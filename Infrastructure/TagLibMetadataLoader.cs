@@ -10,7 +10,7 @@ public class TagLibMetadataLoader : IMetadataLoader
     {
         using var tagFile = File.Create(filePath);
         string title = tagFile.Tag.Title;
-        var artists = tagFile.Tag.AlbumArtists;
+        var artists = tagFile.Tag.Performers;
         var duration = tagFile.Properties.Duration;
         var albumCoverRaw = LoadAlbumCover(tagFile.Tag);
 
