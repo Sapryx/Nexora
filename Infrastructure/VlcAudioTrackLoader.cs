@@ -1,18 +1,22 @@
 using Core;
-using LibVLCSharp.Shared;
 using AudioTrack = Core.AudioTrack;
 
 namespace Infrastructure;
 
 public class VlcAudioTrackLoader : IAudioTrackLoader
 {
-    private static readonly string[] SupportedExtensions = [".mp3", ".flac", ".wav"];
-    private readonly LibVLC vlc;
+    private static readonly string[] SupportedExtensions = [
+        ".mp3",
+        ".flac",
+        ".wav",
+        ".opus",
+        ".ogg"
+    ];
+
     private readonly IMetadataLoader metadataLoader;
 
-    public VlcAudioTrackLoader(LibVLC vlc, IMetadataLoader metadataLoader)
+    public VlcAudioTrackLoader(IMetadataLoader metadataLoader)
     {
-        this.vlc = vlc;
         this.metadataLoader = metadataLoader;
     }
 
