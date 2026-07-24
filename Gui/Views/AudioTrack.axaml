@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:Gui.ViewModels"
+             xmlns:converters="clr-namespace:Gui.Converters"
+             x:Class="Gui.Views.AudioTrackControl"
+             x:DataType="viewModels:AudioTrackVm">
+    <UserControl.Resources>
+        <converters:IsAudioTrackPlayingConverter x:Key="IsAudioTrackPlayingConverter" />
+        <converters:IsAudioTrackActiveConverter x:Key="IsAudioTrackActiveConverter" />
+    </UserControl.Resources>
+
+    <UserControl.Styles>
+        <Style Selector="Button TextBlock">
+            <Setter Property="Opacity"
+                    Value="{Binding IsActive, Converter={StaticResource IsAudioTrackActiveConverter}}" />
+        </Style>
+
+        <Style Selector="Button:pointerover TextBlock">
+            <Setter Property="Opacity"
+                    Value="1" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid
+        ColumnDefinitions="Auto, *, Auto"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Stretch"
+        ColumnSpacing="8">
+        <Button Grid.Column="0"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Command="{Binding PressPlayButton}"
+                Width="50"
+                Height="50"
+                Cursor="Hand"
+                Padding="0"
+                CornerRadius="4">
+            <Button.Styles>
+                <Style Selector="Button Border#HoverEffect">
+                    <Setter Property="Background" Value="Black" />
+                    <Setter Property="Opacity" Value="0.0" />
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                        </Transitions>
+                    </Setter>
+                </Style>
+
+                <Style Selector="Button:pointerover Border#HoverEffect">
+                    <Setter Property="Opacity" Value="0.5" />
+                </Style>
+
+                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="Transparent" />
+                </Style>
+            </Button.Styles>
+            <Panel>
+                <Border CornerRadius="4" ClipToBounds="True">
+                    <Image Source="{Binding AlbumCover}" Stretch="Uniform" />
+                </Border>
+                <Border x:Name="HoverEffect" CornerRadius="4" />
+                <TextBlock
+                    Text="{Binding IsActiveAndPlaying,Converter={StaticResource IsAudioTrackPlayingConverter}}"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Foreground="White"
+                    FontWeight="Bold" />
+            </Panel>
+        </Button>
+        <StackPanel Grid.Column="1"
+                    Orientation="Vertical"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center">
+            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="DemiBold" />
+            <TextBlock Text="{Binding Artists}" FontSize="12" Foreground="DarkGray" />
+        </StackPanel>
+        <TextBlock Grid.Column="2" Text="{Binding Duration}" VerticalAlignment="Center" />
+    </Grid>
+</UserControl>

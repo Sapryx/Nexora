@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Gui.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:Gui.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Gui.Views.MainWindow"
+        x:DataType="vm:MainWindowVm"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Gui">
+    <DockPanel LastChildFill="True">
+        <Border DockPanel.Dock="Bottom" Height="80" Background="#212121">
+            <Grid ColumnDefinitions="100, *, 100"
+                  Margin="16"
+                  VerticalAlignment="Center"
+                  ColumnSpacing="64">
+                <Grid Name="PlaybackPositionSliderContainer" Grid.Column="1">
+                    <Slider Minimum="0"
+                            Maximum="1"
+                            Value="{Binding PlaybackPosition, Mode=TwoWay}"
+                            Cursor="Hand"/>
+                    <Popup Name="FloatingTip"
+                           Placement="TopEdgeAlignedLeft"
+                           PlacementTarget="{Binding #PlaybackPositionSliderContainer}"
+                           IsHitTestVisible="False">
+                        <Border Background="#333" CornerRadius="4" Padding="8,4">
+                            <TextBlock Name="TipText" Text="" Foreground="White" />
+                        </Border>
+                    </Popup>
+                </Grid>
+                
+                <Slider
+                    Grid.Column="2"
+                    Width="100"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="{Binding AudioVolume, Mode=TwoWay}"
+                    Cursor="Hand" />
+            </Grid>
+        </Border>
+        
+        <Border DockPanel.Dock="Top" Height="20">
+
+        </Border>
+        
+        <Border DockPanel.Dock="Left"
+                Width="250"
+                Margin="16, 0, 0, 0">
+            <StackPanel
+                Orientation="Vertical"
+                Spacing="4">
+                <Button HorizontalAlignment="Stretch" Height="50">
+                    <TextBlock VerticalAlignment="Center" Text="🏠 Home" Classes="header"></TextBlock>
+                </Button>
+                
+                <Button HorizontalAlignment="Stretch" Height="50">
+                    <TextBlock VerticalAlignment="Center" Text="💗 Library" Classes="header"></TextBlock>
+                </Button>
+                
+                <Button HorizontalAlignment="Stretch" Height="50">
+                    <TextBlock VerticalAlignment="Center" Text="⚙ Settings" Classes="header"></TextBlock>
+                </Button>
+            </StackPanel>
+        </Border>
+        
+        <ScrollViewer x:Name="Scroller"
+                      Margin="128, 16, 0, 0"
+                      HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl
+                ItemsSource="{Binding AudioTrackVms}"
+                Margin="0, 0, 256, 0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:AudioTrackVm">
+                        <views:AudioTrackControl Margin="0, 0, 0, 8" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+                
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</Window>
