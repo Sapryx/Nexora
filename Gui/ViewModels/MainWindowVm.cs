@@ -67,6 +67,8 @@ public partial class MainWindowVm : ViewModelBase
 
     private void SetPlaylist(Playlist playlist)
     {
+        AudioTrackVms.Clear();
+        
         foreach(var item in playlist)
         {
             var audioTrackVm = audioTrackVmFactory.Create(item, audioPlayer);
