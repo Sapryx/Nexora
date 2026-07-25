@@ -40,8 +40,12 @@
             </Grid>
         </Border>
         
-        <Border DockPanel.Dock="Top" Height="20">
-
+        <Border DockPanel.Dock="Top">
+            <TextBox 
+                Width="400"
+                Margin="4"
+                PlaceholderText="Search..."
+                Text="{Binding SearchQuery}"/>
         </Border>
         
         <Border DockPanel.Dock="Left"

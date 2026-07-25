@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Avalonia.Input;
+﻿using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core;
@@ -21,6 +19,9 @@ public partial class MainWindowVm : ViewModelBase
 
     [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
+    
+    [ObservableProperty]
+    public partial string SearchQuery { get; set; }
 
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
     private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
@@ -39,6 +40,7 @@ public partial class MainWindowVm : ViewModelBase
 
         this.AudioVolume = audioPlayer.Volume;
         this.PlaybackPosition = audioPlayer.PlaybackPosition;
+        this.SearchQuery = "";
 
         audioPlayer.PlaybackPositionChanged += value =>
         {
