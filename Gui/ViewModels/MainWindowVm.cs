@@ -108,7 +108,7 @@ public partial class MainWindowVm : ViewModelBase
 
     partial void OnSearchQueryChanged(string value)
     {
-        string query = value.Trim();
+        string query = value.Trim().ToLower();
         
         if(string.IsNullOrEmpty(query))
         {
@@ -120,8 +120,8 @@ public partial class MainWindowVm : ViewModelBase
 
         foreach(var item in playlistRegistry.GlobalPlaylist)
         {
-            string title = item.AudioTrack.Metadata.Title;
-            string artists = string.Join(", ", item.AudioTrack.Metadata.Artists);
+            string title = item.AudioTrack.Metadata.Title.ToLower();
+            string artists = string.Join(", ", item.AudioTrack.Metadata.Artists).ToLower();
             
             bool titleMatches = title.Contains(query);
             bool artistsMatch = artists.Contains(query);
