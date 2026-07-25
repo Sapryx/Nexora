@@ -1,4 +1,6 @@
 ﻿using System.Collections.ObjectModel;
+using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core;
@@ -87,5 +89,34 @@ public partial class MainWindowVm : ViewModelBase
         {
             audioPlayer.PlaybackPosition = value;
         }
+    }
+
+    partial void OnSearchQueryChanged(string value)
+    {
+        string query = value.Trim();
+        
+        if(string.IsNullOrEmpty(query))
+        {
+            SetPlaylist(playlistRegistry.GlobalPlaylist);
+            return;
+        }
+        
+        var queryPlaylist = new Playlist();
+
+        foreach(var item in playlistRegistry.GlobalPlaylist)
+        {
+            string title = item.AudioTrack.Metadata.Title;
+            string artists = string.Join(", ", item.AudioTrack.Metadata.Artists);
+            
+            bool titleMatches = title.Contains(query);
+            bool artistsMatch = artists.Contains(query);
+
+            if(titleMatches || artistsMatch)
+            {
+                queryPlaylist.AddTrack(item.AudioTrack);
+            }
+        }
+        
+        SetPlaylist(queryPlaylist);
     }
 }
