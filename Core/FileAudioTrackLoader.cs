@@ -1,6 +1,4 @@
-using Core;
-
-namespace Infrastructure;
+namespace Core;
 
 public class FileAudioTrackLoader : IAudioTrackLoader
 {
