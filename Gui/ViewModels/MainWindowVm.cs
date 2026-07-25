@@ -27,21 +27,25 @@ public partial class MainWindowVm : ViewModelBase
     private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
     private readonly AudioPlayer audioPlayer;
     private readonly IPlayNextAudioTrackCommand playNextAudioTrackCommand;
+    private readonly PlaylistRegistry playlistRegistry;
 
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
         IChangeAudioVolumeCommand changeAudioVolumeCommand,
-        AudioPlayer audioPlayer, IPlayNextAudioTrackCommand playNextAudioTrackCommand)
+        AudioPlayer audioPlayer, 
+        IPlayNextAudioTrackCommand playNextAudioTrackCommand,
+        PlaylistRegistry playlistRegistry)
     {
         this.audioTrackVmFactory = audioTrackVmFactory;
         this.changeAudioVolumeCommand = changeAudioVolumeCommand;
         this.audioPlayer = audioPlayer;
         this.playNextAudioTrackCommand = playNextAudioTrackCommand;
+        this.playlistRegistry = playlistRegistry;
 
-        this.AudioVolume = audioPlayer.Volume;
-        this.PlaybackPosition = audioPlayer.PlaybackPosition;
-        this.SearchQuery = "";
-
+        AudioVolume = audioPlayer.Volume;
+        PlaybackPosition = audioPlayer.PlaybackPosition;
+        SearchQuery = "";
+        
         audioPlayer.PlaybackPositionChanged += value =>
         {
             if(!IsSeeking)
@@ -54,9 +58,11 @@ public partial class MainWindowVm : ViewModelBase
         {
             Dispatcher.UIThread.Post(playNextAudioTrackCommand.Execute);
         };
+        
+        SetPlaylist(playlistRegistry.GlobalPlaylist);
     }
 
-    public void SetPlaylist(Playlist playlist)
+    private void SetPlaylist(Playlist playlist)
     {
         foreach(var item in playlist)
         {

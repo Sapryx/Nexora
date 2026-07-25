@@ -25,6 +25,7 @@ public static class CompositionRoot
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<IRpcService, DiscordRpcService>();
         builder.AddSingleton<AudioPlayer>();
+        builder.AddSingleton<PlaylistRegistry>();
 
         builder.AddSingleton<MainWindowVm>();
     }

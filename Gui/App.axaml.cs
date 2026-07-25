@@ -43,19 +43,18 @@ public partial class App : Application
         }
         
         var audioTrackLoaders = Provider.GetServices<IAudioTrackLoader>();
-        var mainPlaylist = new Playlist();
+        var playlistRegistry = Provider.GetService<PlaylistRegistry>()!;
 
         foreach(var loader in audioTrackLoaders)
         {
-            mainPlaylist.AddTracks(loader.Load());
+            playlistRegistry.GlobalPlaylist.AddTracks(loader.Load());
         }
         
-        var mainWindowViewModel = Provider.GetRequiredService<MainWindowVm>();
-        mainWindowViewModel.SetPlaylist(mainPlaylist);
+        var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();
         
         desktop.MainWindow = new MainWindow
         {
-            DataContext = mainWindowViewModel
+            DataContext = mainWindowVm
         };
     }
 }
