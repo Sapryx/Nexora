@@ -45,7 +45,10 @@ public partial class MainWindowVm : ViewModelBase
         AudioVolume = audioPlayer.Volume;
         PlaybackPosition = audioPlayer.PlaybackPosition;
         SearchQuery = "";
-        
+    }
+
+    public void Initialize()
+    {
         audioPlayer.PlaybackPositionChanged += value =>
         {
             if(!IsSeeking)

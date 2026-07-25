@@ -51,6 +51,7 @@ public partial class App : Application
         }
         
         var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();
+        mainWindowVm.Initialize();
         
         desktop.MainWindow = new MainWindow
         {
