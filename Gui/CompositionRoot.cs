@@ -20,7 +20,7 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayNextAudioTrackCommand, PlayNextAudioTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-        builder.AddSingleton<IAudioTrackLoader, VlcAudioTrackLoader>();
+        builder.AddSingleton<IAudioTrackLoader, FileAudioTrackLoader>();
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<IRpcService, DiscordRpcService>();

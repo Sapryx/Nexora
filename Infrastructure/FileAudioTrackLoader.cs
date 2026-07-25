@@ -1,9 +1,8 @@
 using Core;
-using AudioTrack = Core.AudioTrack;
 
 namespace Infrastructure;
 
-public class VlcAudioTrackLoader : IAudioTrackLoader
+public class FileAudioTrackLoader : IAudioTrackLoader
 {
     private static readonly string[] SupportedExtensions = [
         ".mp3",
@@ -15,7 +14,7 @@ public class VlcAudioTrackLoader : IAudioTrackLoader
 
     private readonly IMetadataLoader metadataLoader;
 
-    public VlcAudioTrackLoader(IMetadataLoader metadataLoader)
+    public FileAudioTrackLoader(IMetadataLoader metadataLoader)
     {
         this.metadataLoader = metadataLoader;
     }
