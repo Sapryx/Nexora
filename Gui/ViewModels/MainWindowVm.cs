@@ -1,6 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using System.Linq;
-using Avalonia.Controls;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core;
@@ -11,7 +10,7 @@ namespace Gui.ViewModels;
 
 public partial class MainWindowVm : ViewModelBase
 {
-    public ObservableCollection<AudioTrackVm> AudioTrackVms { get; } = [];
+    public ObservableCollection<AudioTrackVm> DisplayedAudioTrackVms { get; }
     
     [ObservableProperty]
     public partial bool IsSeeking { get; set; }
@@ -25,6 +24,7 @@ public partial class MainWindowVm : ViewModelBase
     [ObservableProperty]
     public partial string SearchQuery { get; set; }
 
+    private Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; }
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
     private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
     private readonly AudioPlayer audioPlayer;
@@ -44,6 +44,8 @@ public partial class MainWindowVm : ViewModelBase
         this.playNextAudioTrackCommand = playNextAudioTrackCommand;
         this.playlistRegistry = playlistRegistry;
 
+        AudioTrackVms = [];
+        DisplayedAudioTrackVms = [];
         AudioVolume = audioPlayer.Volume;
         PlaybackPosition = audioPlayer.PlaybackPosition;
         SearchQuery = "";
@@ -69,13 +71,26 @@ public partial class MainWindowVm : ViewModelBase
 
     private void SetPlaylist(Playlist playlist)
     {
-        AudioTrackVms.Clear();
+        DisplayedAudioTrackVms.Clear();
         
         foreach(var item in playlist)
         {
-            var audioTrackVm = audioTrackVmFactory.Create(item, audioPlayer);
-            AudioTrackVms.Add(audioTrackVm);
+            var audioTrackVm = GetOrCreateAudioTrackVm(item);
+            DisplayedAudioTrackVms.Add(audioTrackVm);
         }
+    }
+
+    private AudioTrackVm GetOrCreateAudioTrackVm(PlaylistItem playlistItem)
+    {
+        bool audioTrackVmExists = AudioTrackVms.TryGetValue(playlistItem.AudioTrack, out var audioTrackVm);
+        
+        if(!audioTrackVmExists)
+        {
+            audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
+            AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
+        }
+
+        return audioTrackVm!;
     }
 
     partial void OnAudioVolumeChanged(int value)
