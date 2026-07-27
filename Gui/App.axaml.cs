@@ -50,9 +50,9 @@ public partial class App : Application
 
         foreach(var loader in audioTrackLoaders)
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
-                var loadedTracks = await loader.Load();
+                var loadedTracks = loader.Load();
                 playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
             });
         }

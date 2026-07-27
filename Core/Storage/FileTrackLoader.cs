@@ -5,7 +5,7 @@ namespace Core.Storage;
 
 public class FileTrackLoader : ITrackLoader
 {
-    private static readonly string[] SupportedExtensions = [
+    private static readonly HashSet<string> SupportedExtensions = [
         ".mp3",
         ".flac",
         ".wav",
@@ -22,7 +22,7 @@ public class FileTrackLoader : ITrackLoader
         this.degreeOfParallelism = degreeOfParallelism;
     }
 
-    public async Task<List<IAudioTrack>> Load()
+    public List<IAudioTrack> Load()
     {
         var musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         var audioTracks = new ConcurrentBag<IAudioTrack>();

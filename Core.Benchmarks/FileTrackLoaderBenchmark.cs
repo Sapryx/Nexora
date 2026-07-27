@@ -19,8 +19,8 @@ public class FileTrackLoaderBenchmark
     }
 
     [Benchmark]
-    public async Task LoadTracks()
+    public void LoadTracks()
     {
-        await loader.Load();
+        loader.Load();
     }
 }

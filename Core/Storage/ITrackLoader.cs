@@ -4,5 +4,5 @@ namespace Core.Storage;
 
 public interface ITrackLoader
 {
-    public Task<List<IAudioTrack>> Load();
+    public List<IAudioTrack> Load();
 }
