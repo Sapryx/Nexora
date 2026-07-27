@@ -4,50 +4,113 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:Gui.Views"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
         x:Class="Gui.Views.MainWindow"
         x:DataType="vm:MainWindowVm"
         Icon="/Assets/avalonia-logo.ico"
         Title="Gui">
+    <Window.Styles>
+        <Style Selector="Slider">
+            <Style.Resources>
+                <CornerRadius x:Key="SliderThumbCornerRadius">16</CornerRadius>
+                <x:Double x:Key="SliderHorizontalThumbWidth">4</x:Double>
+                <GridLength x:Key="SliderPreContentMargin">0</GridLength>
+                <GridLength x:Key="SliderPostContentMargin">0</GridLength>
+                <x:Double x:Key="SliderTrackThemeHeight">12</x:Double>
+            </Style.Resources>
+        </Style>
+        <Style Selector="Slider TickBar">
+            <Setter Property="IsVisible" Value="False" />
+        </Style>
+    </Window.Styles>
     <DockPanel LastChildFill="True">
-        <Border DockPanel.Dock="Bottom" Height="80" Background="#212121">
-            <Grid ColumnDefinitions="100, *, 100"
-                  Margin="16"
-                  VerticalAlignment="Center"
-                  ColumnSpacing="64">
-                <Grid Name="PlaybackPositionSliderContainer" Grid.Column="1">
-                    <Slider Minimum="0"
-                            Maximum="1"
-                            Value="{Binding PlaybackPosition, Mode=TwoWay}"
-                            Cursor="Hand"/>
-                    <Popup Name="FloatingTip"
-                           Placement="TopEdgeAlignedLeft"
-                           PlacementTarget="{Binding #PlaybackPositionSliderContainer}"
-                           IsHitTestVisible="False">
-                        <Border Background="#333" CornerRadius="4" Padding="8,4">
-                            <TextBlock Name="TipText" Text="" Foreground="White" />
-                        </Border>
-                    </Popup>
+        <Border DockPanel.Dock="Bottom"
+                ZIndex="10"
+                Height="100"
+                Width="1000"
+                Margin="0, 0, 0, 16"
+                CornerRadius="8"
+                Background="#212121"
+                HorizontalAlignment="Center"
+                ClipToBounds="False">
+            <Panel HorizontalAlignment="Stretch"
+                   ClipToBounds="False">
+                <Slider Name="PlaybackPositionSliderContainer"
+                        Minimum="0"
+                        Maximum="1"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Margin="0, -18, 0, 0"
+                        Value="{Binding PlaybackPosition, Mode=TwoWay}"
+                        Cursor="Hand">
+                </Slider>
+
+                <Grid ColumnDefinitions="1*, 4*, 1*"
+                      VerticalAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      Margin="24, 0, 24, 0"
+                      ColumnSpacing="64">
+
+                    <Grid Grid.Column="1"
+                          FlowDirection="LeftToRight"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          ColumnSpacing="16"
+                          ColumnDefinitions="Auto, Auto, Auto">
+                        <Button Grid.Column="0"
+                                CornerRadius="24"
+                                Width="48"
+                                Height="48"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
+                            <TextBlock Text="|&lt;"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Button>
+
+                        <Button Grid.Column="1"
+                                CornerRadius="24"
+                                Width="48"
+                                Height="48"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
+                            <TextBlock Text="||"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Button>
+
+                        <Button Grid.Column="2"
+                                CornerRadius="24"
+                                Width="48"
+                                Height="48"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center">
+                            <TextBlock Text="&gt;|"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Button>
+                    </Grid>
+
+                    <Slider Grid.Column="2"
+                            Minimum="0"
+                            Maximum="100"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Bottom"
+                            Margin="0, 0, 0, 24"
+                            Value="{Binding AudioVolume, Mode=TwoWay}"
+                            Cursor="Hand" />
                 </Grid>
-                
-                <Slider
-                    Grid.Column="2"
-                    Width="100"
-                    Minimum="0"
-                    Maximum="100"
-                    Value="{Binding AudioVolume, Mode=TwoWay}"
-                    Cursor="Hand" />
-            </Grid>
+            </Panel>
         </Border>
-        
+
         <Border DockPanel.Dock="Top">
-            <TextBox 
+            <TextBox
                 Width="400"
                 Margin="4"
                 PlaceholderText="Search..."
-                Text="{Binding SearchQuery}"/>
+                Text="{Binding SearchQuery}" />
         </Border>
-        
+
         <Border DockPanel.Dock="Left"
                 Width="250"
                 Margin="16, 0, 0, 0">
@@ -57,19 +120,19 @@
                 <Button HorizontalAlignment="Stretch" Height="50">
                     <TextBlock VerticalAlignment="Center" Text="🏠 Home" Classes="header"></TextBlock>
                 </Button>
-                
+
                 <Button HorizontalAlignment="Stretch" Height="50">
                     <TextBlock VerticalAlignment="Center" Text="💗 Library" Classes="header"></TextBlock>
                 </Button>
-                
+
                 <Button HorizontalAlignment="Stretch" Height="50">
                     <TextBlock VerticalAlignment="Center" Text="⚙ Settings" Classes="header"></TextBlock>
                 </Button>
             </StackPanel>
         </Border>
-        
+
         <ScrollViewer x:Name="Scroller"
-                      Margin="128, 16, 0, 0"
+                      Margin="128, 16, 0, 16"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto">
             <ItemsControl
@@ -80,7 +143,7 @@
                         <views:AudioTrackControl Margin="0, 0, 0, 8" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
-                
+
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Vertical" />
