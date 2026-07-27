@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Core.Integrations;
 using Core.Playlists;
 using Core.Storage;
+using Gui.Logging;
 using Gui.ViewModels;
 using Gui.Views;
 using Microsoft.Extensions.DependencyInjection;

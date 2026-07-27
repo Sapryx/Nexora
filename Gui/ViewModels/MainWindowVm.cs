@@ -157,7 +157,7 @@ public partial class MainWindowVm : ViewModelBase
     {
         string query = rawQuery.Trim().ToLower();
         string title = audioTrack.Metadata.Title.ToLower();
-        string artists = string.Join(", ", audioTrack.Metadata.Artists).ToLower();
+        string artists = audioTrack.Metadata.Artists.ToLower();
         bool titleMatches = title.Contains(query);
         bool artistsMatch = artists.Contains(query);
 

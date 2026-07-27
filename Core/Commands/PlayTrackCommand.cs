@@ -24,7 +24,7 @@ public class PlayTrackCommand : IPlayTrackCommand
         else
         {
             audioPlayer.PlayTrack(playlistItem);
-            richPresenceService.UpdateStatus(playlistItem.AudioTrack.Metadata.Title, string.Join(", ", playlistItem.AudioTrack.Metadata.Artists));
+            richPresenceService.UpdateStatus(playlistItem.AudioTrack.Metadata.Title, playlistItem.AudioTrack.Metadata.Artists);
         }
     }
 }

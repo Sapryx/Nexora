@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ZLogger;
 
-namespace Gui;
+namespace Gui.Logging;
 
 public static class LoggingInitializer
 {

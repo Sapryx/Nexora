@@ -52,7 +52,7 @@ public class FileTrackLoader : ITrackLoader
             
             audioTracks.Add(audioTrack);
             
-            logger.Info($"Loaded track {string.Join(", ", audioTrack.Metadata.Artists)} - {audioTrack.Metadata.Title}");
+            logger.Info($"Loaded track {audioTrack.Metadata.Artists} - {audioTrack.Metadata.Title}");
         });
         
         logger.Info($"Loaded {audioTracks.Count} tracks");
