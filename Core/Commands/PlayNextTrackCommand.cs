@@ -1,11 +1,11 @@
 namespace Core.Commands;
 
-public class PlayNextAudioTrackCommand : IPlayNextAudioTrackCommand
+public class PlayNextTrackCommand : IPlayNextTrackCommand
 {
     private readonly AudioPlayer audioPlayer;
     private readonly IPlayAudioTrackCommand playAudioTrackCommand;
 
-    public PlayNextAudioTrackCommand(AudioPlayer audioPlayer, IPlayAudioTrackCommand playAudioTrackCommand)
+    public PlayNextTrackCommand(AudioPlayer audioPlayer, IPlayAudioTrackCommand playAudioTrackCommand)
     {
         this.audioPlayer = audioPlayer;
         this.playAudioTrackCommand = playAudioTrackCommand;

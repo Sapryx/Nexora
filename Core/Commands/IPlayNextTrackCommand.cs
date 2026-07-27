@@ -1,6 +1,6 @@
 namespace Core.Commands;
 
-public interface IPlayNextAudioTrackCommand
+public interface IPlayNextTrackCommand
 {
     public void Execute();
 }

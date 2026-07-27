@@ -33,7 +33,7 @@ public partial class MainWindowVm : ViewModelBase
     private readonly AudioPlayer audioPlayer;
     private readonly PlaylistRegistry playlistRegistry;
     private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
-    private readonly IPlayNextAudioTrackCommand playNextAudioTrackCommand;
+    private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPauseTrackCommand pauseTrackCommand;
     private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
 
@@ -41,7 +41,7 @@ public partial class MainWindowVm : ViewModelBase
         IAudioTrackVmFactory audioTrackVmFactory,
         IChangeAudioVolumeCommand changeAudioVolumeCommand,
         AudioPlayer audioPlayer, 
-        IPlayNextAudioTrackCommand playNextAudioTrackCommand,
+        IPlayNextTrackCommand playNextTrackCommand,
         PlaylistRegistry playlistRegistry,
         IPauseTrackCommand pauseTrackCommand,
         IPlayPreviousTrackCommand playPreviousTrackCommand)
@@ -49,7 +49,7 @@ public partial class MainWindowVm : ViewModelBase
         this.audioTrackVmFactory = audioTrackVmFactory;
         this.changeAudioVolumeCommand = changeAudioVolumeCommand;
         this.audioPlayer = audioPlayer;
-        this.playNextAudioTrackCommand = playNextAudioTrackCommand;
+        this.playNextTrackCommand = playNextTrackCommand;
         this.playlistRegistry = playlistRegistry;
         this.pauseTrackCommand = pauseTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
@@ -74,7 +74,7 @@ public partial class MainWindowVm : ViewModelBase
 
         audioPlayer.PlaybackFinished += () =>
         {
-            Dispatcher.UIThread.Post(playNextAudioTrackCommand.Execute);
+            Dispatcher.UIThread.Post(playNextTrackCommand.Execute);
         };
 
         audioPlayer.PlaybackPaused += () =>
@@ -165,7 +165,7 @@ public partial class MainWindowVm : ViewModelBase
     [RelayCommand]
     public void PressNextTrackButton()
     {
-        playNextAudioTrackCommand.Execute();
+        playNextTrackCommand.Execute();
     }
 
     [RelayCommand]
