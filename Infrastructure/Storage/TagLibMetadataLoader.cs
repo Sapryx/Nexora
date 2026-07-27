@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Core.Storage;
 using TagLib;
 using File = TagLib.File;
@@ -6,6 +7,10 @@ namespace Infrastructure.Storage;
 
 public class TagLibMetadataLoader : IMetadataLoader
 {
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Mpeg.AudioFile))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Riff.File))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Ogg.File))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Flac.File))]
     public Metadata LoadMetadata(string filePath)
     {
         using var tagFile = File.Create(filePath);
