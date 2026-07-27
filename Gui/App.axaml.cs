@@ -14,7 +14,7 @@ namespace Gui;
 public partial class App : Application
 {
     private static ServiceProvider Provider = null!;
-    
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -22,8 +22,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
-        RegisterDiContainer();
-        
+        var builder = new ServiceCollection();
+        LoggingInitializer.Initialize(builder);
+        RegisterDiContainer(builder);
         InitializeMainWindowVm();
         Provider.GetService<IRichPresenceService>()?.Initialize();
         LibVLCSharp.Shared.Core.Initialize();
@@ -31,9 +32,8 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void RegisterDiContainer()
+    private void RegisterDiContainer(ServiceCollection builder)
     {
-        var builder = new ServiceCollection();
         CompositionRoot.Configure(builder);
         Provider = builder.BuildServiceProvider();
     }
@@ -44,7 +44,7 @@ public partial class App : Application
         {
             return;
         }
-        
+
         var audioTrackLoaders = Provider.GetServices<ITrackLoader>();
         var playlistRegistry = Provider.GetService<PlaylistRegistry>()!;
 
@@ -56,10 +56,10 @@ public partial class App : Application
                 playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
             });
         }
-        
+
         var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
-        
+
         desktop.MainWindow = new MainWindow
         {
             DataContext = mainWindowVm

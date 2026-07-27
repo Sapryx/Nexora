@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,6 +8,8 @@ using Core.Commands;
 using Core.Playback;
 using Core.Playlists;
 using Gui.ViewModels.Factories;
+using Microsoft.Extensions.Logging;
+using ZLogger;
 
 namespace Gui.ViewModels;
 
@@ -37,6 +40,7 @@ public partial class MainWindowVm : ViewModelBase
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPauseTrackCommand pauseTrackCommand;
     private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
+    private readonly ILogger logger;
 
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
@@ -45,7 +49,8 @@ public partial class MainWindowVm : ViewModelBase
         IPlayNextTrackCommand playNextTrackCommand,
         PlaylistRegistry playlistRegistry,
         IPauseTrackCommand pauseTrackCommand,
-        IPlayPreviousTrackCommand playPreviousTrackCommand)
+        IPlayPreviousTrackCommand playPreviousTrackCommand,
+        ILogger<MainWindowVm> logger)
     {
         this.audioTrackVmFactory = audioTrackVmFactory;
         this.changeVolumeCommand = changeVolumeCommand;
@@ -54,6 +59,7 @@ public partial class MainWindowVm : ViewModelBase
         this.playlistRegistry = playlistRegistry;
         this.pauseTrackCommand = pauseTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
+        this.logger = logger;
 
         AudioTrackVms = [];
         DisplayedAudioTrackVms = [];
@@ -97,6 +103,8 @@ public partial class MainWindowVm : ViewModelBase
                 DisplayedAudioTrackVms.Add(trackVm);
             }
         };
+        
+        logger.ZLogInformation($"Application initialized");
     }
 
     private AudioTrackVm AddAudioTrackVm(PlaylistItem playlistItem)

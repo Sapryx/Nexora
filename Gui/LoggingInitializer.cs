@@ -1,0 +1,87 @@
+using System;
+using System.IO;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ZLogger;
+
+namespace Gui;
+
+public static class LoggingInitializer
+{
+    private static readonly string LogsDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+
+    public static void Initialize(ServiceCollection builder)
+    {
+        ConfigureLogging(builder);
+        ConfigureCrashLogging();
+    }
+
+    private static void ConfigureLogging(ServiceCollection builder)
+    {
+        Directory.CreateDirectory(LogsDirectory);
+
+        var sessionLogPath = Path.Combine(LogsDirectory, "session.log");
+
+        if(File.Exists(sessionLogPath))
+        {
+            File.Delete(sessionLogPath);
+        }
+
+        builder.AddLogging(logging =>
+        {
+            logging.ClearProviders();
+            logging.SetMinimumLevel(LogLevel.Trace);
+
+            logging.AddZLoggerFile(sessionLogPath, options =>
+            {
+                options.UsePlainTextFormatter(formatter =>
+                {
+                    // "hh:mm:ss [Info] message"
+                    formatter.SetPrefixFormatter($"{0} [{1}] ",
+                        (in MessageTemplate template, in LogInfo info) =>
+                            template.Format(DateTime.Now.ToString("HH:mm:ss"), GetLevelName(info.LogLevel))
+                    );
+                });
+            });
+        });
+    }
+    
+    private static string GetLevelName(LogLevel level) => level switch
+    {
+        LogLevel.Trace => "Trace",
+        LogLevel.Debug => "Debug",
+        LogLevel.Information => "Info",
+        LogLevel.Warning => "Warn",
+        LogLevel.Error => "Error",
+        LogLevel.Critical => "Crit",
+        _ => "None"
+    };
+
+    private static void ConfigureCrashLogging()
+    {
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            WriteCrashLog(e.ExceptionObject as Exception, "AppDomain.UnhandledException");
+        };
+
+        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, e) =>
+        {
+            WriteCrashLog(e.Exception, "TaskScheduler.UnobservedTaskException");
+            e.SetObserved();
+        };
+    }
+
+    private static void WriteCrashLog(Exception? ex, string source)
+    {
+        Directory.CreateDirectory(LogsDirectory);
+
+        string currentDateString = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+        string crashLogPath = Path.Combine(LogsDirectory, $"crash-{currentDateString}.log");
+
+        string entry =
+            $"{currentDateString} [CRT] ({source}){Environment.NewLine}" +
+            $"{ex}{Environment.NewLine}{new string('-', 60)}{Environment.NewLine}";
+
+        File.AppendAllText(crashLogPath, entry);
+    }
+}
