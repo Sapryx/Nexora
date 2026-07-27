@@ -42,6 +42,12 @@ public class AudioPlayer
         add => audioEngine.PlaybackFinished += value;
         remove => audioEngine.PlaybackFinished -= value;
     }
+    
+    public event Action? PlaybackResumed
+    {
+        add => audioEngine.PlaybackResumed += value;
+        remove => audioEngine.PlaybackResumed -= value;
+    }
 
     public AudioPlayer(IAudioEngine audioEngine)
     {

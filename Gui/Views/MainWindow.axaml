@@ -73,8 +73,9 @@
                                 Width="48"
                                 Height="48"
                                 VerticalAlignment="Center"
-                                HorizontalAlignment="Center">
-                            <TextBlock Text="||"
+                                HorizontalAlignment="Center"
+                                Command="{Binding PressPauseButton}">
+                            <TextBlock Text="{Binding PauseButtonText}"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center" />
                         </Button>

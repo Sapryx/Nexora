@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Core;
 using Core.Commands;
 using Gui.ViewModels.Factories;
@@ -23,6 +24,9 @@ public partial class MainWindowVm : ViewModelBase
     
     [ObservableProperty]
     public partial string SearchQuery { get; set; }
+    
+    [ObservableProperty]
+    public partial string PauseButtonText { get; set; }
 
     private Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; }
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
@@ -30,25 +34,28 @@ public partial class MainWindowVm : ViewModelBase
     private readonly AudioPlayer audioPlayer;
     private readonly IPlayNextAudioTrackCommand playNextAudioTrackCommand;
     private readonly PlaylistRegistry playlistRegistry;
+    private readonly IPauseTrackCommand pauseTrackCommand;
 
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
         IChangeAudioVolumeCommand changeAudioVolumeCommand,
         AudioPlayer audioPlayer, 
         IPlayNextAudioTrackCommand playNextAudioTrackCommand,
-        PlaylistRegistry playlistRegistry)
+        PlaylistRegistry playlistRegistry, IPauseTrackCommand pauseTrackCommand)
     {
         this.audioTrackVmFactory = audioTrackVmFactory;
         this.changeAudioVolumeCommand = changeAudioVolumeCommand;
         this.audioPlayer = audioPlayer;
         this.playNextAudioTrackCommand = playNextAudioTrackCommand;
         this.playlistRegistry = playlistRegistry;
+        this.pauseTrackCommand = pauseTrackCommand;
 
         AudioTrackVms = [];
         DisplayedAudioTrackVms = [];
         AudioVolume = audioPlayer.Volume;
         PlaybackPosition = audioPlayer.PlaybackPosition;
         SearchQuery = "";
+        PauseButtonText = "||";
     }
 
     public void Initialize()
@@ -64,6 +71,16 @@ public partial class MainWindowVm : ViewModelBase
         audioPlayer.PlaybackFinished += () =>
         {
             Dispatcher.UIThread.Post(playNextAudioTrackCommand.Execute);
+        };
+
+        audioPlayer.PlaybackPaused += () =>
+        {
+            Dispatcher.UIThread.Post(() => PauseButtonText = ">");
+        };
+
+        audioPlayer.PlaybackResumed += () =>
+        {
+            Dispatcher.UIThread.Post(() => PauseButtonText = "||");
         };
         
         SetPlaylist(playlistRegistry.GlobalPlaylist);
@@ -133,5 +150,11 @@ public partial class MainWindowVm : ViewModelBase
         }
         
         SetPlaylist(queryPlaylist);
+    }
+
+    [RelayCommand]
+    public void PressPauseButton()
+    {
+        pauseTrackCommand.Execute();
     }
 }

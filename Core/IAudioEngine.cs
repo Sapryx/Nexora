@@ -10,6 +10,7 @@ public interface IAudioEngine
     public event Action? PlaybackStarted;
     public event Action? PlaybackFinished;
     public event Action? PlaybackPaused;
+    public event Action? PlaybackResumed;
     
     public void StartPlayback(IAudioTrack audioTrack);
     public void TogglePause();

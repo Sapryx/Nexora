@@ -26,7 +26,8 @@ public class VlcAudioEngine : IAudioEngine
     public event Action? PlaybackStarted;
     public event Action? PlaybackFinished;
     public event Action? PlaybackPaused;
-
+    public event Action? PlaybackResumed;
+    
     public VlcAudioEngine(LibVLC vlc)
     {
         this.vlc = vlc;
@@ -35,6 +36,7 @@ public class VlcAudioEngine : IAudioEngine
         mediaPlayer.Playing += OnPlaybackStarted;
         mediaPlayer.EndReached += OnEndReached;
         mediaPlayer.Paused += OnPaused;
+        mediaPlayer.Playing += OnPlaying;
     }
 
     public void StartPlayback(IAudioTrack audioTrack)
@@ -67,5 +69,10 @@ public class VlcAudioEngine : IAudioEngine
     private void OnPaused(object? sender, EventArgs args)
     {
         PlaybackPaused?.Invoke();
+    }
+
+    private void OnPlaying(object? sender, EventArgs args)
+    {
+        PlaybackResumed?.Invoke();
     }
 }
