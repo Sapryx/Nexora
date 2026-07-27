@@ -25,7 +25,7 @@ public partial class App : Application
         RegisterDiContainer();
         
         InitializeMainWindowVm();
-        Provider.GetService<IRpcService>()?.Initialize();
+        Provider.GetService<IRichPresenceService>()?.Initialize();
         LibVLCSharp.Shared.Core.Initialize();
 
         base.OnFrameworkInitializationCompleted();

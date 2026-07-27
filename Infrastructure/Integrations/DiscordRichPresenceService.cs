@@ -3,13 +3,13 @@ using DiscordRPC;
 
 namespace Infrastructure.Integrations;
 
-public class DiscordRpcService : IRpcService
+public class DiscordRichPresenceService : IRichPresenceService
 {
     private readonly DiscordRpcClient client;
     
     private const string AppId = "1494383204252258484"; // TODO Pass from outside
 
-    public DiscordRpcService()
+    public DiscordRichPresenceService()
     {
         client = new DiscordRpcClient(AppId);
     }

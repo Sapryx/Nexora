@@ -32,7 +32,7 @@ public static class CompositionRoot
         builder.AddSingleton<IAudioTrackLoader, FileAudioTrackLoader>();
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
-        builder.AddSingleton<IRpcService, DiscordRpcService>();
+        builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<AudioPlayer>();
         builder.AddSingleton<PlaylistRegistry>();
 
