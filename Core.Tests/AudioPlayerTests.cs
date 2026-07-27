@@ -1,16 +1,17 @@
 ﻿using Core.Playback;
+using Moq;
 
 namespace Core.Tests;
 
 public class AudioPlayerTests
 {
-    private readonly FakeAudioEngine audioEngine;
+    private readonly Mock<IAudioEngine> audioEngineMock;
     private readonly AudioPlayer audioPlayer;
     
     public AudioPlayerTests()
     {
-        audioEngine = new FakeAudioEngine();
-        audioPlayer = new AudioPlayer(audioEngine);
+        audioEngineMock = new Mock<IAudioEngine>();
+        audioPlayer = new AudioPlayer(audioEngineMock.Object);
     }
     
     [Fact]
@@ -20,19 +21,19 @@ public class AudioPlayerTests
     }
 
     [Fact]
-    public void NewAudioPlayer_IsNotPlaying()
+    public void IsPlaying_Get_DelegatesToAudioEngine()
     {
-        Assert.False(audioPlayer.IsPlaying);
+        _ = audioPlayer.IsPlaying;
+        audioEngineMock.VerifyGet(it => it.IsPlaying, Times.Once);
     }
 
     [Fact]
-    public void GetAndSetVolume_DelegatesToAudioEngine()
+    public void Volume_Get_Set_DelegatedToAudioEngine()
     {
-        Assert.Equal(audioEngine.Volume, audioPlayer.Volume);
-
-        audioPlayer.Volume = 39;
+        _ = audioPlayer.Volume;
+        audioPlayer.Volume = 13;
         
-        Assert.Equal(39, audioPlayer.Volume);
-        Assert.Equal(39, audioEngine.Volume);
+        audioEngineMock.VerifyGet(it => it.Volume, Times.Once);
+        audioEngineMock.VerifySet(it => it.Volume = 13, Times.Once);
     }
 }
