@@ -11,6 +11,8 @@ public class Playlist : IEnumerable<PlaylistItem>
     
     private readonly List<PlaylistItem> items = [];
 
+    public event Action<PlaylistItem>? ItemAdded;
+
     public IEnumerable<PlaylistItem> GetAllItems()
     {
         return items;
@@ -30,6 +32,7 @@ public class Playlist : IEnumerable<PlaylistItem>
     {
         var item = new PlaylistItem(audioTrack, this, items.Count);
         items.Add(item);
+        ItemAdded?.Invoke(item);
     }
 
     public void AddTracks(IEnumerable<IAudioTrack> audioTracks)

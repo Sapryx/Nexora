@@ -19,7 +19,7 @@ public class FileTrackLoader : IAudioTrackLoader
         this.metadataLoader = metadataLoader;
     }
 
-    public List<IAudioTrack> Load()
+    public async Task<List<IAudioTrack>> Load()
     {
         var musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         var musicFiles = Directory.GetFiles(musicDirectory);

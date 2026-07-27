@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -50,7 +51,11 @@ public partial class App : Application
 
         foreach(var loader in audioTrackLoaders)
         {
-            playlistRegistry.GlobalPlaylist.AddTracks(loader.Load());
+            Task.Run(async () =>
+            {
+                var loadedTracks = await loader.Load();
+                playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
+            });
         }
         
         var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();

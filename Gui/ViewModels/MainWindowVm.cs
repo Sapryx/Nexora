@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core;
 using Core.Commands;
 using Core.Playback;
 using Core.Playlists;
@@ -14,7 +13,7 @@ namespace Gui.ViewModels;
 public partial class MainWindowVm : ViewModelBase
 {
     public ObservableCollection<AudioTrackVm> DisplayedAudioTrackVms { get; }
-    
+
     [ObservableProperty]
     public partial bool IsSeeking { get; set; }
 
@@ -23,10 +22,10 @@ public partial class MainWindowVm : ViewModelBase
 
     [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
-    
+
     [ObservableProperty]
     public partial string SearchQuery { get; set; }
-    
+
     [ObservableProperty]
     public partial string PauseButtonText { get; set; }
 
@@ -42,7 +41,7 @@ public partial class MainWindowVm : ViewModelBase
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
         IChangeVolumeCommand changeVolumeCommand,
-        AudioPlayer audioPlayer, 
+        AudioPlayer audioPlayer,
         IPlayNextTrackCommand playNextTrackCommand,
         PlaylistRegistry playlistRegistry,
         IPauseTrackCommand pauseTrackCommand,
@@ -88,32 +87,24 @@ public partial class MainWindowVm : ViewModelBase
         {
             Dispatcher.UIThread.Post(() => PauseButtonText = "||");
         };
-        
-        SetPlaylist(playlistRegistry.GlobalPlaylist);
+
+        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem =>
+        {
+            var trackVm = AddAudioTrackVm(playlistItem);
+
+            if(ShouldBeDisplayed(playlistItem.AudioTrack, SearchQuery))
+            {
+                DisplayedAudioTrackVms.Add(trackVm);
+            }
+        };
     }
 
-    private void SetPlaylist(Playlist playlist)
+    private AudioTrackVm AddAudioTrackVm(PlaylistItem playlistItem)
     {
-        DisplayedAudioTrackVms.Clear();
-        
-        foreach(var item in playlist)
-        {
-            var audioTrackVm = GetOrCreateAudioTrackVm(item);
-            DisplayedAudioTrackVms.Add(audioTrackVm);
-        }
-    }
+        var audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
+        AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
 
-    private AudioTrackVm GetOrCreateAudioTrackVm(PlaylistItem playlistItem)
-    {
-        bool audioTrackVmExists = AudioTrackVms.TryGetValue(playlistItem.AudioTrack, out var audioTrackVm);
-        
-        if(!audioTrackVmExists)
-        {
-            audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
-            AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
-        }
-
-        return audioTrackVm!;
+        return audioTrackVm;
     }
 
     partial void OnAudioVolumeChanged(int value)
@@ -131,31 +122,39 @@ public partial class MainWindowVm : ViewModelBase
 
     partial void OnSearchQueryChanged(string value)
     {
-        string query = value.Trim().ToLower();
+        string rawQuery = value;
         
-        if(string.IsNullOrEmpty(query))
+        DisplayedAudioTrackVms.Clear();
+
+        if(string.IsNullOrEmpty(rawQuery.Trim()))
         {
-            SetPlaylist(playlistRegistry.GlobalPlaylist);
+            foreach(var audioTrackVm in AudioTrackVms.Values)
+            {
+                DisplayedAudioTrackVms.Add(audioTrackVm);
+            }
+
             return;
         }
-        
-        var queryPlaylist = new Playlist();
 
-        foreach(var item in playlistRegistry.GlobalPlaylist)
+        foreach(var audioTrack in AudioTrackVms.Keys)
         {
-            string title = item.AudioTrack.Metadata.Title.ToLower();
-            string artists = string.Join(", ", item.AudioTrack.Metadata.Artists).ToLower();
-            
-            bool titleMatches = title.Contains(query);
-            bool artistsMatch = artists.Contains(query);
-
-            if(titleMatches || artistsMatch)
+            if(ShouldBeDisplayed(audioTrack, rawQuery))
             {
-                queryPlaylist.AddTrack(item.AudioTrack);
+                var audioTrackVm = AudioTrackVms[audioTrack];
+                DisplayedAudioTrackVms.Add(audioTrackVm);
             }
         }
-        
-        SetPlaylist(queryPlaylist);
+    }
+
+    private bool ShouldBeDisplayed(IAudioTrack audioTrack, string rawQuery)
+    {
+        string query = rawQuery.Trim().ToLower();
+        string title = audioTrack.Metadata.Title.ToLower();
+        string artists = string.Join(", ", audioTrack.Metadata.Artists).ToLower();
+        bool titleMatches = title.Contains(query);
+        bool artistsMatch = artists.Contains(query);
+
+        return titleMatches || artistsMatch;
     }
 
     [RelayCommand]
