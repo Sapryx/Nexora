@@ -62,7 +62,8 @@
                                 Width="48"
                                 Height="48"
                                 VerticalAlignment="Center"
-                                HorizontalAlignment="Center">
+                                HorizontalAlignment="Center"
+                                Command="{Binding PressPreviousTrackButton}">
                             <TextBlock Text="|&lt;"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center" />
@@ -85,7 +86,8 @@
                                 Width="48"
                                 Height="48"
                                 VerticalAlignment="Center"
-                                HorizontalAlignment="Center">
+                                HorizontalAlignment="Center"
+                                Command="{Binding PressNextTrackButton}">
                             <TextBlock Text="&gt;|"
                                        VerticalAlignment="Center"
                                        HorizontalAlignment="Center" />

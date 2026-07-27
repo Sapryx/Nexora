@@ -30,18 +30,21 @@ public partial class MainWindowVm : ViewModelBase
 
     private Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; }
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
-    private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
     private readonly AudioPlayer audioPlayer;
-    private readonly IPlayNextAudioTrackCommand playNextAudioTrackCommand;
     private readonly PlaylistRegistry playlistRegistry;
+    private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
+    private readonly IPlayNextAudioTrackCommand playNextAudioTrackCommand;
     private readonly IPauseTrackCommand pauseTrackCommand;
+    private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
 
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
         IChangeAudioVolumeCommand changeAudioVolumeCommand,
         AudioPlayer audioPlayer, 
         IPlayNextAudioTrackCommand playNextAudioTrackCommand,
-        PlaylistRegistry playlistRegistry, IPauseTrackCommand pauseTrackCommand)
+        PlaylistRegistry playlistRegistry,
+        IPauseTrackCommand pauseTrackCommand,
+        IPlayPreviousTrackCommand playPreviousTrackCommand)
     {
         this.audioTrackVmFactory = audioTrackVmFactory;
         this.changeAudioVolumeCommand = changeAudioVolumeCommand;
@@ -49,6 +52,7 @@ public partial class MainWindowVm : ViewModelBase
         this.playNextAudioTrackCommand = playNextAudioTrackCommand;
         this.playlistRegistry = playlistRegistry;
         this.pauseTrackCommand = pauseTrackCommand;
+        this.playPreviousTrackCommand = playPreviousTrackCommand;
 
         AudioTrackVms = [];
         DisplayedAudioTrackVms = [];
@@ -156,5 +160,17 @@ public partial class MainWindowVm : ViewModelBase
     public void PressPauseButton()
     {
         pauseTrackCommand.Execute();
+    }
+
+    [RelayCommand]
+    public void PressNextTrackButton()
+    {
+        playNextAudioTrackCommand.Execute();
+    }
+
+    [RelayCommand]
+    public void PressPreviousTrackButton()
+    {
+        playPreviousTrackCommand.Execute();
     }
 }
