@@ -14,17 +14,19 @@ public class FileTrackLoader : IAudioTrackLoader
     ];
 
     private readonly IMetadataLoader metadataLoader;
+    private readonly int degreeOfParallelism;
 
-    public FileTrackLoader(IMetadataLoader metadataLoader)
+    public FileTrackLoader(IMetadataLoader metadataLoader, int degreeOfParallelism)
     {
         this.metadataLoader = metadataLoader;
+        this.degreeOfParallelism = degreeOfParallelism;
     }
 
     public async Task<List<IAudioTrack>> Load()
     {
         var musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         var audioTracks = new ConcurrentBag<IAudioTrack>();
-        var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount };
+        var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism };
         
         var musicDirectoryEnumerator = Directory
             .EnumerateFiles(musicDirectory)

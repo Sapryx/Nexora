@@ -1,4 +1,4 @@
-using Core;
+using System;
 using Core.Commands;
 using Core.Integrations;
 using Core.Playback;
@@ -6,7 +6,6 @@ using Core.Playlists;
 using Core.Storage;
 using Gui.ViewModels;
 using Gui.ViewModels.Factories;
-using Infrastructure;
 using Infrastructure.Integrations;
 using Infrastructure.Playback;
 using Infrastructure.Storage;
@@ -29,7 +28,10 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-        builder.AddSingleton<IAudioTrackLoader, FileTrackLoader>();
+        builder.AddSingleton<IAudioTrackLoader, FileTrackLoader>(provider => 
+            // Degree of parallelism here is a result of benchmarking.
+            new FileTrackLoader(provider.GetService<IMetadataLoader>()!, Environment.ProcessorCount * 2)
+        );
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
