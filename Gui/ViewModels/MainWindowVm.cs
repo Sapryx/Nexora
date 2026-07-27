@@ -57,7 +57,7 @@ public partial class MainWindowVm : ViewModelBase
         {
             if(!IsSeeking)
             {
-                PlaybackPosition = value;
+                Dispatcher.UIThread.Post(() => PlaybackPosition = value);
             }
         };
 
