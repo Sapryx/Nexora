@@ -1,4 +1,6 @@
 using Core;
+using Core.Playback;
+using Core.Playlists;
 
 namespace Gui.ViewModels.Factories;
 

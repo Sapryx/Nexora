@@ -1,4 +1,6 @@
-namespace Core;
+using Core.Playlists;
+
+namespace Core.Playback;
 
 public class AudioPlayer
 {

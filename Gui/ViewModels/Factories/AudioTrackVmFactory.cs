@@ -1,5 +1,7 @@
 using Core;
 using Core.Commands;
+using Core.Playback;
+using Core.Playlists;
 
 namespace Gui.ViewModels.Factories;
 

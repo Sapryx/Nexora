@@ -1,7 +1,7 @@
-using Core;
+using Core.Playback;
 using LibVLCSharp.Shared;
 
-namespace Infrastructure;
+namespace Infrastructure.Playback;
 
 public class VlcAudioEngine : IAudioEngine
 {

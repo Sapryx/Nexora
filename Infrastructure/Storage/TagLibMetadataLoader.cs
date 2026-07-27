@@ -1,8 +1,8 @@
-using Core;
+using Core.Storage;
 using TagLib;
 using File = TagLib.File;
 
-namespace Infrastructure;
+namespace Infrastructure.Storage;
 
 public class TagLibMetadataLoader : IMetadataLoader
 {

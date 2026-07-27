@@ -1,6 +1,7 @@
 using System.Collections;
+using Core.Playback;
 
-namespace Core;
+namespace Core.Playlists;
 
 public class Playlist : IEnumerable<PlaylistItem>
 {

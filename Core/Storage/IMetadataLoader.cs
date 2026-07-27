@@ -1,4 +1,4 @@
-namespace Core;
+namespace Core.Storage;
 
 public interface IMetadataLoader
 {

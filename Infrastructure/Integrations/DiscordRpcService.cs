@@ -1,13 +1,13 @@
-using Core;
+using Core.Integrations;
 using DiscordRPC;
 
-namespace Infrastructure;
+namespace Infrastructure.Integrations;
 
 public class DiscordRpcService : IRpcService
 {
     private readonly DiscordRpcClient client;
     
-    private const string AppId = "1494383204252258484";
+    private const string AppId = "1494383204252258484"; // TODO Pass from outside
 
     public DiscordRpcService()
     {

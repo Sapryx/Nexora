@@ -1,4 +1,4 @@
-namespace Core;
+namespace Core.Playlists;
 
 public class PlaylistRegistry
 {

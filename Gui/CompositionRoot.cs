@@ -1,8 +1,15 @@
 using Core;
 using Core.Commands;
+using Core.Integrations;
+using Core.Playback;
+using Core.Playlists;
+using Core.Storage;
 using Gui.ViewModels;
 using Gui.ViewModels.Factories;
 using Infrastructure;
+using Infrastructure.Integrations;
+using Infrastructure.Playback;
+using Infrastructure.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
 

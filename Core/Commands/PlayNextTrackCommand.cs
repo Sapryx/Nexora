@@ -1,3 +1,5 @@
+using Core.Playback;
+
 namespace Core.Commands;
 
 public class PlayNextTrackCommand : IPlayNextTrackCommand

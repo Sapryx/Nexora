@@ -1,4 +1,4 @@
-namespace Core;
+namespace Core.Playback;
 
 public interface IAudioEngine
 {

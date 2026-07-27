@@ -5,6 +5,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core;
 using Core.Commands;
+using Core.Playback;
+using Core.Playlists;
 using Gui.ViewModels.Factories;
 
 namespace Gui.ViewModels;

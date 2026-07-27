@@ -1,4 +1,4 @@
-namespace Core;
+namespace Core.Integrations;
 
 public interface IRpcService : IDisposable
 {
