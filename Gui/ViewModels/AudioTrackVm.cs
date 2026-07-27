@@ -28,16 +28,16 @@ public partial class AudioTrackVm : ViewModelBase
     public partial Bitmap? AlbumCover { get; set; }
     
     private readonly PlaylistItem playlistItem;
-    private readonly IPlayAudioTrackCommand playAudioTrackCommand;
+    private readonly IPlayTrackCommand playTrackCommand;
     private readonly AudioPlayer audioPlayer;
 
     public AudioTrackVm(
         PlaylistItem playlistItem,
-        IPlayAudioTrackCommand playAudioTrackCommand,
+        IPlayTrackCommand playTrackCommand,
         AudioPlayer audioPlayer)
     {
         this.playlistItem = playlistItem;
-        this.playAudioTrackCommand = playAudioTrackCommand;
+        this.playTrackCommand = playTrackCommand;
         this.audioPlayer = audioPlayer;
 
         this.IsActive = audioPlayer.NowPlaying == playlistItem;
@@ -71,6 +71,6 @@ public partial class AudioTrackVm : ViewModelBase
     [RelayCommand]
     public void PressPlayButton()
     {
-        playAudioTrackCommand.Execute(playlistItem);
+        playTrackCommand.Execute(playlistItem);
     }
 }

@@ -5,15 +5,15 @@ namespace Gui.ViewModels.Factories;
 
 public class AudioTrackVmFactory : IAudioTrackVmFactory
 {
-    private readonly IPlayAudioTrackCommand playAudioTrackCommand;
+    private readonly IPlayTrackCommand playTrackCommand;
 
-    public AudioTrackVmFactory(IPlayAudioTrackCommand playAudioTrackCommand)
+    public AudioTrackVmFactory(IPlayTrackCommand playTrackCommand)
     {
-        this.playAudioTrackCommand = playAudioTrackCommand;
+        this.playTrackCommand = playTrackCommand;
     }
     
     public AudioTrackVm Create(PlaylistItem playlistItem, AudioPlayer audioPlayer)
     {
-        return new AudioTrackVm(playlistItem, playAudioTrackCommand, audioPlayer);
+        return new AudioTrackVm(playlistItem, playTrackCommand, audioPlayer);
     }
 }

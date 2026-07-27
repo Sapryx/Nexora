@@ -15,7 +15,7 @@ public static class CompositionRoot
         var vlc = new LibVLC("--no-video");
         builder.AddSingleton(vlc);
 
-        builder.AddSingleton<IPlayAudioTrackCommand, PlayAudioTrackCommand>();
+        builder.AddSingleton<IPlayTrackCommand, PlayTrackCommand>();
         builder.AddSingleton<IChangeAudioVolumeCommand, ChangeAudioVolumeCommand>();
         builder.AddSingleton<IPlayNextTrackCommand, PlayNextTrackCommand>();
         builder.AddSingleton<IPauseTrackCommand, PauseTrackCommand>();

@@ -1,6 +1,6 @@
 namespace Core.Commands;
 
-public interface IPlayAudioTrackCommand
+public interface IPlayTrackCommand
 {
     public void Execute(PlaylistItem playlistItem);
 }

@@ -3,12 +3,12 @@ namespace Core.Commands;
 public class PlayPreviousTrackCommand : IPlayPreviousTrackCommand
 {
     private readonly AudioPlayer audioPlayer;
-    private readonly IPlayAudioTrackCommand playAudioTrackCommand;
+    private readonly IPlayTrackCommand playTrackCommand;
 
-    public PlayPreviousTrackCommand(AudioPlayer audioPlayer, IPlayAudioTrackCommand playAudioTrackCommand)
+    public PlayPreviousTrackCommand(AudioPlayer audioPlayer, IPlayTrackCommand playTrackCommand)
     {
         this.audioPlayer = audioPlayer;
-        this.playAudioTrackCommand = playAudioTrackCommand;
+        this.playTrackCommand = playTrackCommand;
     }
 
     public void Execute()
@@ -17,7 +17,7 @@ public class PlayPreviousTrackCommand : IPlayPreviousTrackCommand
         
         if(previous != null)
         {
-            playAudioTrackCommand.Execute(previous);
+            playTrackCommand.Execute(previous);
         }
     }
 }

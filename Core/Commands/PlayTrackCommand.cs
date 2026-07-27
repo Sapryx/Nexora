@@ -1,11 +1,11 @@
 namespace Core.Commands;
 
-public class PlayAudioTrackCommand : IPlayAudioTrackCommand
+public class PlayTrackCommand : IPlayTrackCommand
 {
     private readonly AudioPlayer audioPlayer;
     private readonly IRpcService rpcService;
 
-    public PlayAudioTrackCommand(AudioPlayer audioPlayer, IRpcService rpcService)
+    public PlayTrackCommand(AudioPlayer audioPlayer, IRpcService rpcService)
     {
         this.audioPlayer = audioPlayer;
         this.rpcService = rpcService;
