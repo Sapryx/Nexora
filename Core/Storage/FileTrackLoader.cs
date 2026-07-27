@@ -3,7 +3,7 @@ using Core.Playback;
 
 namespace Core.Storage;
 
-public class FileTrackLoader : IAudioTrackLoader
+public class FileTrackLoader : ITrackLoader
 {
     private static readonly string[] SupportedExtensions = [
         ".mp3",

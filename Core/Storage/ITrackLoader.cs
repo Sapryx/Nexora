@@ -2,7 +2,7 @@ using Core.Playback;
 
 namespace Core.Storage;
 
-public interface IAudioTrackLoader
+public interface ITrackLoader
 {
     public Task<List<IAudioTrack>> Load();
 }

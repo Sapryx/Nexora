@@ -28,7 +28,7 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-        builder.AddSingleton<IAudioTrackLoader, FileTrackLoader>(provider => 
+        builder.AddSingleton<ITrackLoader, FileTrackLoader>(provider => 
             // Degree of parallelism here is a result of benchmarking.
             new FileTrackLoader(provider.GetService<IMetadataLoader>()!, Environment.ProcessorCount * 2)
         );

@@ -45,7 +45,7 @@ public partial class App : Application
             return;
         }
         
-        var audioTrackLoaders = Provider.GetServices<IAudioTrackLoader>();
+        var audioTrackLoaders = Provider.GetServices<ITrackLoader>();
         var playlistRegistry = Provider.GetService<PlaylistRegistry>()!;
 
         foreach(var loader in audioTrackLoaders)
