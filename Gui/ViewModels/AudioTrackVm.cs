@@ -45,7 +45,8 @@ public partial class AudioTrackVm : ViewModelBase
         this.IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
         this.Title = playlistItem.AudioTrack.Metadata.Title;
         this.Artists = playlistItem.AudioTrack.Metadata.Artists;
-        this.Duration = $"{playlistItem.AudioTrack.Metadata.Duration.TotalMinutes:00}:{playlistItem.AudioTrack.Metadata.Duration.Seconds:00}";
+        this.Duration = $"{playlistItem.AudioTrack.Properties.Duration.TotalMinutes:00}:" +
+                        $"{playlistItem.AudioTrack.Properties.Duration.Seconds:00}";
 
         var tackCoverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
 

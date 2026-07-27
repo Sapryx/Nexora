@@ -29,16 +29,17 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-
         builder.AddSingleton<ITrackLoader, FileTrackLoader>(provider =>
             // Degree of parallelism here is a result of benchmarking.
             new FileTrackLoader(
                 provider.GetService<ILogger<FileTrackLoader>>()!,
                 provider.GetService<IMetadataLoader>()!, 
+                provider.GetService<ITrackPropertyLoader>()!, 
                 Environment.ProcessorCount * 2)
         );
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
+        builder.AddSingleton<ITrackPropertyLoader, TagLibTrackPropertyLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<AudioPlayer>();
         builder.AddSingleton<PlaylistRegistry>();

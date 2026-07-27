@@ -17,15 +17,18 @@ public class FileTrackLoader : ITrackLoader
 
     private readonly ILogger<FileTrackLoader> logger;
     private readonly IMetadataLoader metadataLoader;
+    private readonly ITrackPropertyLoader propertyLoader;
     private readonly int degreeOfParallelism;
 
     public FileTrackLoader(
         ILogger<FileTrackLoader> logger,
-        IMetadataLoader metadataLoader, 
+        IMetadataLoader metadataLoader,
+        ITrackPropertyLoader propertyLoader,
         int degreeOfParallelism)
     {
         this.logger = logger;
         this.metadataLoader = metadataLoader;
+        this.propertyLoader = propertyLoader;
         this.degreeOfParallelism = degreeOfParallelism;
     }
 
@@ -43,12 +46,9 @@ public class FileTrackLoader : ITrackLoader
         
         Parallel.ForEach(musicDirectoryEnumerator, parallelOptions, file =>
         {
-            var metadata = metadataLoader.LoadMetadata(file);
-            var audioTrack = new AudioTrack()
-            {
-                AudioPath = file,
-                Metadata = metadata
-            };
+            var metadata = metadataLoader.Load(file);
+            var properties = propertyLoader.Load(file);
+            var audioTrack = new AudioTrack(file, metadata, properties);
             
             audioTracks.Add(audioTrack);
             logger.Info($"Loaded track {audioTrack.ToString()}");

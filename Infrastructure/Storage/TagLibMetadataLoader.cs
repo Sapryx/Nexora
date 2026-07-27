@@ -11,12 +11,11 @@ public class TagLibMetadataLoader : IMetadataLoader
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Riff.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Ogg.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Flac.File))]
-    public Metadata LoadMetadata(string filePath)
+    public Metadata Load(string filePath)
     {
         using var tagFile = File.Create(filePath);
         string title = tagFile.Tag.Title;
         var artists = string.Join(", ", tagFile.Tag.Performers);
-        var duration = tagFile.Properties.Duration;
         var albumCoverRaw = LoadAlbumCover(tagFile.Tag);
 
         if(string.IsNullOrEmpty(title))
@@ -28,7 +27,6 @@ public class TagLibMetadataLoader : IMetadataLoader
         {
             Title = title,
             Artists = artists,
-            Duration = duration,
             TrackCoverRaw = albumCoverRaw
         };
     }

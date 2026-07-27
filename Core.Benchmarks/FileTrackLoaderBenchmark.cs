@@ -18,6 +18,7 @@ public class FileTrackLoaderBenchmark
         loader = new FileTrackLoader(
             new FakeLogger<FileTrackLoader>(),
             new TagLibMetadataLoader(),
+            new TagLibTrackPropertyLoader(),
             DegreeOfParallelism);
     }
 

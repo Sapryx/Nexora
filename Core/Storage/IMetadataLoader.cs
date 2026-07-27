@@ -2,5 +2,5 @@ namespace Core.Storage;
 
 public interface IMetadataLoader
 {
-    public Metadata LoadMetadata(string filePath);
+    public Metadata Load(string filePath);
 }
