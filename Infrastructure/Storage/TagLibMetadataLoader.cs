@@ -24,7 +24,7 @@ public class TagLibMetadataLoader : IMetadataLoader
             Title = title,
             Artists = artists,
             Duration = duration,
-            AlbumCoverRaw = albumCoverRaw
+            TrackCoverRaw = albumCoverRaw
         };
     }
 

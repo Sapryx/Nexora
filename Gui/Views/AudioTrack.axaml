@@ -56,7 +56,7 @@
             </Button.Styles>
             <Panel>
                 <Border CornerRadius="4" ClipToBounds="True">
-                    <Image Source="{Binding AlbumCover}" Stretch="Uniform" />
+                    <Image Source="{Binding TrackCover}" Stretch="Uniform" />
                 </Border>
                 <Border x:Name="HoverEffect" CornerRadius="4" />
                 <TextBlock

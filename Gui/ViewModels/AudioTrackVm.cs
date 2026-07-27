@@ -27,7 +27,7 @@ public partial class AudioTrackVm : ViewModelBase
     public partial string Duration { get; set; }
 
     [ObservableProperty]
-    public partial Bitmap? AlbumCover { get; set; }
+    public partial Bitmap? TrackCover { get; set; }
     
     private readonly PlaylistItem playlistItem;
     private readonly IPlayTrackCommand playTrackCommand;
@@ -48,13 +48,13 @@ public partial class AudioTrackVm : ViewModelBase
         this.Artists = string.Join(", ", playlistItem.AudioTrack.Metadata.Artists);
         this.Duration = $"{playlistItem.AudioTrack.Metadata.Duration.TotalMinutes:00}:{playlistItem.AudioTrack.Metadata.Duration.Seconds:00}";
 
-        var albumCoverRaw = playlistItem.AudioTrack.Metadata.AlbumCoverRaw;
+        var tackCoverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
 
-        if(albumCoverRaw != null)
+        if(tackCoverRaw != null)
         {
-            using(var albumCoverStream = new MemoryStream(albumCoverRaw))
+            using(var albumCoverStream = new MemoryStream(tackCoverRaw))
             {
-                AlbumCover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
+                TrackCover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
             }
         }
 
