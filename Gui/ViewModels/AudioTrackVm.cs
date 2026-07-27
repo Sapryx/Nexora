@@ -54,7 +54,7 @@ public partial class AudioTrackVm : ViewModelBase
         {
             using(var albumCoverStream = new MemoryStream(albumCoverRaw))
             {
-                AlbumCover = new Bitmap(albumCoverStream);
+                AlbumCover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
             }
         }
 
