@@ -44,12 +44,15 @@ public class FileTrackLoader : ITrackLoader
         Parallel.ForEach(musicDirectoryEnumerator, parallelOptions, file =>
         {
             var metadata = metadataLoader.LoadMetadata(file);
-            
-            audioTracks.Add(new AudioTrack()
+            var audioTrack = new AudioTrack()
             {
                 AudioPath = file,
                 Metadata = metadata
-            });
+            };
+            
+            audioTracks.Add(audioTrack);
+            
+            logger.Info($"Loaded track {string.Join(", ", audioTrack.Metadata.Artists)} - {audioTrack.Metadata.Title}");
         });
         
         logger.Info($"Loaded {audioTracks.Count} tracks");
