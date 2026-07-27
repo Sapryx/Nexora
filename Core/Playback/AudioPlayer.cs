@@ -71,24 +71,4 @@ public class AudioPlayer
         
         audioEngine.TogglePause();
     }
-
-    public void PlayNextTrack()
-    {
-        var nextTrack = NowPlaying?.GetNext();
-        
-        if(nextTrack != null)
-        {
-            PlayTrack(nextTrack);
-        }
-    }
-
-    public void PlayPreviousTrack()
-    {
-        var previousTrack = NowPlaying?.GetPrevious();
-        
-        if(previousTrack != null)
-        {
-            PlayTrack(previousTrack);
-        }
-    }
 }
