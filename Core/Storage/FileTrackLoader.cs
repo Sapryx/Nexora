@@ -2,7 +2,7 @@ using Core.Playback;
 
 namespace Core.Storage;
 
-public class FileAudioTrackLoader : IAudioTrackLoader
+public class FileTrackLoader : IAudioTrackLoader
 {
     private static readonly string[] SupportedExtensions = [
         ".mp3",
@@ -14,7 +14,7 @@ public class FileAudioTrackLoader : IAudioTrackLoader
 
     private readonly IMetadataLoader metadataLoader;
 
-    public FileAudioTrackLoader(IMetadataLoader metadataLoader)
+    public FileTrackLoader(IMetadataLoader metadataLoader)
     {
         this.metadataLoader = metadataLoader;
     }

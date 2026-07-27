@@ -29,7 +29,7 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-        builder.AddSingleton<IAudioTrackLoader, FileAudioTrackLoader>();
+        builder.AddSingleton<IAudioTrackLoader, FileTrackLoader>();
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
