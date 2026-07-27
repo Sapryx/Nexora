@@ -49,6 +49,66 @@ public class AudioPlayerTests
     }
 
     [Fact]
+    public void PlaybackStarted_Add_Remove_DelegatesToAudioEngine()
+    {
+        var handler = () => { };
+
+        audioPlayer.PlaybackStarted += handler;
+        audioPlayer.PlaybackStarted -= handler;
+        
+        audioEngineMock.VerifyAdd(it => it.PlaybackStarted += handler, Times.Once);
+        audioEngineMock.VerifyRemove(it => it.PlaybackStarted -= handler, Times.Once);
+    }
+    
+    [Fact]
+    public void PlaybackPositionChanged_Add_Remove_DelegatesToAudioEngine()
+    {
+        var handler = (float value) => { };
+
+        audioPlayer.PlaybackPositionChanged += handler;
+        audioPlayer.PlaybackPositionChanged -= handler;
+        
+        audioEngineMock.VerifyAdd(it => it.PlaybackPositionChanged += handler, Times.Once);
+        audioEngineMock.VerifyRemove(it => it.PlaybackPositionChanged -= handler, Times.Once);
+    }
+    
+    [Fact]
+    public void PlaybackPaused_Add_Remove_DelegatesToAudioEngine()
+    {
+        var handler = () => { };
+
+        audioPlayer.PlaybackPaused += handler;
+        audioPlayer.PlaybackPaused -= handler;
+        
+        audioEngineMock.VerifyAdd(it => it.PlaybackPaused += handler, Times.Once);
+        audioEngineMock.VerifyRemove(it => it.PlaybackPaused -= handler, Times.Once);
+    }
+
+    [Fact]
+    public void PlaybackFinished_Add_Remove_DelegatesToAudioEngine()
+    {
+        var handler = () => { };
+
+        audioPlayer.PlaybackFinished += handler;
+        audioPlayer.PlaybackFinished -= handler;
+        
+        audioEngineMock.VerifyAdd(it => it.PlaybackFinished += handler, Times.Once);
+        audioEngineMock.VerifyRemove(it => it.PlaybackFinished -= handler, Times.Once);
+    }
+    
+    [Fact]
+    public void PlaybackResumed_Add_Remove_DelegatesToAudioEngine()
+    {
+        var handler = () => { };
+
+        audioPlayer.PlaybackResumed += handler;
+        audioPlayer.PlaybackResumed -= handler;
+        
+        audioEngineMock.VerifyAdd(it => it.PlaybackResumed += handler, Times.Once);
+        audioEngineMock.VerifyRemove(it => it.PlaybackResumed -= handler, Times.Once);
+    }
+    
+    [Fact]
     public void PlayTrack_SetsNowPlaying()
     {
         var playlistItem = new Mock<IPlaylistItem>();
