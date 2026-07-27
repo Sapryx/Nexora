@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,9 +6,9 @@ using CommunityToolkit.Mvvm.Input;
 using Core.Commands;
 using Core.Playback;
 using Core.Playlists;
+using Gui.Logging;
 using Gui.ViewModels.Factories;
 using Microsoft.Extensions.Logging;
-using ZLogger;
 
 namespace Gui.ViewModels;
 
@@ -104,7 +103,7 @@ public partial class MainWindowVm : ViewModelBase
             }
         };
         
-        logger.ZLogInformation($"Application initialized");
+        logger.Info($"Application initialized");
     }
 
     private AudioTrackVm AddAudioTrackVm(PlaylistItem playlistItem)
