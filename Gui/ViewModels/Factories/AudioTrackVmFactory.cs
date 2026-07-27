@@ -1,4 +1,3 @@
-using Core;
 using Core.Commands;
 using Core.Playback;
 using Core.Playlists;

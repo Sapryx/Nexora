@@ -2,7 +2,6 @@ using System.IO;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core;
 using Core.Commands;
 using Core.Playback;
 using Core.Playlists;

@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Core;
 using Core.Integrations;
 using Core.Playlists;
 using Core.Storage;
