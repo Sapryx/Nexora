@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using ZLogger;
 
-namespace Gui.Logging;
+namespace Core.Logging;
 
 public static class LoggingExtensions
 {

@@ -11,6 +11,7 @@ using Infrastructure.Playback;
 using Infrastructure.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Gui;
 
@@ -28,9 +29,13 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-        builder.AddSingleton<ITrackLoader, FileTrackLoader>(provider => 
+
+        builder.AddSingleton<ITrackLoader, FileTrackLoader>(provider =>
             // Degree of parallelism here is a result of benchmarking.
-            new FileTrackLoader(provider.GetService<IMetadataLoader>()!, Environment.ProcessorCount * 2)
+            new FileTrackLoader(
+                provider.GetService<ILogger<FileTrackLoader>>()!,
+                provider.GetService<IMetadataLoader>()!, 
+                Environment.ProcessorCount * 2)
         );
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();

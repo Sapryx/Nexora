@@ -15,7 +15,10 @@ public class FileTrackLoaderBenchmark
     [GlobalSetup]
     public void Setup()
     {
-        loader = new FileTrackLoader(new TagLibMetadataLoader(), DegreeOfParallelism);
+        loader = new FileTrackLoader(
+            new FakeLogger<FileTrackLoader>(),
+            new TagLibMetadataLoader(),
+            DegreeOfParallelism);
     }
 
     [Benchmark]

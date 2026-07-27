@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
+using Core.Logging;
 using Core.Playback;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Storage;
 
@@ -13,11 +15,16 @@ public class FileTrackLoader : ITrackLoader
         ".ogg"
     ];
 
+    private readonly ILogger<FileTrackLoader> logger;
     private readonly IMetadataLoader metadataLoader;
     private readonly int degreeOfParallelism;
 
-    public FileTrackLoader(IMetadataLoader metadataLoader, int degreeOfParallelism)
+    public FileTrackLoader(
+        ILogger<FileTrackLoader> logger,
+        IMetadataLoader metadataLoader, 
+        int degreeOfParallelism)
     {
+        this.logger = logger;
         this.metadataLoader = metadataLoader;
         this.degreeOfParallelism = degreeOfParallelism;
     }
@@ -32,6 +39,8 @@ public class FileTrackLoader : ITrackLoader
             .EnumerateFiles(musicDirectory)
             .Where(file => SupportedExtensions.Contains(Path.GetExtension(file)));
         
+        logger.Info($"Started loading tracks...");
+        
         Parallel.ForEach(musicDirectoryEnumerator, parallelOptions, file =>
         {
             var metadata = metadataLoader.LoadMetadata(file);
@@ -42,6 +51,8 @@ public class FileTrackLoader : ITrackLoader
                 Metadata = metadata
             });
         });
+        
+        logger.Info($"Loaded {audioTracks.Count} tracks");
 
         return audioTracks.ToList();
     }

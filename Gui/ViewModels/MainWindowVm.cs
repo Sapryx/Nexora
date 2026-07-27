@@ -4,9 +4,9 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Commands;
+using Core.Logging;
 using Core.Playback;
 using Core.Playlists;
-using Gui.Logging;
 using Gui.ViewModels.Factories;
 using Microsoft.Extensions.Logging;
 
