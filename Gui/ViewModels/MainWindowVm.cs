@@ -106,7 +106,7 @@ public partial class MainWindowVm : ViewModelBase
         logger.Info($"Application initialized");
     }
 
-    private AudioTrackVm AddAudioTrackVm(PlaylistItem playlistItem)
+    private AudioTrackVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
         var audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
         AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;

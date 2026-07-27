@@ -5,5 +5,5 @@ namespace Gui.ViewModels.Factories;
 
 public interface IAudioTrackVmFactory
 {
-    public AudioTrackVm Create(PlaylistItem audioTrack, AudioPlayer audioPlayer);
+    public AudioTrackVm Create(IPlaylistItem audioTrack, AudioPlayer audioPlayer);
 }

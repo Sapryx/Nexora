@@ -15,7 +15,7 @@ public class PlayTrackCommand : IPlayTrackCommand
         this.richPresenceService = richPresenceService;
     }
 
-    public void Execute(PlaylistItem playlistItem)
+    public void Execute(IPlaylistItem playlistItem)
     {
         if(audioPlayer.NowPlaying == playlistItem)
         {

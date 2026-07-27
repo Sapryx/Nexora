@@ -28,12 +28,12 @@ public partial class AudioTrackVm : ViewModelBase
     [ObservableProperty]
     public partial Bitmap? TrackCover { get; set; }
     
-    private readonly PlaylistItem playlistItem;
+    private readonly IPlaylistItem playlistItem;
     private readonly IPlayTrackCommand playTrackCommand;
     private readonly AudioPlayer audioPlayer;
 
     public AudioTrackVm(
-        PlaylistItem playlistItem,
+        IPlaylistItem playlistItem,
         IPlayTrackCommand playTrackCommand,
         AudioPlayer audioPlayer)
     {

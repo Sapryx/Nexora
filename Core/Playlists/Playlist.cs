@@ -3,22 +3,22 @@ using Core.Playback;
 
 namespace Core.Playlists;
 
-public class Playlist : IEnumerable<PlaylistItem>
+public class Playlist : IEnumerable<IPlaylistItem>
 {
     public string Name = string.Empty;
     public bool IsEmpty => TrackCount == 0;
     public int TrackCount => items.Count;
     
-    private readonly List<PlaylistItem> items = [];
+    private readonly List<IPlaylistItem> items = [];
 
-    public event Action<PlaylistItem>? ItemAdded;
+    public event Action<IPlaylistItem>? ItemAdded;
 
-    public IEnumerable<PlaylistItem> GetAllItems()
+    public IEnumerable<IPlaylistItem> GetAllItems()
     {
         return items;
     }
 
-    public PlaylistItem GetItem(int index)
+    public IPlaylistItem GetItem(int index)
     {
         if(index < 0 || index > items.Count - 1)
         {
@@ -53,7 +53,7 @@ public class Playlist : IEnumerable<PlaylistItem>
         items.RemoveAt(index);
     }
 
-    public IEnumerator<PlaylistItem> GetEnumerator()
+    public IEnumerator<IPlaylistItem> GetEnumerator()
     {
         foreach(var item in items)
         {

@@ -2,7 +2,7 @@ using Core.Playback;
 
 namespace Core.Playlists;
 
-public class PlaylistItem
+public class PlaylistItem : IPlaylistItem
 {
     public IAudioTrack AudioTrack { get; private set; }
     public Playlist Playlist { get; set; }
@@ -15,7 +15,7 @@ public class PlaylistItem
         this.Index = index;
     }
 
-    public PlaylistItem? GetNext()
+    public IPlaylistItem? GetNext()
     {
         int nextIndex = Index + 1;
 
@@ -29,7 +29,7 @@ public class PlaylistItem
         }
     }
 
-    public PlaylistItem? GetPrevious()
+    public IPlaylistItem? GetPrevious()
     {
         int previousIndex = Index - 1;
 

@@ -4,7 +4,7 @@ namespace Core.Playback;
 
 public class AudioPlayer
 {
-    public PlaylistItem? NowPlaying;
+    public IPlaylistItem? NowPlaying { get; private set; }
     public bool IsPlaying => audioEngine.IsPlaying;
 
     public int Volume
@@ -56,7 +56,7 @@ public class AudioPlayer
         this.audioEngine = audioEngine;
     }
 
-    public void PlayTrack(PlaylistItem playlistItem)
+    public void PlayTrack(IPlaylistItem playlistItem)
     {
         NowPlaying = playlistItem;
         audioEngine.StartPlayback(NowPlaying.AudioTrack);
