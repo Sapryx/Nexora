@@ -1,10 +1,10 @@
 namespace Core.Commands;
 
-public class ChangeAudioVolumeCommand : IChangeAudioVolumeCommand
+public class ChangeVolumeCommand : IChangeVolumeCommand
 {
     private readonly IAudioEngine audioEngine;
 
-    public ChangeAudioVolumeCommand(IAudioEngine audioEngine)
+    public ChangeVolumeCommand(IAudioEngine audioEngine)
     {
         this.audioEngine = audioEngine;
     }

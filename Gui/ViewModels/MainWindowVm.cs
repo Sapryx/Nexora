@@ -32,14 +32,14 @@ public partial class MainWindowVm : ViewModelBase
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
     private readonly AudioPlayer audioPlayer;
     private readonly PlaylistRegistry playlistRegistry;
-    private readonly IChangeAudioVolumeCommand changeAudioVolumeCommand;
+    private readonly IChangeVolumeCommand changeVolumeCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPauseTrackCommand pauseTrackCommand;
     private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
 
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
-        IChangeAudioVolumeCommand changeAudioVolumeCommand,
+        IChangeVolumeCommand changeVolumeCommand,
         AudioPlayer audioPlayer, 
         IPlayNextTrackCommand playNextTrackCommand,
         PlaylistRegistry playlistRegistry,
@@ -47,7 +47,7 @@ public partial class MainWindowVm : ViewModelBase
         IPlayPreviousTrackCommand playPreviousTrackCommand)
     {
         this.audioTrackVmFactory = audioTrackVmFactory;
-        this.changeAudioVolumeCommand = changeAudioVolumeCommand;
+        this.changeVolumeCommand = changeVolumeCommand;
         this.audioPlayer = audioPlayer;
         this.playNextTrackCommand = playNextTrackCommand;
         this.playlistRegistry = playlistRegistry;
@@ -116,7 +116,7 @@ public partial class MainWindowVm : ViewModelBase
 
     partial void OnAudioVolumeChanged(int value)
     {
-        changeAudioVolumeCommand.Execute(value);
+        changeVolumeCommand.Execute(value);
     }
 
     partial void OnPlaybackPositionChanged(float value)

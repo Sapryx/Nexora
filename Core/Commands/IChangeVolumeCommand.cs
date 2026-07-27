@@ -1,6 +1,6 @@
 namespace Core.Commands;
 
-public interface IChangeAudioVolumeCommand
+public interface IChangeVolumeCommand
 {
     void Execute(int newVolume);
 }
