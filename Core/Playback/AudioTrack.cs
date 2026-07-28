@@ -17,13 +17,16 @@ public class AudioTrack : IAudioTrack
 
     public override string ToString()
     {
-        if(string.IsNullOrEmpty(Metadata.Artists))
+        bool titleIsSpecified = Metadata.Title != "";
+        bool artistsAreSpecified = Metadata.Artists != "";
+
+        if(titleIsSpecified && artistsAreSpecified)
         {
-            return $"{Metadata.Title}";
+            return $"{Metadata.Artists} - {Metadata.Title}";
         }
         else
         {
-            return $"{Metadata.Artists} - {Metadata.Title}";
+            return Path.GetFileNameWithoutExtension(AudioPath);
         }
     }
 }
