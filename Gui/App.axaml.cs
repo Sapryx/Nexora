@@ -1,14 +1,17 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Core.Integrations;
+using Core.Logging;
 using Core.Playlists;
 using Core.Storage;
 using Gui.Logging;
 using Gui.ViewModels;
 using Gui.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Gui;
 
@@ -48,21 +51,30 @@ public partial class App : Application
 
         var audioTrackLoaders = Provider.GetServices<ITrackLoader>();
         var playlistRegistry = Provider.GetService<PlaylistRegistry>()!;
-        
+
         var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
-        
+
         desktop.MainWindow = new MainWindow
         {
             DataContext = mainWindowVm
         };
+        
+        var logger = Provider.GetService<ILogger<App>>()!;
 
         foreach(var loader in audioTrackLoaders)
         {
             Task.Run(() =>
             {
-                var loadedTracks = loader.Load();
-                playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
+                try
+                {
+                    var loadedTracks = loader.Load();
+                    playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
+                }
+                catch(Exception ex)
+                {
+                    logger.Crit($"{ex}");
+                }
             });
         }
     }
