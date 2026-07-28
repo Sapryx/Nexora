@@ -7,5 +7,5 @@ public interface IDegreeOfParallelismProvider
 
 public interface IDegreeOfParallelismProvider<T> : IDegreeOfParallelismProvider
 {
-    public int Value { get; }
+    public new int Value { get; }
 }
