@@ -1,7 +1,7 @@
 using Core.Playback;
 using Core.Storage;
 
-namespace Core.Tests;
+namespace Core.Tests.Playback;
 
 public class AudioTrackTests
 {

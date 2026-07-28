@@ -2,7 +2,7 @@
 using Core.Playlists;
 using Moq;
 
-namespace Core.Tests;
+namespace Core.Tests.Playback;
 
 public class AudioPlayerTests
 {
