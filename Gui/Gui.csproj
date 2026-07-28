@@ -34,4 +34,8 @@
       <ProjectReference Include="..\Core\Core.csproj" />
       <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <TrimmerRootAssembly Include="DiscordRPC" />
+    </ItemGroup>
 </Project>
