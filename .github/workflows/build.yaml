@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
@@ -43,12 +43,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ matrix.rid }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-${{ matrix.rid }}-
+
+      # Windows Defender real-time scanning noticeably slows down restore/build.
+      - name: Exclude workspace from Defender scanning (Windows)
+        if: runner.os == 'Windows'
+        run: Add-MpPreference -ExclusionPath "${{ github.workspace }}"
+        shell: powershell
 
       # Native AOT publish on Linux needs clang + zlib headers.
       # Windows and macOS runners already ship the required toolchains.
@@ -65,7 +79,7 @@ jobs:
         run: dotnet publish Gui -c Release -p:PublishAot=true -r ${{ matrix.rid }} --no-restore
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Nexora-${{ matrix.rid }}
           path: Gui/bin/Release/**/publish/**
