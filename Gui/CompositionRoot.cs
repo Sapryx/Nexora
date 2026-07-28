@@ -12,6 +12,7 @@ using Infrastructure.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TagLib;
 
 namespace Gui;
 
@@ -30,16 +31,9 @@ public static class CompositionRoot
         builder.AddSingleton<IToggleTrackCommand, ToggleTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
-        builder.AddSingleton<ITrackLoader, FileTrackLoader>(provider =>
-            // Degree of parallelism here is a result of benchmarking.
-            new FileTrackLoader(
-                provider.GetService<ILogger<FileTrackLoader>>()!,
-                provider.GetService<IMetadataLoader>()!, 
-                provider.GetService<ITrackPropertyLoader>()!, 
-                provider.GetService<ISupportedAudioFormatsProvider>()!, 
-                Environment.ProcessorCount * 2)
-        );
+        builder.AddSingleton<ITrackLoader, FileTrackLoader>();
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
+        builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<ITrackPropertyLoader, TagLibTrackPropertyLoader>();

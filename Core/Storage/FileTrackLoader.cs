@@ -11,27 +11,27 @@ public class FileTrackLoader : ITrackLoader
     private readonly IMetadataLoader metadataLoader;
     private readonly ITrackPropertyLoader propertyLoader;
     private readonly ISupportedAudioFormatsProvider supportedAudioFormatsProvider;
-    private readonly int degreeOfParallelism;
+    private readonly IDegreeOfParallelismProvider degreeOfParallelismProvider;
 
     public FileTrackLoader(
         ILogger<FileTrackLoader> logger,
         IMetadataLoader metadataLoader,
         ITrackPropertyLoader propertyLoader,
         ISupportedAudioFormatsProvider supportedAudioFormatsProvider,
-        int degreeOfParallelism)
+        IDegreeOfParallelismProvider<FileTrackLoader> degreeOfParallelismProvider)
     {
         this.logger = logger;
         this.metadataLoader = metadataLoader;
         this.propertyLoader = propertyLoader;
         this.supportedAudioFormatsProvider = supportedAudioFormatsProvider;
-        this.degreeOfParallelism = degreeOfParallelism;
+        this.degreeOfParallelismProvider = degreeOfParallelismProvider;
     }
 
     public List<IAudioTrack> Load()
     {
         var musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         var audioTracks = new ConcurrentBag<IAudioTrack>();
-        var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism };
+        var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelismProvider.Value };
         var supportedFormats = supportedAudioFormatsProvider.GetFormats();
         
         var musicDirectoryEnumerator = Directory
