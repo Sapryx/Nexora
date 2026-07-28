@@ -40,8 +40,6 @@ Windows:
 ```
 winget install VideoLAN.VLC
 ```
-
----
 </details>
 
 <details>
