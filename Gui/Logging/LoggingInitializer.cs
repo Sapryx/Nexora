@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ZLogger;
@@ -63,8 +65,13 @@ public static class LoggingInitializer
         {
             WriteCrashLog(e.ExceptionObject as Exception, "AppDomain.UnhandledException");
         };
+        
+        Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            WriteCrashLog(e.Exception, "Avalonia.UIThread");
+        };
 
-        System.Threading.Tasks.TaskScheduler.UnobservedTaskException += (_, e) =>
+        TaskScheduler.UnobservedTaskException += (_, e) =>
         {
             WriteCrashLog(e.Exception, "TaskScheduler.UnobservedTaskException");
             e.SetObserved();
@@ -75,7 +82,7 @@ public static class LoggingInitializer
     {
         Directory.CreateDirectory(LogsDirectory);
 
-        string currentDateString = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+        string currentDateString = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}";
         string crashLogPath = Path.Combine(LogsDirectory, $"crash-{currentDateString}.log");
 
         string entry =
