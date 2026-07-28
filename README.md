@@ -7,6 +7,12 @@
 ### About
 **Nexora** is a cross-platform, open source desktop audio player.
 
+Features:
+- Loads music from your system's default directory (`C:/Users/[user]/Music` on Windows, `~/Music` on Linux)
+- Has basic audio player controls
+- Displays your current listening activity in Discord Rich Presence
+- Left side buttons are just for fun now
+
 Target platforms currently are:
 - Windows
 - Linux
@@ -46,13 +52,18 @@ Clone the repository:
 git clone "https://github.com/sapryx/nexora"
 ```
 
-Build the project with:
+Open the solution directory:
+```
+cd Nexora
+```
+
+Build the project:
 
 ```
-dotnet publish -c Release
+dotnet publish Nexora -c Release
 ```
 
 If you don't have .NET Runtime installed, you can add `--self-contained=true`, but it will make the build size bigger.
 
-The executable file will be located at `Gui/bin/Release/net10.0/publish/`
+The executable file will be located at `Nexora/bin/Release/net10.0/[your OS]/publish/`
 </details>
