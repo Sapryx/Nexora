@@ -7,13 +7,13 @@ using Core.Integrations;
 using Core.Logging;
 using Core.Playlists;
 using Core.Storage;
-using Gui.Logging;
-using Gui.ViewModels;
-using Gui.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Nexora.Logging;
+using Nexora.ViewModels;
+using Nexora.Views;
 
-namespace Gui;
+namespace Nexora;
 
 public partial class App : Application
 {

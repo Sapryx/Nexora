@@ -1,8 +1,8 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:viewModels="clr-namespace:Gui.ViewModels"
-             xmlns:converters="clr-namespace:Gui.Converters"
-             x:Class="Gui.Views.AudioTrackControl"
+             xmlns:viewModels="clr-namespace:Nexora.ViewModels"
+             xmlns:converters="clr-namespace:Nexora.Converters"
+             x:Class="Nexora.Views.AudioTrackControl"
              x:DataType="viewModels:AudioTrackVm">
     <UserControl.Resources>
         <converters:IsAudioTrackPlayingConverter x:Key="IsAudioTrackPlayingConverter" />

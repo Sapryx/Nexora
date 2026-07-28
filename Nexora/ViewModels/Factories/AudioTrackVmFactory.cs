@@ -2,7 +2,7 @@ using Core.Commands;
 using Core.Playback;
 using Core.Playlists;
 
-namespace Gui.ViewModels.Factories;
+namespace Nexora.ViewModels.Factories;
 
 public class AudioTrackVmFactory : IAudioTrackVmFactory
 {

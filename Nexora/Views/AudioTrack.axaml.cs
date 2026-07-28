@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace Gui.Views;
+namespace Nexora.Views;
 
 public partial class AudioTrackControl : UserControl
 {

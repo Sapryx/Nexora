@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace Gui.ViewModels;
+namespace Nexora.ViewModels;
 
 public abstract class ViewModelBase : ObservableObject
 {

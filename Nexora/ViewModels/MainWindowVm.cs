@@ -7,10 +7,10 @@ using Core.Commands;
 using Core.Logging;
 using Core.Playback;
 using Core.Playlists;
-using Gui.ViewModels.Factories;
 using Microsoft.Extensions.Logging;
+using Nexora.ViewModels.Factories;
 
-namespace Gui.ViewModels;
+namespace Nexora.ViewModels;
 
 public partial class MainWindowVm : ViewModelBase
 {

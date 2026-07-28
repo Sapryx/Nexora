@@ -6,7 +6,7 @@ using Core.Commands;
 using Core.Playback;
 using Core.Playlists;
 
-namespace Gui.ViewModels;
+namespace Nexora.ViewModels;
 
 public partial class AudioTrackVm : ViewModelBase
 {

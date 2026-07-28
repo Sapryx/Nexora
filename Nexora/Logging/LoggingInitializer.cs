@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ZLogger;
 
-namespace Gui.Logging;
+namespace Nexora.Logging;
 
 public static class LoggingInitializer
 {

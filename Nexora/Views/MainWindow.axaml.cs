@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Gui.ViewModels;
+using Nexora.ViewModels;
 
-namespace Gui.Views;
+namespace Nexora.Views;
 
 public partial class MainWindow : Window
 {

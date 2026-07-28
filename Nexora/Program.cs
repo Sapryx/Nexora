@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace Gui;
+namespace Nexora;
 
 sealed class Program
 {

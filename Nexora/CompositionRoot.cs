@@ -1,20 +1,17 @@
-using System;
 using Core.Commands;
 using Core.Integrations;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage;
-using Gui.ViewModels;
-using Gui.ViewModels.Factories;
 using Infrastructure.Integrations;
 using Infrastructure.Playback;
 using Infrastructure.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using TagLib;
+using Nexora.ViewModels;
+using Nexora.ViewModels.Factories;
 
-namespace Gui;
+namespace Nexora;
 
 public static class CompositionRoot
 {

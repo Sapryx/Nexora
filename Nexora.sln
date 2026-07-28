@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{76EC7B3E-7CF0-4386-ADD7-4131085574A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gui", "Gui\Gui.csproj", "{95DCD0FA-C1BB-496B-BF1A-2645BF07467A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexora", "Nexora\Nexora.csproj", "{95DCD0FA-C1BB-496B-BF1A-2645BF07467A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{9A7FCE28-5A23-4D2A-A413-E58F0AB11057}"
 EndProject
