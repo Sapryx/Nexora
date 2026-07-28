@@ -30,12 +30,12 @@ public partial class AudioTrackVm : ViewModelBase
     
     private readonly IPlaylistItem playlistItem;
     private readonly IPlayTrackCommand playTrackCommand;
-    private readonly AudioPlayer audioPlayer;
+    private readonly IAudioPlayer audioPlayer;
 
     public AudioTrackVm(
         IPlaylistItem playlistItem,
         IPlayTrackCommand playTrackCommand,
-        AudioPlayer audioPlayer)
+        IAudioPlayer audioPlayer)
     {
         this.playlistItem = playlistItem;
         this.playTrackCommand = playTrackCommand;

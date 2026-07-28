@@ -13,7 +13,7 @@ public class AudioTrackVmFactory : IAudioTrackVmFactory
         this.playTrackCommand = playTrackCommand;
     }
     
-    public AudioTrackVm Create(IPlaylistItem playlistItem, AudioPlayer audioPlayer)
+    public AudioTrackVm Create(IPlaylistItem playlistItem, IAudioPlayer audioPlayer)
     {
         return new AudioTrackVm(playlistItem, playTrackCommand, audioPlayer);
     }

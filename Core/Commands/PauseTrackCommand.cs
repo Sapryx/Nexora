@@ -4,9 +4,9 @@ namespace Core.Commands;
 
 public class PauseTrackCommand : IPauseTrackCommand
 {
-    private readonly AudioPlayer audioPlayer;
+    private readonly IAudioPlayer audioPlayer;
 
-    public PauseTrackCommand(AudioPlayer audioPlayer)
+    public PauseTrackCommand(IAudioPlayer audioPlayer)
     {
         this.audioPlayer = audioPlayer;
     }

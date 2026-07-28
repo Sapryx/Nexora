@@ -33,7 +33,7 @@ public partial class MainWindowVm : ViewModelBase
 
     private Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; }
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
-    private readonly AudioPlayer audioPlayer;
+    private readonly IAudioPlayer audioPlayer;
     private readonly PlaylistRegistry playlistRegistry;
     private readonly IChangeVolumeCommand changeVolumeCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
@@ -44,7 +44,7 @@ public partial class MainWindowVm : ViewModelBase
     public MainWindowVm(
         IAudioTrackVmFactory audioTrackVmFactory,
         IChangeVolumeCommand changeVolumeCommand,
-        AudioPlayer audioPlayer,
+        IAudioPlayer audioPlayer,
         IPlayNextTrackCommand playNextTrackCommand,
         PlaylistRegistry playlistRegistry,
         IPauseTrackCommand pauseTrackCommand,

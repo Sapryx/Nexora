@@ -7,7 +7,7 @@ namespace Core.Tests.Playback;
 public class AudioPlayerTests
 {
     private readonly Mock<IAudioEngine> audioEngineMock;
-    private readonly AudioPlayer audioPlayer;
+    private readonly IAudioPlayer audioPlayer;
     
     public AudioPlayerTests()
     {

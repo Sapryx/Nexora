@@ -6,10 +6,10 @@ namespace Core.Commands;
 
 public class PlayTrackCommand : IPlayTrackCommand
 {
-    private readonly AudioPlayer audioPlayer;
+    private readonly IAudioPlayer audioPlayer;
     private readonly IRichPresenceService richPresenceService;
 
-    public PlayTrackCommand(AudioPlayer audioPlayer, IRichPresenceService richPresenceService)
+    public PlayTrackCommand(IAudioPlayer audioPlayer, IRichPresenceService richPresenceService)
     {
         this.audioPlayer = audioPlayer;
         this.richPresenceService = richPresenceService;

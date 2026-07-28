@@ -41,7 +41,7 @@ public static class CompositionRoot
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<ITrackPropertyLoader, TagLibTrackPropertyLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
-        builder.AddSingleton<AudioPlayer>();
+        builder.AddSingleton<IAudioPlayer, AudioPlayer>();
         builder.AddSingleton<PlaylistRegistry>();
 
         builder.AddSingleton<MainWindowVm>();

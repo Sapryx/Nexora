@@ -2,7 +2,7 @@ using Core.Playlists;
 
 namespace Core.Playback;
 
-public class AudioPlayer
+public class AudioPlayer : IAudioPlayer
 {
     public IPlaylistItem? NowPlaying { get; private set; }
     public bool IsPlaying => audioEngine.IsPlaying;
