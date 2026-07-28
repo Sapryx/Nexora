@@ -19,6 +19,7 @@ public class FileTrackLoaderBenchmark
             new FakeLogger<FileTrackLoader>(),
             new TagLibMetadataLoader(),
             new TagLibTrackPropertyLoader(),
+            new SupportedAudioFormatsProvider(),
             DegreeOfParallelism);
     }
 

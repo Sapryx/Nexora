@@ -7,28 +7,23 @@ namespace Core.Storage;
 
 public class FileTrackLoader : ITrackLoader
 {
-    private static readonly HashSet<string> SupportedExtensions = [
-        ".mp3",
-        ".flac",
-        ".wav",
-        ".opus",
-        ".ogg"
-    ];
-
     private readonly ILogger<FileTrackLoader> logger;
     private readonly IMetadataLoader metadataLoader;
     private readonly ITrackPropertyLoader propertyLoader;
+    private readonly ISupportedAudioFormatsProvider supportedAudioFormatsProvider;
     private readonly int degreeOfParallelism;
 
     public FileTrackLoader(
         ILogger<FileTrackLoader> logger,
         IMetadataLoader metadataLoader,
         ITrackPropertyLoader propertyLoader,
+        ISupportedAudioFormatsProvider supportedAudioFormatsProvider,
         int degreeOfParallelism)
     {
         this.logger = logger;
         this.metadataLoader = metadataLoader;
         this.propertyLoader = propertyLoader;
+        this.supportedAudioFormatsProvider = supportedAudioFormatsProvider;
         this.degreeOfParallelism = degreeOfParallelism;
     }
 
@@ -37,10 +32,11 @@ public class FileTrackLoader : ITrackLoader
         var musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         var audioTracks = new ConcurrentBag<IAudioTrack>();
         var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism };
+        var supportedFormats = supportedAudioFormatsProvider.GetFormats();
         
         var musicDirectoryEnumerator = Directory
             .EnumerateFiles(musicDirectory)
-            .Where(file => SupportedExtensions.Contains(Path.GetExtension(file)));
+            .Where(file => supportedFormats.Contains(Path.GetExtension(file)));
         
         logger.Info($"Started loading tracks...");
         

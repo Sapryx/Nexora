@@ -36,9 +36,11 @@ public static class CompositionRoot
                 provider.GetService<ILogger<FileTrackLoader>>()!,
                 provider.GetService<IMetadataLoader>()!, 
                 provider.GetService<ITrackPropertyLoader>()!, 
+                provider.GetService<ISupportedAudioFormatsProvider>()!, 
                 Environment.ProcessorCount * 2)
         );
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
+        builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<ITrackPropertyLoader, TagLibTrackPropertyLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
