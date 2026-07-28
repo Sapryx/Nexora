@@ -1,5 +1,12 @@
+# ReSharper / IDE
+*.DotSettings.user
 .idea/
+.vs/
+
+# Build artifacts
 obj/
 bin/
+
+# Unit test results
 */Test Results/
 */Report/
