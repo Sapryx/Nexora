@@ -59,7 +59,7 @@ public partial class App : Application
         {
             DataContext = mainWindowVm
         };
-        
+
         var logger = Provider.GetService<ILogger<App>>()!;
 
         foreach(var loader in audioTrackLoaders)
@@ -73,7 +73,7 @@ public partial class App : Application
                 }
                 catch(Exception ex)
                 {
-                    logger.Crit($"{ex}");
+                    logger.Crit(ex, $"");
                 }
             });
         }
