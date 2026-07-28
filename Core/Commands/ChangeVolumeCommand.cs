@@ -4,16 +4,16 @@ namespace Core.Commands;
 
 public class ChangeVolumeCommand : IChangeVolumeCommand
 {
-    private readonly IAudioEngine audioEngine;
+    private readonly IAudioPlayer audioPlayer;
 
-    public ChangeVolumeCommand(IAudioEngine audioEngine)
+    public ChangeVolumeCommand(IAudioPlayer audioPlayer)
     {
-        this.audioEngine = audioEngine;
+        this.audioPlayer = audioPlayer;
     }
 
     public void Execute(int newVolume)
     {
         int clippedValue = Math.Max(newVolume, 0);
-        audioEngine.Volume = clippedValue;
+        audioPlayer.Volume = clippedValue;
     }
 }
