@@ -1,4 +1,3 @@
-using Core.Integrations;
 using Core.Playback;
 using Core.Playlists;
 
@@ -7,12 +6,10 @@ namespace Core.Commands;
 public class PlayTrackCommand : IPlayTrackCommand
 {
     private readonly IAudioPlayer audioPlayer;
-    private readonly IRichPresenceService richPresenceService;
 
-    public PlayTrackCommand(IAudioPlayer audioPlayer, IRichPresenceService richPresenceService)
+    public PlayTrackCommand(IAudioPlayer audioPlayer)
     {
         this.audioPlayer = audioPlayer;
-        this.richPresenceService = richPresenceService;
     }
 
     public void Execute(IPlaylistItem playlistItem)
@@ -24,7 +21,6 @@ public class PlayTrackCommand : IPlayTrackCommand
         else
         {
             audioPlayer.PlayTrack(playlistItem);
-            richPresenceService.UpdateStatus(playlistItem.AudioTrack.Metadata.Title, playlistItem.AudioTrack.Metadata.Artists);
         }
     }
 }

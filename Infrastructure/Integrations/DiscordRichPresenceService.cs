@@ -1,4 +1,5 @@
 using Core.Integrations;
+using Core.Playback;
 using DiscordRPC;
 using DiscordRPC.Logging;
 
@@ -6,19 +7,28 @@ namespace Infrastructure.Integrations;
 
 public class DiscordRichPresenceService : IRichPresenceService
 {
+    private readonly IAudioPlayer audioPlayer;
     private readonly DiscordRpcClient client;
     
     private const string AppId = "1494383204252258484"; // TODO Pass from outside
 
-    public DiscordRichPresenceService()
+    public DiscordRichPresenceService(IAudioPlayer audioPlayer)
     {
+        this.audioPlayer = audioPlayer;
         client = new DiscordRpcClient(AppId);
         client.Logger = new FileLogger("logs/discord.log");
+
+        audioPlayer.PlaybackStarted += OnPlaybackStarted;
     }
 
     public void Initialize()
     {
         client.Initialize();
+    }
+
+    public void Dispose()
+    {
+        client.Dispose();
     }
 
     public void UpdateStatus(string title, string artist)
@@ -33,8 +43,15 @@ public class DiscordRichPresenceService : IRichPresenceService
         client.SetPresence(richPresence);
     }
 
-    public void Dispose()
+    private void OnPlaybackStarted()
     {
-        client.Dispose();
+        var playlistItem = audioPlayer.NowPlaying;
+
+        if(playlistItem != null)
+        {
+            string title = playlistItem.AudioTrack.Metadata.Title;
+            string artists = playlistItem.AudioTrack.Metadata.Artists;
+            UpdateStatus(title, artists);
+        }
     }
 }
