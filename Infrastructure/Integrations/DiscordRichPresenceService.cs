@@ -1,5 +1,6 @@
 using Core.Integrations;
 using DiscordRPC;
+using DiscordRPC.Logging;
 
 namespace Infrastructure.Integrations;
 
@@ -12,6 +13,7 @@ public class DiscordRichPresenceService : IRichPresenceService
     public DiscordRichPresenceService()
     {
         client = new DiscordRpcClient(AppId);
+        client.Logger = new FileLogger("logs/discord.log");
     }
 
     public void Initialize()
