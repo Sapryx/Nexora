@@ -27,6 +27,7 @@ public static class CompositionRoot
         builder.AddSingleton<IPlayNextTrackCommand, PlayNextTrackCommand>();
         builder.AddSingleton<IPauseTrackCommand, PauseTrackCommand>();
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
+        builder.AddSingleton<IToggleTrackCommand, ToggleTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>(provider =>

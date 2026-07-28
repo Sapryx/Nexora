@@ -29,16 +29,16 @@ public partial class AudioTrackVm : ViewModelBase
     public partial Bitmap? TrackCover { get; set; }
     
     private readonly IPlaylistItem playlistItem;
-    private readonly IPlayTrackCommand playTrackCommand;
+    private readonly IToggleTrackCommand toggleTrackCommand;
     private readonly IAudioPlayer audioPlayer;
 
     public AudioTrackVm(
         IPlaylistItem playlistItem,
-        IPlayTrackCommand playTrackCommand,
+        IToggleTrackCommand toggleTrackCommand,
         IAudioPlayer audioPlayer)
     {
         this.playlistItem = playlistItem;
-        this.playTrackCommand = playTrackCommand;
+        this.toggleTrackCommand = toggleTrackCommand;
         this.audioPlayer = audioPlayer;
 
         this.IsActive = audioPlayer.NowPlaying == playlistItem;
@@ -73,6 +73,6 @@ public partial class AudioTrackVm : ViewModelBase
     [RelayCommand]
     public void PressPlayButton()
     {
-        playTrackCommand.Execute(playlistItem);
+        toggleTrackCommand.Execute(playlistItem);
     }
 }

@@ -14,13 +14,6 @@ public class PlayTrackCommand : IPlayTrackCommand
 
     public void Execute(IPlaylistItem playlistItem)
     {
-        if(audioPlayer.NowPlaying == playlistItem)
-        {
-            audioPlayer.TogglePause();
-        }
-        else
-        {
-            audioPlayer.PlayTrack(playlistItem);
-        }
+        audioPlayer.PlayTrack(playlistItem);
     }
 }
