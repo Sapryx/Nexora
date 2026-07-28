@@ -12,7 +12,7 @@ Target platforms currently are:
 - Linux
 - MacOS (hasn't been tested yet, but it should work fine in theory, because all dependencies are platform-independent)
 
-![](preview.png)
+![preview.png](preview.png)
 
 ---
 
@@ -40,16 +40,6 @@ winget install VideoLAN.VLC
 
 <details>
 <summary>Building the project</summary>
-Create a directory for the project and open it:
-  
-```
-mkdir Nexora
-```
-
-```
-cd Nexora
-```
-
 Clone the repository:
 
 ```
