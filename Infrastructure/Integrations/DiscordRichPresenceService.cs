@@ -16,7 +16,7 @@ public class DiscordRichPresenceService : IRichPresenceService
     {
         this.audioPlayer = audioPlayer;
         client = new DiscordRpcClient(AppId);
-        client.Logger = new FileLogger("logs/discord.log");
+        client.Logger = new FileLogger($"{AppContext.BaseDirectory}/logs/discord.log");
 
         audioPlayer.PlaybackStarted += OnPlaybackStarted;
     }
