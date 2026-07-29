@@ -73,7 +73,7 @@ jobs:
           sudo apt-get install -y clang zlib1g-dev
 
       - name: Restore dependencies
-        run: dotnet restore Gui -r ${{ matrix.rid }}
+        run: dotnet restore Nexora -r ${{ matrix.rid }}
 
       - name: Publish (AOT)
         run: dotnet publish Nexora -c Release -r ${{ matrix.rid }} --no-restore
