@@ -57,11 +57,15 @@ cd Nexora
 
 Build the project:
 
+Windows
 ```
-dotnet publish Nexora -c Release
+.\Publish.ps1
 ```
 
-If you don't have .NET Runtime installed, you can add `--self-contained=true`, but it will make the build size bigger.
+Linux
+```
+publish.sh
+```
 
 The executable file will be located at `Nexora/bin/Release/net10.0/[your OS]/publish/`
 </details>
