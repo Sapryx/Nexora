@@ -10,6 +10,8 @@
 
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+        <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
