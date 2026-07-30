@@ -65,22 +65,39 @@ jobs:
         shell: powershell
 
       # Native AOT publish on Linux needs clang + zlib headers.
-      # Windows and macOS runners already ship the required toolchains.
       - name: Install native build tools (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y clang zlib1g-dev
 
-      - name: Restore dependencies
-        run: dotnet restore src/Nexora -r ${{ matrix.rid }}
+      # Build for Windows
+      - name: Run Windows build script
+        if: runner.os == 'Windows'
+        run: ./Publish.ps1 -Rid ${{ matrix.rid }}
+        shell: powershell
 
-      - name: Publish (AOT)
-        run: dotnet publish src/Nexora -c Release -r ${{ matrix.rid }} --no-restore
+      # Build for Linux and OSX
+      - name: Run Linux/macOS build script
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ./publish.sh
+          ./publish.sh ${{ matrix.rid }}
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v5
+      # Upload artifacts
+      - name: Upload build artifact (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
         with:
           name: Nexora-${{ matrix.rid }}
-          path: src/Nexora/bin/Release/**/publish/**
+          path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora.exe
           if-no-files-found: error
+
+      - name: Upload build artifact (Linux / macOS)
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nexora-${{ matrix.rid }}
+          path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora
+          if-no-files-found: error
+    
