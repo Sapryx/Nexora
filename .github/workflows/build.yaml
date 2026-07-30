@@ -25,7 +25,7 @@ jobs:
         run: dotnet restore Nexora.sln
 
       - name: Run unit tests
-        run: dotnet test Core.Tests -c Release --no-restore
+        run: dotnet test tests/Core.Tests -c Release --no-restore
 
   build:
     name: Build (${{ matrix.os }})
@@ -73,14 +73,14 @@ jobs:
           sudo apt-get install -y clang zlib1g-dev
 
       - name: Restore dependencies
-        run: dotnet restore Nexora -r ${{ matrix.rid }}
+        run: dotnet restore src/Nexora -r ${{ matrix.rid }}
 
       - name: Publish (AOT)
-        run: dotnet publish Nexora -c Release -r ${{ matrix.rid }} --no-restore
+        run: dotnet publish src/Nexora -c Release -r ${{ matrix.rid }} --no-restore
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
         with:
           name: Nexora-${{ matrix.rid }}
-          path: Nexora/bin/Release/**/publish/**
+          path: src/Nexora/bin/Release/**/publish/**
           if-no-files-found: error
