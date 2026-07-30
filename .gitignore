@@ -8,5 +8,5 @@ obj/
 bin/
 
 # Unit test results
-*/Test Results/
-*/Report/
+Test Results/
+Report/
