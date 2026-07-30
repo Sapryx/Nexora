@@ -6,14 +6,18 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    </PropertyGroup>
+
     <ItemGroup>
-      <ProjectReference Include="..\Core\Core.csproj" />
+        <ProjectReference Include="..\Core\Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
-      <PackageReference Include="LibVLCSharp" Version="3.10.0" />
-      <PackageReference Include="TagLibSharp" Version="2.3.0" />
+        <PackageReference Include="DiscordRichPresence" Version="1.6.1.70" />
+        <PackageReference Include="LibVLCSharp" Version="3.10.0" />
+        <PackageReference Include="TagLibSharp" Version="2.3.0" />
     </ItemGroup>
 
 </Project>
