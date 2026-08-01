@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Benchmarks", "tests\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "tests\Core.Tests\Core.Tests.csproj", "{53D7D6D4-ACAA-441B-B256-B19DFAED5DAB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexora.Theme", "src\Nexora.Theme\Nexora.Theme.csproj", "{C4B1D773-6DCC-4ECD-998E-35706304DAFE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{53D7D6D4-ACAA-441B-B256-B19DFAED5DAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53D7D6D4-ACAA-441B-B256-B19DFAED5DAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53D7D6D4-ACAA-441B-B256-B19DFAED5DAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4B1D773-6DCC-4ECD-998E-35706304DAFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4B1D773-6DCC-4ECD-998E-35706304DAFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4B1D773-6DCC-4ECD-998E-35706304DAFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4B1D773-6DCC-4ECD-998E-35706304DAFE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
