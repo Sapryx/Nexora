@@ -11,20 +11,20 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
-        PlaybackPositionSliderContainer.AddHandler(
-            PointerPressedEvent,
-            InputElement_OnPointerPressed,
-            RoutingStrategies.Tunnel);
-
-        PlaybackPositionSliderContainer.AddHandler(
-            PointerReleasedEvent,
-            InputElement_OnPointerReleased,
-            RoutingStrategies.Tunnel);
-
-        PlaybackPositionSliderContainer.AddHandler(
-            PointerCaptureLostEvent,
-            InputElement_OnPointerReleased,
-            RoutingStrategies.Bubble);
+        // PlaybackPositionSliderContainer.AddHandler(
+        //     PointerPressedEvent,
+        //     InputElement_OnPointerPressed,
+        //     RoutingStrategies.Tunnel);
+        //
+        // PlaybackPositionSliderContainer.AddHandler(
+        //     PointerReleasedEvent,
+        //     InputElement_OnPointerReleased,
+        //     RoutingStrategies.Tunnel);
+        //
+        // PlaybackPositionSliderContainer.AddHandler(
+        //     PointerCaptureLostEvent,
+        //     InputElement_OnPointerReleased,
+        //     RoutingStrategies.Bubble);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

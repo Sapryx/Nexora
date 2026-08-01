@@ -62,20 +62,20 @@ public partial class App : Application
 
         var logger = Provider.GetService<ILogger<App>>()!;
 
-        foreach(var loader in audioTrackLoaders)
-        {
-            Task.Run(() =>
-            {
-                try
-                {
-                    var loadedTracks = loader.Load();
-                    playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
-                }
-                catch(Exception ex)
-                {
-                    logger.Crit(ex, $"");
-                }
-            });
-        }
+        // foreach(var loader in audioTrackLoaders)
+        // {
+        //     Task.Run(() =>
+        //     {
+        //         try
+        //         {
+        //             var loadedTracks = loader.Load();
+        //             playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
+        //         }
+        //         catch(Exception ex)
+        //         {
+        //             logger.Crit(ex, $"");
+        //         }
+        //     });
+        // }
     }
 }

@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:views="clr-namespace:Nexora.Views"
-        mc:Ignorable="d" d:DesignWidth="1920" d:DesignHeight="1080"
+        xmlns:controls="clr-namespace:Nexora.Controls"
+        mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="1024"
         x:Class="Nexora.Views.MainWindow"
         x:DataType="vm:MainWindowVm"
         Icon="/Assets/avalonia-logo.ico"
@@ -27,137 +28,57 @@
         </ContainerQuery>
     </Window.Styles>
     <DockPanel LastChildFill="True">
-        <Border DockPanel.Dock="Bottom"
-                ZIndex="10"
-                Height="100"
-                Width="1000"
-                Margin="0, 0, 0, 16"
-                CornerRadius="8"
-                Background="#212121"
-                HorizontalAlignment="Center"
-                ClipToBounds="False">
-            <Panel HorizontalAlignment="Stretch"
-                   ClipToBounds="False">
-                <Slider Name="PlaybackPositionSliderContainer"
-                        Minimum="0"
-                        Maximum="1"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Top"
-                        Margin="0, -18, 0, 0"
-                        Value="{Binding PlaybackPosition, Mode=TwoWay}"
-                        Cursor="Hand">
-                </Slider>
+        <DockPanel.Background>
+            <LinearGradientBrush StartPoint="0%, 0%" EndPoint="100%, 100%">
+                <GradientStop Color="#3D3D3D" Offset="0" />
+                <GradientStop Color="#191919" Offset="1" />
+            </LinearGradientBrush>
+        </DockPanel.Background>
 
-                <Grid ColumnDefinitions="1*, 4*, 1*"
-                      VerticalAlignment="Stretch"
-                      HorizontalAlignment="Stretch"
-                      Margin="24, 0, 24, 0"
-                      ColumnSpacing="64">
+        <Border
+            DockPanel.Dock="Top"
+            Height="64"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            Background="rgba(0, 0, 0, 40%)">
 
-                    <Grid Grid.Column="1"
-                          FlowDirection="LeftToRight"
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"
-                          ColumnSpacing="16"
-                          ColumnDefinitions="Auto, Auto, Auto">
-                        <Button Grid.Column="0"
-                                CornerRadius="24"
-                                Width="48"
-                                Height="48"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Command="{Binding PressPreviousTrackButton}">
-                            <TextBlock Text="|&lt;"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                        </Button>
-
-                        <Button Grid.Column="1"
-                                CornerRadius="24"
-                                Width="48"
-                                Height="48"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Command="{Binding PressPauseButton}">
-                            <TextBlock Text="{Binding PauseButtonText}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                        </Button>
-
-                        <Button Grid.Column="2"
-                                CornerRadius="24"
-                                Width="48"
-                                Height="48"
-                                VerticalAlignment="Center"
-                                HorizontalAlignment="Center"
-                                Command="{Binding PressNextTrackButton}">
-                            <TextBlock Text="&gt;|"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                        </Button>
-                    </Grid>
-
-                    <Slider Grid.Column="2"
-                            Minimum="0"
-                            Maximum="100"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Bottom"
-                            Margin="0, 0, 0, 24"
-                            Value="{Binding AudioVolume, Mode=TwoWay}"
-                            Cursor="Hand" />
-                </Grid>
-            </Panel>
         </Border>
 
-        <Border DockPanel.Dock="Top">
-            <TextBox
-                Width="400"
-                Margin="4"
-                PlaceholderText="Search..."
-                Text="{Binding SearchQuery}" />
+        <Border
+            DockPanel.Dock="Left"
+            Width="240"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Left"
+            Background="rgba(0, 0, 0, 25%)">
+
         </Border>
 
-        <Border DockPanel.Dock="Left"
-                x:Name="sidebar"
-                Width="250"
-                Margin="16, 0, 0, 0">
-            <StackPanel
-                Orientation="Vertical"
-                Spacing="4">
-                <Button HorizontalAlignment="Stretch" Height="50">
-                    <TextBlock VerticalAlignment="Center" Text="🏠 Home" Classes="header"></TextBlock>
-                </Button>
+        <Grid RowDefinitions="Auto * Auto"
+              Margin="32">
+            <Border Grid.Row="0"
+                    Width="640"
+                    CornerRadius="100"
+                    Background="rgba(255, 255, 255, 10%)">
+                <StackPanel Orientation="Horizontal"
+                            Margin="16, 16, 32, 16"
+                            HorizontalAlignment="Left"
+                            Spacing="16">
+                    <Path Data="{StaticResource MagnifierIcon}"
+                          Stroke="White"
+                          StrokeThickness="2"
+                          StrokeLineCap="Round"
+                          Width="24" Height="24"
+                          Stretch="Uniform" />
+                    <TextBlock Text="Search..." />
+                </StackPanel>
+            </Border>
 
-                <Button HorizontalAlignment="Stretch" Height="50">
-                    <TextBlock VerticalAlignment="Center" Text="💗 Library" Classes="header"></TextBlock>
-                </Button>
-
-                <Button HorizontalAlignment="Stretch" Height="50">
-                    <TextBlock VerticalAlignment="Center" Text="⚙ Settings" Classes="header"></TextBlock>
-                </Button>
-            </StackPanel>
-        </Border>
-
-        <ScrollViewer Margin="128, 16, 0, 16"
-                      HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="trackContainer"
-                          ItemsSource="{Binding DisplayedAudioTrackVms}"
-                          HorizontalAlignment="Stretch">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="vm:AudioTrackVm">
-                        <views:AudioTrackControl HorizontalAlignment="Stretch" />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel
-                            Orientation="Vertical"
-                            HorizontalAlignment="Stretch"
-                            Spacing="16" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-        </ScrollViewer>
+            <controls:TrackArea Grid.Row="1"/>
+            <controls:PlaybackControl Grid.Row="2"
+                                      VerticalAlignment="Bottom"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="960"
+                                      MaxWidth="1280"/>
+        </Grid>
     </DockPanel>
 </Window>
