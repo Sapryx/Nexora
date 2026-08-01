@@ -10,7 +10,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        
+
         PlaybackPositionSliderContainer.AddHandler(
             PointerPressedEvent,
             InputElement_OnPointerPressed,
@@ -20,11 +20,21 @@ public partial class MainWindow : Window
             PointerReleasedEvent,
             InputElement_OnPointerReleased,
             RoutingStrategies.Tunnel);
-        
+
         PlaybackPositionSliderContainer.AddHandler(
             PointerCaptureLostEvent,
             InputElement_OnPointerReleased,
             RoutingStrategies.Bubble);
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+
+        if(DataContext is MainWindowVm vm)
+        {
+            vm.UpdateLayout(e.NewSize.Width);
+        }
     }
 
     private void InputElement_OnPointerPressed(object? sender, PointerPressedEventArgs e)

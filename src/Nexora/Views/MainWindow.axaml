@@ -8,7 +8,9 @@
         x:Class="Nexora.Views.MainWindow"
         x:DataType="vm:MainWindowVm"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Nexora">
+        Title="Nexora"
+        Container.Name="main"
+        Container.Sizing="Width">
     <Window.Styles>
         <Style Selector="Slider">
             <Style.Resources>
@@ -19,9 +21,24 @@
                 <x:Double x:Key="SliderTrackThemeHeight">12</x:Double>
             </Style.Resources>
         </Style>
+
         <Style Selector="Slider TickBar">
             <Setter Property="IsVisible" Value="False" />
         </Style>
+
+        <Style Selector="ItemsControl#trackContainer">
+            <Setter Property="Margin" Value="0, 0, 128, 0" />
+        </Style>
+
+        <ContainerQuery Name="main" Query="max-width:768">
+            <Style Selector="Border#sidebar">
+                <Setter Property="IsVisible" Value="False" />
+            </Style>
+
+            <Style Selector="ItemsControl#trackContainer">
+                <Setter Property="Margin" Value="0, 0, 32, 0" />
+            </Style>
+        </ContainerQuery>
     </Window.Styles>
     <DockPanel LastChildFill="True">
         <Border DockPanel.Dock="Bottom"
@@ -115,6 +132,7 @@
         </Border>
 
         <Border DockPanel.Dock="Left"
+                x:Name="sidebar"
                 Width="250"
                 Margin="16, 0, 0, 0">
             <StackPanel
@@ -134,22 +152,23 @@
             </StackPanel>
         </Border>
 
-        <ScrollViewer x:Name="Scroller"
-                      Margin="128, 16, 0, 16"
-                      HorizontalScrollBarVisibility="Auto"
+        <ScrollViewer Margin="128, 16, 0, 16"
+                      HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
-            <ItemsControl
-                ItemsSource="{Binding DisplayedAudioTrackVms}"
-                Margin="0, 0, 256, 0">
+            <ItemsControl x:Name="trackContainer"
+                          ItemsSource="{Binding DisplayedAudioTrackVms}"
+                          HorizontalAlignment="Stretch">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="vm:AudioTrackVm">
-                        <views:AudioTrackControl Margin="0, 0, 0, 8" />
+                        <views:AudioTrackControl HorizontalAlignment="Stretch" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
-
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" />
+                        <StackPanel
+                            Orientation="Vertical"
+                            HorizontalAlignment="Stretch"
+                            Spacing="16" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>

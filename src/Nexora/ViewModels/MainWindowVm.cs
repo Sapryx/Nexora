@@ -31,6 +31,9 @@ public partial class MainWindowVm : ViewModelBase
     [ObservableProperty]
     public partial string PauseButtonText { get; set; }
 
+    [ObservableProperty]
+    public partial bool IsCompact { get; set; }
+    
     private Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; }
     private readonly IAudioTrackVmFactory audioTrackVmFactory;
     private readonly IAudioPlayer audioPlayer;
@@ -104,6 +107,11 @@ public partial class MainWindowVm : ViewModelBase
         };
         
         logger.Info($"Application initialized");
+    }
+
+    public void UpdateLayout(double windowWidth)
+    {
+        IsCompact = windowWidth <= 768;
     }
 
     private AudioTrackVm AddAudioTrackVm(IPlaylistItem playlistItem)
