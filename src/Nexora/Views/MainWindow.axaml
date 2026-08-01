@@ -3,8 +3,6 @@
         xmlns:vm="using:Nexora.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:svg="clr-namespace:Avalonia.Svg.Skia;assembly=Avalonia.Svg.Skia"
-        xmlns:views="clr-namespace:Nexora.Views"
         xmlns:controls="clr-namespace:Nexora.Controls"
         mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="1024"
         x:Class="Nexora.Views.MainWindow"
@@ -42,7 +40,7 @@
             HorizontalAlignment="Stretch"
             VerticalAlignment="Top"
             Background="rgba(0, 0, 0, 40%)">
-
+        
         </Border>
 
         <Border
@@ -56,20 +54,8 @@
 
         <Grid RowDefinitions="Auto * Auto"
               Margin="32">
-            <Border Grid.Row="0"
-                    Width="640"
-                    CornerRadius="100"
-                    Background="rgba(255, 255, 255, 10%)">
-                <StackPanel Orientation="Horizontal"
-                            Margin="16, 16, 32, 16"
-                            HorizontalAlignment="Left"
-                            Spacing="16">
-
-                    <controls:Icon IconName="magnifier" />
-                    <TextBlock Text="Search..." />
-                </StackPanel>
-            </Border>
-
+            
+            <controls:SearchBar Grid.Row="0"/>
             <controls:TrackArea Grid.Row="1" />
             <controls:PlaybackControl Grid.Row="2"
                                       VerticalAlignment="Bottom"

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Nexora.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Nexora.Controls.SearchBar">
+    <Border Width="480"
+            CornerRadius="100"
+            VerticalAlignment="Center"
+            Background="rgba(255, 255, 255, 10%)"
+            BorderThickness="1"
+            BorderBrush="{StaticResource BorderBrush}">
+        <Grid ColumnDefinitions="Auto *"
+              Margin="8 4">
+            <controls:Icon Grid.Column="0"
+                           IconName="magnifier"
+                           Margin="0 0 4 0" />
+
+            <TextBox Grid.Column="1"
+                     PlaceholderText="Search..."
+                     VerticalAlignment="Center"
+                     BorderThickness="0"
+                     Background="Transparent" />
+        </Grid>
+    </Border>
+</UserControl>

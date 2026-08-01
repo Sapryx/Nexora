@@ -10,7 +10,10 @@
         <conv:IconNameToSourceConverter x:Key="IconNameToSourceConverter"/>
     </UserControl.Resources>
 
-    <Image Width="24" Height="24">
+    <Image Width="24" 
+           Height="24"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Center">
         <Image.Source>
             <SvgImage Source="{Binding IconName, ElementName=Root, Converter={StaticResource IconNameToSourceConverter}}"/>
         </Image.Source>

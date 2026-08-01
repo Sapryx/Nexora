@@ -8,6 +8,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Nexora.Theme/Controls/Slider.axaml" />
+                <ResourceInclude Source="avares://Nexora.Theme/Controls/TextBox.axaml" />
                 
                 <ResourceInclude Source="avares://Nexora.Theme/Resources/Colors.axaml"/>
             </ResourceDictionary.MergedDictionaries>
