@@ -1,0 +1,48 @@
+uniform float2 u_size;
+uniform float2 u_start;
+uniform float2 u_end;
+
+const int MAX_STOPS = 8;
+uniform half4 u_colors[MAX_STOPS];
+uniform float u_offsets[MAX_STOPS];
+uniform float u_stopCount;
+
+float noise(float2 co) {
+    return fract(sin(dot(co, float2(12.9898, 78.233))) * 43758.5453);
+}
+
+half4 sampleGradient(float t) {
+    t = clamp(t, 0.0, 1.0);
+    half4 color = u_colors[0];
+
+    for(int i = 0; i < MAX_STOPS - 1; i++) {
+        if(float(i) + 1.0 >= u_stopCount) {
+            break;
+        }
+
+        float offsetA = u_offsets[i];
+        float offsetB = u_offsets[i + 1];
+
+        if(t >= offsetA && t <= offsetB) {
+            float span = max(offsetB - offsetA, 0.0001);
+            float localT = (t - offsetA) / span;
+            color = mix(u_colors[i], u_colors[i + 1], localT);
+        }
+    }
+
+    return color;
+}
+
+half4 main(float2 fragCoord) {
+    float2 dir = u_end - u_start;
+    float lenSq = dot(dir, dir);
+
+    float t = lenSq < 0.0001 ? 0.0 : dot(fragCoord - u_start, dir) / lenSq;
+
+    half4 color = sampleGradient(t);
+
+    float rnd = noise(fragCoord) - 0.5;
+    half3 dither = half3(rnd / 255.0);
+
+    return half4(color.rgb + dither, color.a);
+}
