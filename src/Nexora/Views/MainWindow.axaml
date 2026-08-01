@@ -11,6 +11,7 @@
         Icon="/Assets/avalonia-logo.ico"
         Title="Nexora"
         MinWidth="640"
+        MinHeight="480"
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
