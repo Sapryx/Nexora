@@ -1,7 +1,0 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <GeometryGroup x:Key="MagnifierIcon">
-        <EllipseGeometry Center="10, 10" RadiusX="5" RadiusY="5" />
-        <LineGeometry StartPoint="14, 14" EndPoint="19, 19" />
-    </GeometryGroup>
-</ResourceDictionary>
