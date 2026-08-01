@@ -12,20 +12,6 @@
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
-        <Style Selector="Slider">
-            <Style.Resources>
-                <CornerRadius x:Key="SliderThumbCornerRadius">16</CornerRadius>
-                <x:Double x:Key="SliderHorizontalThumbWidth">4</x:Double>
-                <GridLength x:Key="SliderPreContentMargin">0</GridLength>
-                <GridLength x:Key="SliderPostContentMargin">0</GridLength>
-                <x:Double x:Key="SliderTrackThemeHeight">12</x:Double>
-            </Style.Resources>
-        </Style>
-
-        <Style Selector="Slider TickBar">
-            <Setter Property="IsVisible" Value="False" />
-        </Style>
-
         <Style Selector="ItemsControl#trackContainer">
             <Setter Property="Margin" Value="0, 0, 128, 0" />
         </Style>
