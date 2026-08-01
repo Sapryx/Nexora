@@ -5,8 +5,7 @@
              xmlns:controls="clr-namespace:Nexora.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Nexora.Controls.SearchBar">
-    <Border Width="480"
-            CornerRadius="100"
+    <Border CornerRadius="100"
             VerticalAlignment="Center"
             Background="rgba(255, 255, 255, 10%)"
             BorderThickness="1"

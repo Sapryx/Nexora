@@ -55,13 +55,18 @@
         <Grid RowDefinitions="Auto * Auto"
               Margin="32">
             
-            <controls:SearchBar Grid.Row="0"/>
+            <controls:SearchBar Grid.Row="0"
+                                HorizontalAlignment="Stretch"
+                                MinWidth="360"
+                                MaxWidth="480"/>
+            
             <controls:TrackArea Grid.Row="1" />
+            
             <controls:PlaybackControl Grid.Row="2"
                                       VerticalAlignment="Bottom"
                                       HorizontalAlignment="Stretch"
-                                      MinWidth="960"
-                                      MaxWidth="1280" />
+                                      MinWidth="480"
+                                      MaxWidth="960" />
         </Grid>
     </DockPanel>
 </Window>
