@@ -11,18 +11,21 @@
              x:Name="Root">
     <Border Margin="0, 16, 0, 0">
         <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                      VerticalScrollBarVisibility="Auto">
+                                     VerticalScrollBarVisibility="Auto"
+                                     AllowAutoHide="False">
             <ItemsControl
-                ItemsSource="{Binding #Root.TrackVms}">
+                ItemsSource="{Binding #Root.TrackVms}"
+                Margin="0 0 16 0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="viewModels:AudioTrackVm">
-                        <views:AudioTrackControl Margin="0, 0, 0, 8" />
+                        <views:AudioTrackControl />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
 
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" />
+                        <StackPanel Orientation="Vertical" 
+                                    Spacing="8"/>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>

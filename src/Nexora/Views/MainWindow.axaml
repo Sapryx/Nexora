@@ -53,23 +53,22 @@
             </Border>
 
             <Grid RowDefinitions="Auto * Auto"
-                  Margin="16">
-
+                  Margin="0 16">
                 <controls:SearchBar Grid.Row="0"
                                     HorizontalAlignment="Stretch"
-                                    MinWidth="360"
                                     MaxWidth="480" />
 
                 <controls:TrackArea Grid.Row="1" 
                                     TrackVms="{Binding DisplayedAudioTrackVms}"
                                     HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"/>
+                                    VerticalAlignment="Stretch"
+                                    Margin="64 0 0 0"/>
 
                 <controls:PlaybackControl Grid.Row="2"
                                           VerticalAlignment="Bottom"
                                           HorizontalAlignment="Stretch"
-                                          MinWidth="480"
-                                          MaxWidth="960" />
+                                          MaxWidth="960"
+                                          Margin="48 0"/>
             </Grid>
         </DockPanel>
     </Panel>
