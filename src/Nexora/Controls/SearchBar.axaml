@@ -3,8 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="clr-namespace:Nexora.Controls"
+             xmlns:viewModels="clr-namespace:Nexora.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Nexora.Controls.SearchBar">
+             x:Class="Nexora.Controls.SearchBar"
+             x:DataType="viewModels:SearchBarVm">
     <Border CornerRadius="100"
             VerticalAlignment="Center"
             Background="rgba(255, 255, 255, 10%)"
@@ -17,6 +19,7 @@
                            Margin="0 0 4 0" />
 
             <TextBox Grid.Column="1"
+                     Text="{Binding SearchQuery}"
                      PlaceholderText="Search..."
                      VerticalAlignment="Center"
                      BorderThickness="0"

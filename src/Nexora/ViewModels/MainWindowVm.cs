@@ -1,21 +1,15 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Avalonia.Threading;
+﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Commands;
 using Core.Logging;
 using Core.Playback;
-using Core.Playlists;
 using Microsoft.Extensions.Logging;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
 public partial class MainWindowVm : ViewModelBase
 {
-    public ObservableCollection<AudioTrackVm> DisplayedAudioTrackVms { get; }
-
     [ObservableProperty]
     public partial bool IsSeeking { get; set; }
 
@@ -26,18 +20,14 @@ public partial class MainWindowVm : ViewModelBase
     public partial float PlaybackPosition { get; set; }
 
     [ObservableProperty]
-    public partial string SearchQuery { get; set; }
-
-    [ObservableProperty]
     public partial string PauseButtonText { get; set; }
 
     [ObservableProperty]
     public partial bool IsCompact { get; set; }
     
-    private Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; }
-    private readonly IAudioTrackVmFactory audioTrackVmFactory;
+    public SearchBarVm SearchBarVm { get; }
+
     private readonly IAudioPlayer audioPlayer;
-    private readonly PlaylistRegistry playlistRegistry;
     private readonly IChangeVolumeCommand changeVolumeCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPauseTrackCommand pauseTrackCommand;
@@ -45,29 +35,24 @@ public partial class MainWindowVm : ViewModelBase
     private readonly ILogger logger;
 
     public MainWindowVm(
-        IAudioTrackVmFactory audioTrackVmFactory,
+        ILogger<MainWindowVm> logger,
         IChangeVolumeCommand changeVolumeCommand,
         IAudioPlayer audioPlayer,
         IPlayNextTrackCommand playNextTrackCommand,
-        PlaylistRegistry playlistRegistry,
         IPauseTrackCommand pauseTrackCommand,
         IPlayPreviousTrackCommand playPreviousTrackCommand,
-        ILogger<MainWindowVm> logger)
+        SearchBarVm searchBarVm)
     {
-        this.audioTrackVmFactory = audioTrackVmFactory;
+        this.logger = logger;
         this.changeVolumeCommand = changeVolumeCommand;
         this.audioPlayer = audioPlayer;
         this.playNextTrackCommand = playNextTrackCommand;
-        this.playlistRegistry = playlistRegistry;
         this.pauseTrackCommand = pauseTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
-        this.logger = logger;
-
-        AudioTrackVms = [];
-        DisplayedAudioTrackVms = [];
+        
+        SearchBarVm = searchBarVm;
         AudioVolume = audioPlayer.Volume;
         PlaybackPosition = audioPlayer.PlaybackPosition;
-        SearchQuery = "";
         PauseButtonText = "||";
     }
 
@@ -95,16 +80,6 @@ public partial class MainWindowVm : ViewModelBase
         {
             Dispatcher.UIThread.Post(() => PauseButtonText = "||");
         };
-
-        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem =>
-        {
-            var trackVm = AddAudioTrackVm(playlistItem);
-
-            if(ShouldBeDisplayed(playlistItem.AudioTrack, SearchQuery))
-            {
-                DisplayedAudioTrackVms.Add(trackVm);
-            }
-        };
         
         logger.Info($"Application initialized");
     }
@@ -112,14 +87,6 @@ public partial class MainWindowVm : ViewModelBase
     public void UpdateLayout(double windowWidth)
     {
         IsCompact = windowWidth <= 768;
-    }
-
-    private AudioTrackVm AddAudioTrackVm(IPlaylistItem playlistItem)
-    {
-        var audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
-        AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
-
-        return audioTrackVm;
     }
 
     partial void OnAudioVolumeChanged(int value)
@@ -133,43 +100,6 @@ public partial class MainWindowVm : ViewModelBase
         {
             audioPlayer.PlaybackPosition = value;
         }
-    }
-
-    partial void OnSearchQueryChanged(string value)
-    {
-        string rawQuery = value;
-        
-        DisplayedAudioTrackVms.Clear();
-
-        if(string.IsNullOrEmpty(rawQuery.Trim()))
-        {
-            foreach(var audioTrackVm in AudioTrackVms.Values)
-            {
-                DisplayedAudioTrackVms.Add(audioTrackVm);
-            }
-
-            return;
-        }
-
-        foreach(var audioTrack in AudioTrackVms.Keys)
-        {
-            if(ShouldBeDisplayed(audioTrack, rawQuery))
-            {
-                var audioTrackVm = AudioTrackVms[audioTrack];
-                DisplayedAudioTrackVms.Add(audioTrackVm);
-            }
-        }
-    }
-
-    private bool ShouldBeDisplayed(IAudioTrack audioTrack, string rawQuery)
-    {
-        string query = rawQuery.Trim().ToLower();
-        string title = audioTrack.Metadata.Title.ToLower();
-        string artists = audioTrack.Metadata.Artists.ToLower();
-        bool titleMatches = title.Contains(query);
-        bool artistsMatch = artists.Contains(query);
-
-        return titleMatches || artistsMatch;
     }
 
     [RelayCommand]

@@ -39,5 +39,6 @@ public static class CompositionRoot
         builder.AddSingleton<PlaylistRegistry>();
 
         builder.AddSingleton<MainWindowVm>();
+        builder.AddSingleton<SearchBarVm>();
     }
 }

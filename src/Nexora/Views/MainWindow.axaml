@@ -55,11 +55,12 @@
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
                 <controls:SearchBar Grid.Row="0"
+                                    DataContext="{Binding SearchBarVm}"
                                     HorizontalAlignment="Stretch"
                                     MaxWidth="480" />
 
                 <controls:TrackArea Grid.Row="1" 
-                                    TrackVms="{Binding DisplayedAudioTrackVms}"
+                                    TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
                                     Margin="64 0 0 0"/>
