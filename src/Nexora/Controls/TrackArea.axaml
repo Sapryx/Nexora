@@ -2,9 +2,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Nexora.ViewModels"
+             xmlns:views="clr-namespace:Nexora.Views"
+             xmlns:controls="clr-namespace:Nexora.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Nexora.Controls.TrackArea">
-    <Border Margin="0, 32, 0, 0">
-        
+             x:Class="Nexora.Controls.TrackArea"
+             x:DataType="controls:TrackArea"
+             x:Name="Root">
+    <Border Margin="0, 16, 0, 0">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Auto">
+            <ItemsControl
+                ItemsSource="{Binding #Root.TrackVms}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="viewModels:AudioTrackVm">
+                        <views:AudioTrackControl Margin="0, 0, 0, 8" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
     </Border>
 </UserControl>
