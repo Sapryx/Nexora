@@ -18,6 +18,8 @@ Target platforms currently are:
 - Linux
 - MacOS (hasn't been tested yet, but it should work fine in theory, because all dependencies are platform-independent)
 
+<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/19901dca-8641-4d66-a4b8-410a1e6b0c1b" />
+
 ---
 
 ### Installation
@@ -65,5 +67,5 @@ Linux
 publish.sh
 ```
 
-The executable file will be located at `Nexora/bin/Release/net10.0/[your OS]/publish/`
+The executable file will be located at `src/Nexora/bin/Release/net10.0/[your OS]/publish/`
 </details>
