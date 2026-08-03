@@ -27,6 +27,7 @@ public class VlcAudioEngine : IAudioEngine
     public event Action? PlaybackFinished;
     public event Action? PlaybackPaused;
     public event Action? PlaybackResumed;
+    public event Action<float>? VolumeChanged;
     
     public VlcAudioEngine(LibVLC vlc)
     {
@@ -37,6 +38,7 @@ public class VlcAudioEngine : IAudioEngine
         mediaPlayer.EndReached += OnEndReached;
         mediaPlayer.Paused += OnPaused;
         mediaPlayer.Playing += OnPlaying;
+        mediaPlayer.VolumeChanged += OnVolumeChange;
     }
 
     public void StartPlayback(IAudioTrack audioTrack)
@@ -74,5 +76,10 @@ public class VlcAudioEngine : IAudioEngine
     private void OnPlaying(object? sender, EventArgs args)
     {
         PlaybackResumed?.Invoke();
+    }
+
+    private void OnVolumeChange(object? sender, MediaPlayerVolumeChangedEventArgs args)
+    {
+        VolumeChanged?.Invoke(args.Volume * 100f);
     }
 }

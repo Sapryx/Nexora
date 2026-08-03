@@ -50,6 +50,12 @@ public class AudioPlayer : IAudioPlayer
         add => audioEngine.PlaybackResumed += value;
         remove => audioEngine.PlaybackResumed -= value;
     }
+    
+    public event Action<float>? VolumeChanged
+    {
+        add => audioEngine.VolumeChanged += value;
+        remove => audioEngine.VolumeChanged -= value;
+    }
 
     public AudioPlayer(IAudioEngine audioEngine)
     {

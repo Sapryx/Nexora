@@ -14,6 +14,7 @@ public interface IAudioPlayer
     public event Action? PlaybackPaused;
     public event Action? PlaybackFinished;
     public event Action? PlaybackResumed;
+    public event Action<float>? VolumeChanged;
     
     public void PlayTrack(IPlaylistItem playlistItem);
     public void TogglePause();
