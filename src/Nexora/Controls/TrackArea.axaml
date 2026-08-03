@@ -10,9 +10,9 @@
              x:DataType="controls:TrackArea"
              x:Name="Root">
     <Border Margin="0, 16, 0, 0">
-        <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                     VerticalScrollBarVisibility="Auto"
-                                     AllowAutoHide="False">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto"
+                      AllowAutoHide="False">
             <ItemsControl
                 ItemsSource="{Binding #Root.TrackVms}"
                 Margin="0 0 16 0">
@@ -24,8 +24,8 @@
 
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical" 
-                                    Spacing="8"/>
+                        <StackPanel Orientation="Vertical"
+                                    Spacing="8" />
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>

@@ -15,7 +15,7 @@
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
-        <ContainerQuery Name="main" Query="max-width:768">
+        <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
             </Style>

@@ -49,6 +49,8 @@ public partial class PlaybackVm : ViewModelBase
         audioPlayer.PlaybackStarted += () =>
         {
             CurrentTrackVm ??= audioTrackVmFactory.Create(audioPlayer.NowPlaying!, audioPlayer);
+            
+            // TODO The cover should probably NOT be re-created every time you switch a track
             CurrentTrackVm.Update(audioPlayer.NowPlaying!);
         };
 
