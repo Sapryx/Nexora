@@ -1,6 +1,10 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Color x:Key="BorderColor">#585858</Color>
+    <Color x:Key="TitleColor">#FFFFFF</Color>
+    <Color x:Key="SubtitleColor">#B9B9B9</Color>
 
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
+    <SolidColorBrush x:Key="TitleBrush" Color="{StaticResource TitleColor}" />
+    <SolidColorBrush x:Key="SubtitleBrush" Color="{StaticResource SubtitleColor}" />
 </ResourceDictionary>

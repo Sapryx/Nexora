@@ -11,7 +11,6 @@ public partial class PlaybackControl : UserControl
     {
         InitializeComponent();
         
-        
         VolumeSlider.AddHandler(
             PointerPressedEvent,
             VolumeSlider_OnPointerPressed,

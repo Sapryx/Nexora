@@ -3,6 +3,8 @@
         x:Class="Nexora.Theme.NexoraTheme">
 
     <FluentTheme />
+    
+    <StyleInclude Source="avares://Nexora.Theme/Styles/Typography.axaml" />
 
     <Styles.Resources>
         <ResourceDictionary>

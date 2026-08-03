@@ -71,9 +71,16 @@
                     Orientation="Vertical"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center">
-            <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="DemiBold" />
-            <TextBlock Text="{Binding Artists}" FontSize="12" Foreground="DarkGray" />
+            <TextBlock 
+                Classes="Title" 
+                Text="{Binding Title}" />
+            
+            <TextBlock Classes="Subtitle" 
+                       Text="{Binding Artists}" />
         </StackPanel>
-        <TextBlock Grid.Column="2" Text="{Binding Duration}" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="2" 
+                   Text="{Binding Duration}"
+                   Classes="Subtitle"
+                   VerticalAlignment="Center" />
     </Grid>
 </UserControl>
