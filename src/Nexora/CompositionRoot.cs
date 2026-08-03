@@ -40,5 +40,6 @@ public static class CompositionRoot
 
         builder.AddSingleton<MainWindowVm>();
         builder.AddSingleton<SearchBarVm>();
+        builder.AddSingleton<PlaybackVm>();
     }
 }

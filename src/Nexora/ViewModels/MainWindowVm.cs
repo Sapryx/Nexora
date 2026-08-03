@@ -1,6 +1,5 @@
 ﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using Core.Commands;
 using Core.Logging;
 using Core.Playback;
@@ -26,12 +25,11 @@ public partial class MainWindowVm : ViewModelBase
     public partial bool IsCompact { get; set; }
     
     public SearchBarVm SearchBarVm { get; }
+    public PlaybackVm PlaybackVm { get; }
 
     private readonly IAudioPlayer audioPlayer;
     private readonly IChangeVolumeCommand changeVolumeCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
-    private readonly IPauseTrackCommand pauseTrackCommand;
-    private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
     private readonly ILogger logger;
 
     public MainWindowVm(
@@ -39,18 +37,15 @@ public partial class MainWindowVm : ViewModelBase
         IChangeVolumeCommand changeVolumeCommand,
         IAudioPlayer audioPlayer,
         IPlayNextTrackCommand playNextTrackCommand,
-        IPauseTrackCommand pauseTrackCommand,
-        IPlayPreviousTrackCommand playPreviousTrackCommand,
-        SearchBarVm searchBarVm)
+        SearchBarVm searchBarVm, PlaybackVm playbackVm)
     {
         this.logger = logger;
         this.changeVolumeCommand = changeVolumeCommand;
         this.audioPlayer = audioPlayer;
         this.playNextTrackCommand = playNextTrackCommand;
-        this.pauseTrackCommand = pauseTrackCommand;
-        this.playPreviousTrackCommand = playPreviousTrackCommand;
         
         SearchBarVm = searchBarVm;
+        PlaybackVm = playbackVm;
         AudioVolume = audioPlayer.Volume;
         PlaybackPosition = audioPlayer.PlaybackPosition;
         PauseButtonText = "||";
@@ -100,23 +95,5 @@ public partial class MainWindowVm : ViewModelBase
         {
             audioPlayer.PlaybackPosition = value;
         }
-    }
-
-    [RelayCommand]
-    public void PressPauseButton()
-    {
-        pauseTrackCommand.Execute();
-    }
-
-    [RelayCommand]
-    public void PressNextTrackButton()
-    {
-        playNextTrackCommand.Execute();
-    }
-
-    [RelayCommand]
-    public void PressPreviousTrackButton()
-    {
-        playPreviousTrackCommand.Execute();
     }
 }

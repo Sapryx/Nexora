@@ -66,6 +66,7 @@
                                     Margin="64 0 0 0"/>
 
                 <controls:PlaybackControl Grid.Row="2"
+                                          DataContext="{Binding PlaybackVm}"
                                           VerticalAlignment="Bottom"
                                           HorizontalAlignment="Stretch"
                                           MaxWidth="960"
