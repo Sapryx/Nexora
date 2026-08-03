@@ -3,7 +3,7 @@
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
              xmlns:controls="clr-namespace:Nexora.Controls"
              x:Class="Nexora.Controls.AudioTrackView"
-             x:DataType="viewModels:AudioTrackVm"
+             x:DataType="viewModels:TrackControlVm"
              x:Name="Root">
 
     <UserControl.Styles>
@@ -43,7 +43,6 @@
         ColumnSpacing="8">
         <Button Grid.Column="0"
                 x:Name="TogglePlayButton"
-                IsVisible="{Binding #Root.IsInteractive}"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 Command="{Binding PressPlayButton}"
@@ -52,7 +51,7 @@
                 CornerRadius="4">
             <Panel>
                 <Border CornerRadius="4" ClipToBounds="True">
-                    <Image Source="{Binding TrackCover}"
+                    <Image Source="{Binding Cover}"
                            Width="64"
                            Height="64" />
                 </Border>
@@ -69,15 +68,6 @@
             </Panel>
         </Button>
 
-        <Border Grid.Column="0"
-                IsVisible="{Binding !#Root.IsInteractive}">
-            <Border CornerRadius="4" ClipToBounds="True">
-                <Image Source="{Binding TrackCover}"
-                       Width="64"
-                       Height="64" />
-            </Border>
-        </Border>
-
         <StackPanel Grid.Column="1"
                     Orientation="Vertical"
                     HorizontalAlignment="Left"
@@ -92,7 +82,6 @@
         <TextBlock Grid.Column="2"
                    Text="{Binding Duration}"
                    Classes="Subtitle"
-                   VerticalAlignment="Center"
-                   IsVisible="{Binding #Root.ShowDuration}" />
+                   VerticalAlignment="Center" />
     </Grid>
 </UserControl>

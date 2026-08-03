@@ -15,8 +15,8 @@ public partial class SearchBarVm : ViewModelBase
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
 
-    public Dictionary<IAudioTrack, AudioTrackVm> AudioTrackVms { get; } = [];
-    public ObservableCollection<AudioTrackVm> DisplayedAudioTrackVms { get; } = [];
+    public Dictionary<IAudioTrack, TrackControlVm> AudioTrackVms { get; } = [];
+    public ObservableCollection<TrackControlVm> DisplayedAudioTrackVms { get; } = [];
 
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
@@ -37,7 +37,7 @@ public partial class SearchBarVm : ViewModelBase
         };
     }
     
-    private AudioTrackVm AddAudioTrackVm(IPlaylistItem playlistItem)
+    private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
         var audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
         AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;

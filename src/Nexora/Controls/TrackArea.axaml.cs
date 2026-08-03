@@ -7,11 +7,11 @@ namespace Nexora.Controls;
 
 public partial class TrackArea : UserControl
 {
-    public static readonly StyledProperty<ObservableCollection<AudioTrackVm>> TrackVmsProperty =
-        AvaloniaProperty.Register<TrackArea, ObservableCollection<AudioTrackVm>>(nameof(TrackVms)
+    public static readonly StyledProperty<ObservableCollection<TrackControlVm>> TrackVmsProperty =
+        AvaloniaProperty.Register<TrackArea, ObservableCollection<TrackControlVm>>(nameof(TrackVms)
     );
 
-    public ObservableCollection<AudioTrackVm> TrackVms
+    public ObservableCollection<TrackControlVm> TrackVms
     {
         get => GetValue(TrackVmsProperty);
         set => SetValue(TrackVmsProperty, value);

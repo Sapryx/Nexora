@@ -13,8 +13,8 @@ public class AudioTrackVmFactory : IAudioTrackVmFactory
         this.toggleTrackCommand = toggleTrackCommand;
     }
     
-    public AudioTrackVm Create(IPlaylistItem playlistItem, IAudioPlayer audioPlayer)
+    public TrackControlVm Create(IPlaylistItem playlistItem, IAudioPlayer audioPlayer)
     {
-        return new AudioTrackVm(playlistItem, toggleTrackCommand, audioPlayer);
+        return new TrackControlVm(playlistItem, toggleTrackCommand, audioPlayer);
     }
 }

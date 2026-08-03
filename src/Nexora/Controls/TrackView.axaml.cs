@@ -2,10 +2,11 @@ using Avalonia.Controls;
 
 namespace Nexora.Controls;
 
-public partial class AudioTrackView : UserControl
+public partial class TrackView : UserControl
 {
-    public AudioTrackView()
+    public TrackView()
     {
         InitializeComponent();
     }
 }
+

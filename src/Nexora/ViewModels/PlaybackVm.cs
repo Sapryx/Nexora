@@ -16,7 +16,7 @@ public partial class PlaybackVm : ViewModelBase
     public partial float PlaybackPosition { get; set; }
 
     [ObservableProperty]
-    public partial AudioTrackVm? CurrentTrackVm { get; set; }
+    public partial TrackViewVm? PlayingTrackViewVm { get; set; }
     
     [ObservableProperty]
     public partial int Volume { get; set; }
@@ -48,10 +48,10 @@ public partial class PlaybackVm : ViewModelBase
 
         audioPlayer.PlaybackStarted += () =>
         {
-            CurrentTrackVm ??= audioTrackVmFactory.Create(audioPlayer.NowPlaying!, audioPlayer);
+            PlayingTrackViewVm ??= new TrackViewVm();
             
             // TODO The cover should probably NOT be re-created every time you switch a track
-            CurrentTrackVm.Update(audioPlayer.NowPlaying!);
+            PlayingTrackViewVm.Update(audioPlayer.NowPlaying!);
         };
 
         audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>

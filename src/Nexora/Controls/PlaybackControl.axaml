@@ -22,10 +22,8 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 Padding="16 8">
             <Grid ColumnDefinitions="* Auto *">
-                <controls:AudioTrackView Grid.Column="0"
-                                         DataContext="{Binding CurrentTrackVm}"
-                                         IsInteractive="False"
-                                         ShowDuration="False"/>
+                <controls:TrackView Grid.Column="0"
+                                         DataContext="{Binding PlayingTrackViewVm}" />
 
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"

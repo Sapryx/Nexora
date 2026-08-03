@@ -5,5 +5,5 @@ namespace Nexora.ViewModels.Factories;
 
 public interface IAudioTrackVmFactory
 {
-    public AudioTrackVm Create(IPlaylistItem audioTrack, IAudioPlayer audioPlayer);
+    public TrackControlVm Create(IPlaylistItem audioTrack, IAudioPlayer audioPlayer);
 }
