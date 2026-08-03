@@ -88,7 +88,10 @@ public partial class PlaybackVm : ViewModelBase
     
     partial void OnVolumeChanged(int value)
     {
-        changeVolumeCommand.Execute(value);
+        if(IsChangingVolume)
+        {
+            changeVolumeCommand.Execute(value);
+        }
     }
 
     partial void OnPlaybackPositionChanged(float value)

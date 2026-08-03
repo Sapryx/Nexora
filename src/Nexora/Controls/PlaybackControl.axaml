@@ -84,9 +84,7 @@
                             Minimum="0"
                             Maximum="100"
                             Width="120"
-                            Height="8"
-                            PointerPressed="VolumeSlider_OnPointerPressed"
-                            PointerReleased="VolumeSlider_OnPointerReleased" />
+                            Height="8" />
                 </StackPanel>
             </Grid>
         </Border>
