@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
              xmlns:converters="clr-namespace:Nexora.Converters"
-             x:Class="Nexora.Views.AudioTrackControl"
-             x:DataType="viewModels:AudioTrackVm">
+             x:Class="Nexora.Controls.AudioTrackView"
+             x:DataType="viewModels:AudioTrackVm"
+             x:Name="Root">
     <UserControl.Resources>
         <converters:IsAudioTrackPlayingConverter x:Key="IsAudioTrackPlayingConverter" />
         <converters:IsAudioTrackActiveConverter x:Key="IsAudioTrackActiveConverter" />
@@ -19,6 +20,24 @@
             <Setter Property="Opacity"
                     Value="1" />
         </Style>
+        
+        <Style Selector="Button Border#HoverEffect">
+            <Setter Property="Background" Value="Black" />
+            <Setter Property="Opacity" Value="0.0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        
+        <Style Selector="Button:pointerover Border#HoverEffect">
+            <Setter Property="Opacity" Value="0.5" />
+        </Style>
+
+        <Style Selector="Button:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
     </UserControl.Styles>
 
     <Grid
@@ -27,38 +46,23 @@
         HorizontalAlignment="Stretch"
         ColumnSpacing="8">
         <Button Grid.Column="0"
+                x:Name="TogglePlayButton"
+                IsVisible="{Binding #Root.IsInteractive}"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
                 Command="{Binding PressPlayButton}"
-                Width="64"
-                Height="64"
                 Cursor="Hand"
                 Padding="0"
                 CornerRadius="4">
-            <Button.Styles>
-                <Style Selector="Button Border#HoverEffect">
-                    <Setter Property="Background" Value="Black" />
-                    <Setter Property="Opacity" Value="0.0" />
-                    <Setter Property="Transitions">
-                        <Transitions>
-                            <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
-                        </Transitions>
-                    </Setter>
-                </Style>
-
-                <Style Selector="Button:pointerover Border#HoverEffect">
-                    <Setter Property="Opacity" Value="0.5" />
-                </Style>
-
-                <Style Selector="Button:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="Transparent" />
-                </Style>
-            </Button.Styles>
             <Panel>
                 <Border CornerRadius="4" ClipToBounds="True">
-                    <Image Source="{Binding TrackCover}" Stretch="Uniform" />
+                    <Image Source="{Binding TrackCover}" 
+                           Width="64" 
+                           Height="64" />
                 </Border>
+                
                 <Border x:Name="HoverEffect" CornerRadius="4" />
+                
                 <TextBlock
                     Text="{Binding IsActiveAndPlaying,Converter={StaticResource IsAudioTrackPlayingConverter}}"
                     HorizontalAlignment="Center"
@@ -67,6 +71,16 @@
                     FontWeight="Bold" />
             </Panel>
         </Button>
+        
+        <Border Grid.Column="0"
+            IsVisible="{Binding !#Root.IsInteractive}">
+            <Border CornerRadius="4" ClipToBounds="True">
+                <Image Source="{Binding TrackCover}" 
+                       Width="64" 
+                       Height="64" />
+            </Border>
+        </Border>
+        
         <StackPanel Grid.Column="1"
                     Orientation="Vertical"
                     HorizontalAlignment="Left"
@@ -81,6 +95,7 @@
         <TextBlock Grid.Column="2" 
                    Text="{Binding Duration}"
                    Classes="Subtitle"
-                   VerticalAlignment="Center" />
+                   VerticalAlignment="Center" 
+                   IsVisible="{Binding #Root.ShowDuration}"/>
     </Grid>
 </UserControl>

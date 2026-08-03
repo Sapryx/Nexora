@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Commands;
 using Core.Playback;
+using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
@@ -13,6 +14,9 @@ public partial class PlaybackVm : ViewModelBase
     
     [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
+
+    [ObservableProperty]
+    public partial AudioTrackVm? CurrentTrackVm { get; set; }
     
     [ObservableProperty]
     public partial int Volume { get; set; }
@@ -31,15 +35,22 @@ public partial class PlaybackVm : ViewModelBase
         IPlayNextTrackCommand playNextTrackCommand,
         IPlayPreviousTrackCommand playPreviousTrackCommand,
         IAudioPlayer audioPlayer,
-        IChangeVolumeCommand changeVolumeCommand)
+        IChangeVolumeCommand changeVolumeCommand,
+        IAudioTrackVmFactory audioTrackVmFactory)
     {
         this.pauseTrackCommand = pauseTrackCommand;
         this.playNextTrackCommand = playNextTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
         this.audioPlayer = audioPlayer;
         this.changeVolumeCommand = changeVolumeCommand;
-
+        
         Volume = audioPlayer.Volume;
+
+        audioPlayer.PlaybackStarted += () =>
+        {
+            CurrentTrackVm ??= audioTrackVmFactory.Create(audioPlayer.NowPlaying!, audioPlayer);
+            CurrentTrackVm.Update(audioPlayer.NowPlaying!);
+        };
 
         audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
         {

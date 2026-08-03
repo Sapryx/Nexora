@@ -45,4 +45,11 @@
     <ItemGroup>
         <TrimmerRootAssembly Include="DiscordRPC" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Controls\AudioTrackView.axaml.cs">
+        <DependentUpon>AudioTrack.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
 </Project>

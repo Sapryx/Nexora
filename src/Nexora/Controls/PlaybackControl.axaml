@@ -22,29 +22,10 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 Padding="16 8">
             <Grid ColumnDefinitions="* Auto *">
-                <Border Grid.Column="0">
-                    <Grid RowDefinitions="Auto Auto"
-                          ColumnDefinitions="Auto Auto"
-                          RowSpacing="8"
-                          ColumnSpacing="16">
-                        <Image Grid.Row="0"
-                               Grid.Column="0"
-                               Grid.RowSpan="2"
-                               Source="C:\Users\sapryx\Pictures\wallhaven-1pvr23-scaled.png"
-                               Width="64" />
-
-                        <TextBlock Grid.Row="0"
-                                   Grid.Column="1"
-                                   VerticalAlignment="Bottom"
-                                   Text="Weightless"
-                                   FontSize="16" />
-
-                        <TextBlock Grid.Row="1"
-                                   Grid.Column="1"
-                                   Text="Ari Xorka"
-                                   VerticalAlignment="Top" />
-                    </Grid>
-                </Border>
+                <controls:AudioTrackView Grid.Column="0"
+                                         DataContext="{Binding CurrentTrackVm}"
+                                         IsInteractive="False"
+                                         ShowDuration="False"/>
 
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"

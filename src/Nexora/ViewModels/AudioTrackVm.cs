@@ -28,7 +28,7 @@ public partial class AudioTrackVm : ViewModelBase
     [ObservableProperty]
     public partial Bitmap? TrackCover { get; set; }
     
-    private readonly IPlaylistItem playlistItem;
+    private IPlaylistItem playlistItem;
     private readonly IToggleTrackCommand toggleTrackCommand;
     private readonly IAudioPlayer audioPlayer;
 
@@ -41,22 +41,7 @@ public partial class AudioTrackVm : ViewModelBase
         this.toggleTrackCommand = toggleTrackCommand;
         this.audioPlayer = audioPlayer;
 
-        this.IsActive = audioPlayer.NowPlaying == playlistItem;
-        this.IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
-        this.Title = playlistItem.AudioTrack.Metadata.Title;
-        this.Artists = playlistItem.AudioTrack.Metadata.Artists;
-        this.Duration = $"{playlistItem.AudioTrack.Properties.Duration.TotalMinutes:00}:" +
-                        $"{playlistItem.AudioTrack.Properties.Duration.Seconds:00}";
-
-        var tackCoverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
-
-        if(tackCoverRaw != null)
-        {
-            using(var albumCoverStream = new MemoryStream(tackCoverRaw))
-            {
-                TrackCover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
-            }
-        }
+        Update(playlistItem);
 
         audioPlayer.PlaybackStarted += () =>
         {
@@ -74,5 +59,27 @@ public partial class AudioTrackVm : ViewModelBase
     public void PressPlayButton()
     {
         toggleTrackCommand.Execute(playlistItem);
+    }
+
+    public void Update(IPlaylistItem playlistItem)
+    {
+        this.playlistItem = playlistItem;
+        
+        IsActive = audioPlayer.NowPlaying == playlistItem;
+        IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
+        Title = playlistItem.AudioTrack.Metadata.Title;
+        Artists = playlistItem.AudioTrack.Metadata.Artists;
+        Duration = $"{playlistItem.AudioTrack.Properties.Duration.TotalMinutes:00}:" +
+                        $"{playlistItem.AudioTrack.Properties.Duration.Seconds:00}";
+        
+        var tackCoverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
+
+        if(tackCoverRaw != null)
+        {
+            using(var albumCoverStream = new MemoryStream(tackCoverRaw))
+            {
+                TrackCover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
+            }
+        }
     }
 }
