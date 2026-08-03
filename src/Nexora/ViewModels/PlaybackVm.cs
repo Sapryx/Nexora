@@ -50,6 +50,11 @@ public partial class PlaybackVm : ViewModelBase
         {
             IsPlaying = true;
         });
+
+        audioPlayer.PlaybackFinished += () => Dispatcher.UIThread.Post(() =>
+        {
+            playNextTrackCommand.Execute();
+        });
         
         audioPlayer.PlaybackPositionChanged += value => Dispatcher.UIThread.Post(() =>
         {
