@@ -58,33 +58,28 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-${{ matrix.rid }}-
 
-      # Windows Defender real-time scanning noticeably slows down restore/build.
       - name: Exclude workspace from Defender scanning (Windows)
         if: runner.os == 'Windows'
         run: Add-MpPreference -ExclusionPath "${{ github.workspace }}"
         shell: powershell
 
-      # Native AOT publish on Linux needs clang + zlib headers.
       - name: Install native build tools (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y clang zlib1g-dev
 
-      # Build for Windows
       - name: Run Windows build script
         if: runner.os == 'Windows'
-        run: ./Publish.ps1 -Rid ${{ matrix.rid }}
+        run: ./scripts/Publish.ps1 -Rid ${{ matrix.rid }}
         shell: powershell
 
-      # Build for Linux and OSX
       - name: Run Linux/macOS build script
         if: runner.os != 'Windows'
         run: |
-          chmod +x ./publish.sh
-          ./publish.sh ${{ matrix.rid }}
+          chmod +x ./scripts/publish.sh
+          ./scripts/publish.sh ${{ matrix.rid }}
 
-      # Upload artifacts
       - name: Upload build artifact (Windows)
         if: runner.os == 'Windows'
         uses: actions/upload-artifact@v4
@@ -100,4 +95,4 @@ jobs:
           name: Nexora-${{ matrix.rid }}
           path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora
           if-no-files-found: error
-    
+          
