@@ -5,12 +5,35 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$publishDir = Join-Path $PSScriptRoot "src/Nexora/bin/Release/net10.0/$Rid/publish"
-$configPath = Join-Path $PSScriptRoot "publish-whitelist.conf"
+$publishDir = Join-Path $PSScriptRoot "../src/Nexora/bin/Release/net10.0/$Rid/publish"
+$whitelistDir = Join-Path $PSScriptRoot ""
+
+# --- Pick the whitelist that matches the target RID ------------------------
+$platform = switch -Regex ($Rid) {
+    '^win'          { "windows"; break }
+    '^linux'        { "linux"; break }
+    '^osx'          { "macos"; break }
+    default         { $null }
+}
+
+if (-not $platform) {
+    throw "Unrecognized RID '$Rid': expected it to start with 'win', 'linux' or 'osx'."
+}
+
+$configPath = Join-Path $whitelistDir "$platform.conf"
+
+if (-not (Test-Path $configPath)) {
+    throw "No whitelist found for platform '$platform' at $configPath"
+}
 
 dotnet publish src/Nexora -c Release -r $Rid
 
-Write-Host "`n--- Trimming VLC plugins (RID: $Rid) ---"
+Write-Host "`n--- Trimming VLC plugins (RID: $Rid, platform: $platform) ---"
+
+if (-not (Test-Path $publishDir)) {
+    Write-Host "Publish directory not found at $publishDir, skipping plugin trim."
+    return
+}
 
 $deleteFolders = [System.Collections.Generic.List[string]]::new()
 $keepInFolder = @{}
@@ -57,8 +80,6 @@ foreach ($folderName in $keepInFolder.Keys) {
 
 Get-ChildItem -Path $publishDir -Recurse -Include "*.pdb", "*.lib" -ErrorAction SilentlyContinue |
         ForEach-Object { Remove-Item -Force $_.FullName }
-$anglePath = Join-Path $publishDir "av_libglesv2.dll"
-if (Test-Path $anglePath) { Remove-Item -Force $anglePath }
 
 Get-ChildItem -Path $publishDir -Recurse -Directory |
         Sort-Object { $_.FullName.Length } -Descending |

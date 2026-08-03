@@ -1,17 +1,39 @@
 #!/usr/bin/env bash
-# Usage: ./publish-release.sh [rid]
+# Usage: ./publish.sh [rid]
 set -euo pipefail
 
 rid="${1:-linux-x64}"
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-publish_dir="$script_dir/src/Nexora/bin/Release/net10.0/$rid/publish"
-config_path="$script_dir/publish-whitelist.conf"
+publish_dir="$script_dir/../src/Nexora/bin/Release/net10.0/$rid/publish"
+whitelist_dir="$script_dir"
+
+case "$rid" in
+    win*)   platform="windows" ;;
+    linux*) platform="linux" ;;
+    osx*)   platform="macos" ;;
+    *)
+        echo "Unrecognized RID '$rid': expected it to start with 'win', 'linux' or 'osx'." >&2
+        exit 1
+        ;;
+esac
+
+config_path="$whitelist_dir/$platform.conf"
+
+if [ ! -f "$config_path" ]; then
+    echo "No whitelist found for platform '$platform' at $config_path" >&2
+    exit 1
+fi
 
 dotnet publish src/Nexora -c Release -r "$rid"
 
 echo ""
-echo "--- Trimming VLC plugins (RID: $rid) ---"
+echo "--- Trimming VLC plugins (RID: $rid, platform: $platform) ---"
+
+if [ ! -d "$publish_dir" ]; then
+    echo "Publish directory not found at $publish_dir, skipping plugin trim."
+    exit 0
+fi
 
 delete_folders=()
 declare -A keep_in_folder
@@ -64,7 +86,6 @@ for folder_name in "${!keep_in_folder[@]}"; do
 done
 
 find "$publish_dir" -type f \( -name "*.pdb" -o -name "*.lib" \) -delete
-
 find "$publish_dir" -type d -empty -delete
 
 final_size=$(du -sm "$publish_dir" | cut -f1)
