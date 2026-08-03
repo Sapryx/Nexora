@@ -7,14 +7,25 @@
              x:Name="Root">
 
     <UserControl.Styles>
+        <Style Selector="Border#MainTrackBorder">
+            <Setter Property="Background" Value="#00000000" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.25" />
+                </Transitions>
+            </Setter>
+        </Style>
+
+        <Style Selector="Border#MainTrackBorder[Tag=True]">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        </Style>
+
         <Style Selector="Panel#IconPanel">
-            <Setter Property="IsVisible"
-                    Value="{Binding IsActive}" />
+            <Setter Property="IsVisible" Value="{Binding IsActive}" />
         </Style>
 
         <Style Selector="Button:pointerover Panel#IconPanel">
-            <Setter Property="IsVisible"
-                    Value="True" />
+            <Setter Property="IsVisible" Value="True" />
         </Style>
 
         <Style Selector="Button Border#HoverEffect">
@@ -36,52 +47,55 @@
         </Style>
     </UserControl.Styles>
 
-    <Grid
-        ColumnDefinitions="Auto, *, Auto"
-        VerticalAlignment="Center"
-        HorizontalAlignment="Stretch"
-        ColumnSpacing="8">
-        <Button Grid.Column="0"
-                x:Name="TogglePlayButton"
-                HorizontalContentAlignment="Center"
-                VerticalContentAlignment="Center"
-                Command="{Binding PressPlayButton}"
-                Cursor="Hand"
-                Padding="0"
-                CornerRadius="4">
-            <Panel>
-                <Border CornerRadius="4" ClipToBounds="True">
-                    <Image Source="{Binding Cover}"
-                           Width="64"
-                           Height="64" />
-                </Border>
+    <Border x:Name="MainTrackBorder"
+            Tag="{Binding IsActive}"
+            Padding="8 8 16 8"
+            CornerRadius="12">
+        <Grid ColumnDefinitions="Auto, *, Auto"
+              ColumnSpacing="8">
 
-                <Border x:Name="HoverEffect" CornerRadius="4" />
+            <Button Grid.Column="0"
+                    x:Name="TogglePlayButton"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Command="{Binding PressPlayButton}"
+                    Cursor="Hand"
+                    Padding="0"
+                    CornerRadius="4">
+                <Panel>
+                    <Border CornerRadius="4" ClipToBounds="True">
+                        <Image Source="{Binding Cover}"
+                               Width="64"
+                               Height="64" />
+                    </Border>
 
-                <Panel x:Name="IconPanel">
-                    <controls:Icon IsVisible="{Binding IsActiveAndPlaying}"
-                                   IconName="pause" />
-                
-                    <controls:Icon IsVisible="{Binding !IsActiveAndPlaying}"
-                                   IconName="play" />
+                    <Border x:Name="HoverEffect" CornerRadius="4" />
+
+                    <Panel x:Name="IconPanel">
+                        <controls:Icon IsVisible="{Binding IsActiveAndPlaying}"
+                                       IconName="pause" />
+
+                        <controls:Icon IsVisible="{Binding !IsActiveAndPlaying}"
+                                       IconName="play" />
+                    </Panel>
                 </Panel>
-            </Panel>
-        </Button>
+            </Button>
 
-        <StackPanel Grid.Column="1"
-                    Orientation="Vertical"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center">
-            <TextBlock
-                Classes="Title"
-                Text="{Binding Title}" />
+            <StackPanel Grid.Column="1"
+                        Orientation="Vertical"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center">
+                <TextBlock Classes="Title"
+                           Text="{Binding Title}" />
 
-            <TextBlock Classes="Subtitle"
-                       Text="{Binding Artists}" />
-        </StackPanel>
-        <TextBlock Grid.Column="2"
-                   Text="{Binding Duration}"
-                   Classes="Subtitle"
-                   VerticalAlignment="Center" />
-    </Grid>
+                <TextBlock Classes="Subtitle"
+                           Text="{Binding Artists}" />
+            </StackPanel>
+
+            <TextBlock Grid.Column="2"
+                       Text="{Binding Duration}"
+                       Classes="Subtitle"
+                       VerticalAlignment="Center" />
+        </Grid>
+    </Border>
 </UserControl>

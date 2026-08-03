@@ -3,8 +3,10 @@
     <Color x:Key="BorderColor">#585858</Color>
     <Color x:Key="TitleColor">#FFFFFF</Color>
     <Color x:Key="SubtitleColor">#B9B9B9</Color>
+    <Color x:Key="PrimaryColor">#3E6B97</Color>
 
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
     <SolidColorBrush x:Key="TitleBrush" Color="{StaticResource TitleColor}" />
     <SolidColorBrush x:Key="SubtitleBrush" Color="{StaticResource SubtitleColor}" />
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
 </ResourceDictionary>

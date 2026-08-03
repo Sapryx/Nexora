@@ -30,5 +30,9 @@ public partial class TrackViewVm : ViewModelBase
                 Cover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
             }
         }
+        else
+        {
+            Cover = null;
+        }
     }
 }
