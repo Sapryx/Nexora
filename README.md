@@ -5,7 +5,7 @@
 ---
 
 ### About
-**Nexora** is a cross-platform, open source desktop audio player.
+**Nexora** is an open source cross-platform desktop audio player.
 
 Features:
 - Loads music from your system's default directory (`C:/Users/[user]/Music` on Windows, `~/Music` on Linux)
