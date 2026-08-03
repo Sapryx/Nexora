@@ -10,9 +10,6 @@ namespace Nexora.ViewModels;
 public partial class MainWindowVm : ViewModelBase
 {
     [ObservableProperty]
-    public partial bool IsSeeking { get; set; }
-
-    [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
 
     [ObservableProperty]
@@ -42,14 +39,6 @@ public partial class MainWindowVm : ViewModelBase
 
     public void Initialize()
     {
-        audioPlayer.PlaybackPositionChanged += value =>
-        {
-            if(!IsSeeking)
-            {
-                Dispatcher.UIThread.Post(() => PlaybackPosition = value);
-            }
-        };
-
         audioPlayer.PlaybackFinished += () =>
         {
             Dispatcher.UIThread.Post(playNextTrackCommand.Execute);
@@ -61,13 +50,5 @@ public partial class MainWindowVm : ViewModelBase
     public void UpdateLayout(double windowWidth)
     {
         IsCompact = windowWidth <= 768;
-    }
-
-    partial void OnPlaybackPositionChanged(float value)
-    {
-        if(IsSeeking)
-        {
-            audioPlayer.PlaybackPosition = value;
-        }
     }
 }

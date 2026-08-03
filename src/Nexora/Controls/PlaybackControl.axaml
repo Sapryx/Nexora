@@ -8,7 +8,11 @@
              x:Class="Nexora.Controls.PlaybackControl"
              x:DataType="viewModels:PlaybackVm">
     <StackPanel Orientation="Vertical">
-        <Slider HorizontalAlignment="Stretch"
+        <Slider x:Name="PlaybackPositionSlider"
+                Value="{Binding PlaybackPosition, Mode=TwoWay}"
+                Minimum="0"
+                Maximum="1"
+                HorizontalAlignment="Stretch"
                 Margin="12 0"
                 CornerRadius="8 8 0 0" />
         <Border Background="#2C2C2C"
@@ -80,9 +84,9 @@
                             Minimum="0"
                             Maximum="100"
                             Width="120"
-                            Height="8" 
+                            Height="8"
                             PointerPressed="VolumeSlider_OnPointerPressed"
-                            PointerReleased="VolumeSlider_OnPointerReleased"/>
+                            PointerReleased="VolumeSlider_OnPointerReleased" />
                 </StackPanel>
             </Grid>
         </Border>
