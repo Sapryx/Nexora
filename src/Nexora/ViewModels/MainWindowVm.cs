@@ -13,13 +13,7 @@ public partial class MainWindowVm : ViewModelBase
     public partial bool IsSeeking { get; set; }
 
     [ObservableProperty]
-    public partial int AudioVolume { get; set; }
-
-    [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
-
-    [ObservableProperty]
-    public partial string PauseButtonText { get; set; }
 
     [ObservableProperty]
     public partial bool IsCompact { get; set; }
@@ -28,27 +22,22 @@ public partial class MainWindowVm : ViewModelBase
     public PlaybackVm PlaybackVm { get; }
 
     private readonly IAudioPlayer audioPlayer;
-    private readonly IChangeVolumeCommand changeVolumeCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly ILogger logger;
 
     public MainWindowVm(
         ILogger<MainWindowVm> logger,
-        IChangeVolumeCommand changeVolumeCommand,
         IAudioPlayer audioPlayer,
         IPlayNextTrackCommand playNextTrackCommand,
         SearchBarVm searchBarVm, PlaybackVm playbackVm)
     {
         this.logger = logger;
-        this.changeVolumeCommand = changeVolumeCommand;
         this.audioPlayer = audioPlayer;
         this.playNextTrackCommand = playNextTrackCommand;
         
         SearchBarVm = searchBarVm;
         PlaybackVm = playbackVm;
-        AudioVolume = audioPlayer.Volume;
         PlaybackPosition = audioPlayer.PlaybackPosition;
-        PauseButtonText = "||";
     }
 
     public void Initialize()
@@ -65,16 +54,6 @@ public partial class MainWindowVm : ViewModelBase
         {
             Dispatcher.UIThread.Post(playNextTrackCommand.Execute);
         };
-
-        audioPlayer.PlaybackPaused += () =>
-        {
-            Dispatcher.UIThread.Post(() => PauseButtonText = ">");
-        };
-
-        audioPlayer.PlaybackResumed += () =>
-        {
-            Dispatcher.UIThread.Post(() => PauseButtonText = "||");
-        };
         
         logger.Info($"Application initialized");
     }
@@ -82,11 +61,6 @@ public partial class MainWindowVm : ViewModelBase
     public void UpdateLayout(double windowWidth)
     {
         IsCompact = windowWidth <= 768;
-    }
-
-    partial void OnAudioVolumeChanged(int value)
-    {
-        changeVolumeCommand.Execute(value);
     }
 
     partial void OnPlaybackPositionChanged(float value)

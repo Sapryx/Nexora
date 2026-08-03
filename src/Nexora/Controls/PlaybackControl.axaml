@@ -10,7 +10,7 @@
     <StackPanel Orientation="Vertical">
         <Slider HorizontalAlignment="Stretch"
                 Margin="12 0"
-                CornerRadius="8 8 0 0"/>
+                CornerRadius="8 8 0 0" />
         <Border Background="#2C2C2C"
                 CornerRadius="12"
                 BorderThickness="1"
@@ -50,19 +50,19 @@
                             Padding="8">
                         <controls:Icon IconName="skip_back" />
                     </Button>
-                    
+
                     <Button Command="{Binding PressPauseButton}"
                             CornerRadius="100"
                             Padding="8">
                         <Panel>
-                            <controls:Icon IconName="pause" 
-                                           IsVisible="{Binding IsPlaying}"/>
-                            
-                            <controls:Icon IconName="play" 
-                                           IsVisible="{Binding !IsPlaying}"/>
+                            <controls:Icon IconName="pause"
+                                           IsVisible="{Binding IsPlaying}" />
+
+                            <controls:Icon IconName="play"
+                                           IsVisible="{Binding !IsPlaying}" />
                         </Panel>
                     </Button>
-                    
+
                     <Button Command="{Binding PressNextTrackButton}"
                             CornerRadius="100"
                             Padding="8">
@@ -75,8 +75,14 @@
                             Spacing="16"
                             HorizontalAlignment="Right">
                     <controls:Icon IconName="speaker_loud" />
-                    <Slider Width="120"
-                            Height="8" />
+                    <Slider x:Name="VolumeSlider"
+                            Value="{Binding Volume, Mode=TwoWay}"
+                            Minimum="0"
+                            Maximum="100"
+                            Width="120"
+                            Height="8" 
+                            PointerPressed="VolumeSlider_OnPointerPressed"
+                            PointerReleased="VolumeSlider_OnPointerReleased"/>
                 </StackPanel>
             </Grid>
         </Border>

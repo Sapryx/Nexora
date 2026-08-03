@@ -11,19 +11,29 @@ public partial class PlaybackVm : ViewModelBase
     [ObservableProperty]
     public partial bool IsPlaying { get; private set; }
     
+    [ObservableProperty]
+    public partial int Volume { get; set; }
+
+    public bool IsChangingVolume { get; set; }
+    
     private readonly IPauseTrackCommand pauseTrackCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
+    private readonly IChangeVolumeCommand changeVolumeCommand;
 
     public PlaybackVm(
         IPauseTrackCommand pauseTrackCommand, 
         IPlayNextTrackCommand playNextTrackCommand,
         IPlayPreviousTrackCommand playPreviousTrackCommand,
-        IAudioPlayer audioPlayer)
+        IAudioPlayer audioPlayer,
+        IChangeVolumeCommand changeVolumeCommand)
     {
         this.pauseTrackCommand = pauseTrackCommand;
         this.playNextTrackCommand = playNextTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
+        this.changeVolumeCommand = changeVolumeCommand;
+
+        Volume = audioPlayer.Volume;
 
         audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
         {
@@ -33,6 +43,14 @@ public partial class PlaybackVm : ViewModelBase
         audioPlayer.PlaybackResumed += () => Dispatcher.UIThread.Post(() =>
         {
             IsPlaying = true;
+        });
+
+        audioPlayer.VolumeChanged += newVolume => Dispatcher.UIThread.Post(() =>
+        {
+            if(!IsChangingVolume)
+            {
+                Volume = (int)newVolume;
+            }
         });
     }
 
@@ -52,5 +70,10 @@ public partial class PlaybackVm : ViewModelBase
     public void PressPreviousTrackButton()
     {
         playPreviousTrackCommand.Execute();
+    }
+    
+    partial void OnVolumeChanged(int value)
+    {
+        changeVolumeCommand.Execute(value);
     }
 }
