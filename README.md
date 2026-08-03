@@ -18,8 +18,6 @@ Target platforms currently are:
 - Linux
 - MacOS (hasn't been tested yet, but it should work fine in theory, because all dependencies are platform-independent)
 
-![preview.png](preview.png)
-
 ---
 
 ### Installation
