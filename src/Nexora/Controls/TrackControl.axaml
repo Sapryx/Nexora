@@ -1,26 +1,22 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
-             xmlns:converters="clr-namespace:Nexora.Converters"
+             xmlns:controls="clr-namespace:Nexora.Controls"
              x:Class="Nexora.Controls.AudioTrackView"
              x:DataType="viewModels:AudioTrackVm"
              x:Name="Root">
-    <UserControl.Resources>
-        <converters:IsAudioTrackPlayingConverter x:Key="IsAudioTrackPlayingConverter" />
-        <converters:IsAudioTrackActiveConverter x:Key="IsAudioTrackActiveConverter" />
-    </UserControl.Resources>
 
     <UserControl.Styles>
-        <Style Selector="Button TextBlock">
-            <Setter Property="Opacity"
-                    Value="{Binding IsActive, Converter={StaticResource IsAudioTrackActiveConverter}}" />
+        <Style Selector="Panel#IconPanel">
+            <Setter Property="IsVisible"
+                    Value="{Binding IsActive}" />
         </Style>
 
-        <Style Selector="Button:pointerover TextBlock">
-            <Setter Property="Opacity"
-                    Value="1" />
+        <Style Selector="Button:pointerover Panel#IconPanel">
+            <Setter Property="IsVisible"
+                    Value="True" />
         </Style>
-        
+
         <Style Selector="Button Border#HoverEffect">
             <Setter Property="Background" Value="Black" />
             <Setter Property="Opacity" Value="0.0" />
@@ -30,7 +26,7 @@
                 </Transitions>
             </Setter>
         </Style>
-        
+
         <Style Selector="Button:pointerover Border#HoverEffect">
             <Setter Property="Opacity" Value="0.5" />
         </Style>
@@ -56,46 +52,47 @@
                 CornerRadius="4">
             <Panel>
                 <Border CornerRadius="4" ClipToBounds="True">
-                    <Image Source="{Binding TrackCover}" 
-                           Width="64" 
+                    <Image Source="{Binding TrackCover}"
+                           Width="64"
                            Height="64" />
                 </Border>
-                
+
                 <Border x:Name="HoverEffect" CornerRadius="4" />
+
+                <Panel x:Name="IconPanel">
+                    <controls:Icon IsVisible="{Binding IsActiveAndPlaying}"
+                                   IconName="pause" />
                 
-                <TextBlock
-                    Text="{Binding IsActiveAndPlaying,Converter={StaticResource IsAudioTrackPlayingConverter}}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Foreground="White"
-                    FontWeight="Bold" />
+                    <controls:Icon IsVisible="{Binding !IsActiveAndPlaying}"
+                                   IconName="play" />
+                </Panel>
             </Panel>
         </Button>
-        
+
         <Border Grid.Column="0"
-            IsVisible="{Binding !#Root.IsInteractive}">
+                IsVisible="{Binding !#Root.IsInteractive}">
             <Border CornerRadius="4" ClipToBounds="True">
-                <Image Source="{Binding TrackCover}" 
-                       Width="64" 
+                <Image Source="{Binding TrackCover}"
+                       Width="64"
                        Height="64" />
             </Border>
         </Border>
-        
+
         <StackPanel Grid.Column="1"
                     Orientation="Vertical"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center">
-            <TextBlock 
-                Classes="Title" 
+            <TextBlock
+                Classes="Title"
                 Text="{Binding Title}" />
-            
-            <TextBlock Classes="Subtitle" 
+
+            <TextBlock Classes="Subtitle"
                        Text="{Binding Artists}" />
         </StackPanel>
-        <TextBlock Grid.Column="2" 
+        <TextBlock Grid.Column="2"
                    Text="{Binding Duration}"
                    Classes="Subtitle"
-                   VerticalAlignment="Center" 
-                   IsVisible="{Binding #Root.ShowDuration}"/>
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding #Root.ShowDuration}" />
     </Grid>
 </UserControl>

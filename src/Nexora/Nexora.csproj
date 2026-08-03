@@ -47,7 +47,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Compile Update="Controls\AudioTrackView.axaml.cs">
+      <Compile Update="Controls\TrackControl.axaml.cs">
         <DependentUpon>AudioTrack.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
