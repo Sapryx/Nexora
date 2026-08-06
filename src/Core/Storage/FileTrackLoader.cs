@@ -39,15 +39,23 @@ public class FileTrackLoader : ITrackLoader
             .Where(file => supportedFormats.Contains(Path.GetExtension(file)));
         
         logger.Info($"Started loading tracks...");
+
+        int i = 0;
         
         Parallel.ForEach(musicDirectoryEnumerator, parallelOptions, file =>
         {
+            if(i >= 5)
+            {
+                return;
+            }
+            
             var metadata = metadataLoader.Load(file);
             var properties = propertyLoader.Load(file);
             var audioTrack = new AudioTrack(file, metadata, properties);
             
             audioTracks.Add(audioTrack);
             logger.Info($"Loaded track {audioTrack.ToString()}");
+            Interlocked.Increment(ref i);
         });
         
         logger.Info($"Loaded {audioTracks.Count} tracks");

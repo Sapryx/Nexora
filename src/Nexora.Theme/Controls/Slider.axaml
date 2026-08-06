@@ -60,7 +60,7 @@
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
-        <Setter Property="Background" Value="{DynamicResource SliderTrackFill}" />
+        <Setter Property="Background" Value="#333333" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="CornerRadius" Value="{DynamicResource SliderTrackCornerRadius}" />

@@ -52,18 +52,25 @@
             Padding="8 8 16 8"
             CornerRadius="12">
         <Grid ColumnDefinitions="Auto, *, Auto"
-              ColumnSpacing="8">
+              RowDefinitions="Auto Auto"
+              ColumnSpacing="8"
+              RowSpacing="4">
 
             <Button Grid.Column="0"
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
                     x:Name="TogglePlayButton"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
                     Command="{Binding PressPlayButton}"
                     Cursor="Hand"
                     Padding="0"
-                    CornerRadius="4">
+                    CornerRadius="4"
+                    BorderThickness="0">
                 <Panel>
-                    <Border CornerRadius="4" ClipToBounds="True">
+                    <Border 
+                        CornerRadius="4" 
+                        ClipToBounds="True">
                         <Image Source="{Binding Cover}"
                                Width="64"
                                Height="64" />
@@ -81,18 +88,21 @@
                 </Panel>
             </Button>
 
-            <StackPanel Grid.Column="1"
-                        Orientation="Vertical"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Center">
-                <TextBlock Classes="Title"
-                           Text="{Binding Title}" />
+            <TextBlock Grid.Column="1"
+                       Grid.Row="0"
+                       Classes="Title"
+                       Text="{Binding Title}" 
+                       VerticalAlignment="Bottom"/>
 
-                <TextBlock Classes="Subtitle"
-                           Text="{Binding Artists}" />
-            </StackPanel>
-
+            <TextBlock Grid.Column="1"
+                       Grid.Row="1"
+                       Classes="Subtitle"
+                       Text="{Binding Artists}" 
+                       VerticalAlignment="Top"/>
+            
             <TextBlock Grid.Column="2"
+                       Grid.Row="0"
+                       Grid.RowSpan="2"
                        Text="{Binding Duration}"
                        Classes="Subtitle"
                        VerticalAlignment="Center" />

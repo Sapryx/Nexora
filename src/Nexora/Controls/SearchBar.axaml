@@ -11,12 +11,12 @@
             VerticalAlignment="Center"
             Background="rgba(255, 255, 255, 10%)"
             BorderThickness="1"
-            BorderBrush="{StaticResource BorderBrush}">
+            BorderBrush="{StaticResource BorderBrush}"
+            Padding="8 4">
         <Grid ColumnDefinitions="Auto *"
-              Margin="8 4">
+              ColumnSpacing="4">
             <controls:Icon Grid.Column="0"
-                           IconName="magnifier"
-                           Margin="0 0 4 0" />
+                           IconName="magnifier" />
 
             <TextBox Grid.Column="1"
                      Classes="Title"
@@ -24,7 +24,11 @@
                      PlaceholderText="Search..."
                      VerticalAlignment="Center"
                      BorderThickness="0"
-                     Background="Transparent" />
+                     Background="Transparent" 
+                     Padding="0"
+                     Margin="0"
+                     
+                     VerticalContentAlignment="Center"/>
         </Grid>
     </Border>
 </UserControl>
