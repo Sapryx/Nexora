@@ -109,6 +109,18 @@ public class AudioPlayerTests
     }
     
     [Fact]
+    public void VolumeChanged_Add_Remove_DelegatesToAudioEngine()
+    {
+        var handler = (float value) => { };
+
+        audioPlayer.VolumeChanged += handler;
+        audioPlayer.VolumeChanged -= handler;
+        
+        audioEngineMock.VerifyAdd(it => it.VolumeChanged += handler, Times.Once);
+        audioEngineMock.VerifyRemove(it => it.VolumeChanged -= handler, Times.Once);
+    }
+    
+    [Fact]
     public void PlayTrack_SetsNowPlaying()
     {
         var playlistItem = new Mock<IPlaylistItem>();
