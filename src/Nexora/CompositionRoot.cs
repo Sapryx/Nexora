@@ -32,6 +32,7 @@ public static class CompositionRoot
         builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
+        builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<ITrackPropertyLoader, TagLibTrackPropertyLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
