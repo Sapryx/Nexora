@@ -10,7 +10,7 @@ namespace Nexora.Logging;
 
 public static class LoggingInitializer
 {
-    private static readonly string LogsDirectory = Path.Combine(AppContext.BaseDirectory, "logs");
+    public static readonly string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Nexora/logs");
 
     public static void Initialize(ServiceCollection builder)
     {
