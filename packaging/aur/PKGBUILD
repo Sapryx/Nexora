@@ -1,0 +1,39 @@
+# Maintainer: Blaadick <123119046+Blaadick@users.noreply.github.com>
+
+_repoowner="Sapryx"
+_reponame="Nexora"
+pkgname="nexora"
+pkgdesc="Open-source cross-platform desktop audio player"
+license=("GPL-3.0-or-later")
+pkgver="0.2.3"
+pkgrel=1
+arch=("x86_64")
+depends=("vlc")
+makedepends=("dotnet-sdk" "clang" "zlib")
+source=(
+    "$pkgname-$pkgver.tar.gz::https://github.com/$_repoowner/$_reponame/archive/refs/tags/$pkgver.tar.gz"
+    "nexora"
+    "nexora.desktop"
+)
+sha512sums=(
+    "b3963cdcc30d184d7816c121a1fd5f6112ebe1a191c37ceeac919d9aaf3ad695db12cd94e9d018fc4a6b1e42886caba619bc32476b5e8042d07ae5264384de38"
+    "e7df54e12a9ec7bbcb4e9278f773e66c8d045634cb57fed46defd308ea2bc63c015b93c9aa8095b3e54eca318f31eab849482058a60928e9ebce38a57f4e7bcc"
+    "8db8ece564aa7ddffed1e5b0453eda43e192eeac01655de9bb33d8f31bcafd780a9962206b26d7bbc40e1f3fe1d6c5e5624b472c81d3c1f3919712e9605e797b"
+)
+url="https://github.com/$_repoowner/$_reponame"
+
+build() {
+    cd "$_reponame-$pkgver"
+    dotnet publish src/Nexora -c Release -r linux-x64 --self-contained true -p:PublishAot=true
+}
+
+package() {
+    install -Dm755 "nexora" "$pkgdir/usr/bin/$pkgname"
+    install -Dm644 "nexora.desktop" "$pkgdir/usr/share/applications/$pkgname.desktop"
+
+    cd "$_reponame-$pkgver"
+    install -Dm755 "src/Nexora/bin/Release/net10.0/linux-x64/publish/Nexora" "$pkgdir/usr/lib/$pkgname/Nexora"
+    for file in src/Nexora/bin/Release/net10.0/linux-x64/publish/*.so; do
+        install -Dm644 "$file" "$pkgdir/usr/lib/$pkgname/"
+    done
+}

@@ -1,0 +1,35 @@
+name: Publish to AUR
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  aur-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update pkgver in PKGBUILD
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          sed -i "s/^pkgver=.*/pkgver=\"${VERSION}\"/" packaging/aur/PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" packaging/aur/PKGBUILD
+
+      - name: Publish AUR package
+        uses: KSXGitHub/github-actions-deploy-aur@v4.1.1
+        with:
+          pkgname: nexora
+          pkgbuild: ./packaging/aur/PKGBUILD
+          assets: |
+            packaging/aur/nexora
+            packaging/aur/nexora.desktop
+          updpkgsums: true
+          test: true
+          commit_username: ${{ secrets.AUR_USERNAME }}
+          commit_email: ${{ secrets.AUR_EMAIL }}
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Update to ${{ github.ref_name }}"
+          ssh_keyscan_types: rsa,ecdsa,ed25519
+          
