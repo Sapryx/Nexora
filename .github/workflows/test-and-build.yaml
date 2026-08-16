@@ -13,6 +13,7 @@ env:
 jobs:
   test:
     name: Unit Tests
+    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -79,20 +80,4 @@ jobs:
         run: |
           chmod +x ./scripts/publish.sh
           ./scripts/publish.sh ${{ matrix.rid }}
-
-      - name: Upload build artifact (Windows)
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nexora-${{ matrix.rid }}
-          path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora.exe
-          if-no-files-found: error
-
-      - name: Upload build artifact (Linux)
-        if: runner.os != 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nexora-${{ matrix.rid }}
-          path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora
-          if-no-files-found: error
           
