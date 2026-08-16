@@ -15,6 +15,9 @@ public class AudioTrackVmFactory : IAudioTrackVmFactory
     
     public TrackControlVm Create(IPlaylistItem playlistItem, IAudioPlayer audioPlayer)
     {
-        return new TrackControlVm(playlistItem, toggleTrackCommand, audioPlayer);
+        var vm = new TrackControlVm(toggleTrackCommand, audioPlayer);
+        _ = vm.SetTrack(playlistItem);
+        
+        return vm;
     }
 }

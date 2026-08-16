@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Playback;
 using Core.Playlists;
@@ -26,7 +27,7 @@ public partial class SearchBarVm : ViewModelBase
         this.audioTrackVmFactory = audioTrackVmFactory;
         this.audioPlayer = audioPlayer;
         
-        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem =>
+        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => Dispatcher.UIThread.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
 
@@ -34,7 +35,7 @@ public partial class SearchBarVm : ViewModelBase
             {
                 DisplayedAudioTrackVms.Add(trackVm);
             }
-        };
+        });
     }
     
     private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
