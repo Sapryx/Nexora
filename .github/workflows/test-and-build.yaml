@@ -1,9 +1,9 @@
 name: Test and Build
 
 on:
-  push:
-    tags:
-      - '*'
+  pull_request:
+    branches:
+      - master
 
 env:
   DOTNET_VERSION: '10.0.x'
@@ -13,6 +13,7 @@ env:
 jobs:
   test:
     name: Unit Tests
+    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -40,8 +41,6 @@ jobs:
             rid: linux-x64
           - os: windows-latest
             rid: win-x64
-          - os: macos-latest
-            rid: osx-arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -76,25 +75,9 @@ jobs:
         run: ./scripts/Publish.ps1 -Rid ${{ matrix.rid }}
         shell: powershell
 
-      - name: Run Linux/macOS build script
+      - name: Run Linux build script
         if: runner.os != 'Windows'
         run: |
           chmod +x ./scripts/publish.sh
           ./scripts/publish.sh ${{ matrix.rid }}
-
-      - name: Upload build artifact (Windows)
-        if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nexora-${{ matrix.rid }}
-          path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora.exe
-          if-no-files-found: error
-
-      - name: Upload build artifact (Linux / macOS)
-        if: runner.os != 'Windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nexora-${{ matrix.rid }}
-          path: src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora
-          if-no-files-found: error
           

@@ -80,6 +80,6 @@ public partial class TrackControlVm : ViewModelBase
     [RelayCommand]
     public void PressPlayButton()
     {
-        toggleTrackCommand.Execute(playlistItem);
+        toggleTrackCommand.Execute(playlistItem!);
     }
 }

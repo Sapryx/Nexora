@@ -1,0 +1,95 @@
+name: Build Release Artifacts
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+          - os: windows-latest
+            rid: win-x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository at release tag
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ matrix.rid }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-${{ matrix.rid }}-
+
+      - name: Exclude workspace from Defender scanning (Windows)
+        if: runner.os == 'Windows'
+        run: Add-MpPreference -ExclusionPath "${{ github.workspace }}"
+        shell: powershell
+
+      - name: Install native build tools (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang zlib1g-dev
+
+      - name: Run Windows build script
+        if: runner.os == 'Windows'
+        run: ./scripts/Publish.ps1 -Rid ${{ matrix.rid }}
+        shell: powershell
+
+      - name: Run Linux build script
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x ./scripts/publish.sh
+          ./scripts/publish.sh ${{ matrix.rid }}
+
+      - name: Package artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Compress-Archive `
+            -Path "src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora.exe" `
+            -DestinationPath "Nexora-${{ matrix.rid }}.zip"
+
+      - name: Package artifact (Linux)
+        if: runner.os != 'Windows'
+        run: |
+          tar -czvf "Nexora-${{ matrix.rid }}.tar.gz" \
+            -C "src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish" Nexora
+
+      - name: Upload asset to release (Windows)
+        if: runner.os == 'Windows'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: Nexora-${{ matrix.rid }}.zip
+
+      - name: Upload asset to release (Linux)
+        if: runner.os != 'Windows'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: Nexora-${{ matrix.rid }}.tar.gz
+          

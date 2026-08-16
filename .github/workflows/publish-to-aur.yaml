@@ -1,19 +1,21 @@
 name: Publish to AUR
 
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types: [published]
 
 jobs:
   aur-publish:
+    if: github.event.release.target_commitish == 'master'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Update pkgver in PKGBUILD
         run: |
-          VERSION="${GITHUB_REF_NAME}"
+          VERSION="${{ github.event.release.tag_name }}"
           sed -i "s/^pkgver=.*/pkgver=\"${VERSION}\"/" packaging/aur/PKGBUILD
           sed -i "s/^pkgrel=.*/pkgrel=1/" packaging/aur/PKGBUILD
 
@@ -29,6 +31,6 @@ jobs:
           commit_username: ${{ secrets.AUR_USERNAME }}
           commit_email: ${{ secrets.AUR_EMAIL }}
           ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
-          commit_message: "Update to ${{ github.ref_name }}"
+          commit_message: "Update to ${{ github.event.release.tag_name }}"
           ssh_keyscan_types: rsa,ecdsa,ed25519
           
