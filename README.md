@@ -5,7 +5,7 @@
 ---
 
 ### About
-**Nexora** is an open source cross-platform desktop audio player.
+**Nexora** is an open-source cross-platform desktop audio player.
 
 Features:
 - Loads music from your system's default directory (`C:/Users/[user]/Music` on Windows, `~/Music` on Linux)
@@ -15,15 +15,26 @@ Features:
 Target platforms currently are:
 - Windows
 - Linux
-- MacOS (hasn't been tested yet, but it should work fine in theory, because all dependencies are platform-independent)
 
-<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/19901dca-8641-4d66-a4b8-410a1e6b0c1b" />
+<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/d271fb95-d45b-462b-b0f8-de5e33c0c9f6" />
 
 ---
 
 ### Installation
-The only option right now is to manually build the thing.
+#### Option 1: Prebuilt binary
+Binaries for the latest release:
+- [Windows x64](https://github.com/Sapryx/Nexora/releases/latest/download/Nexora-win-x64.zip)
+- [Linux x64](https://github.com/Sapryx/Nexora/releases/latest/download/Nexora-linux-x64.tar.gz)
 
+You can view all releases [here](https://github.com/Sapryx/Nexora/releases).
+
+#### Option 2: Package manager
+AUR:
+```
+yay -S nexora
+```
+
+#### Option 3: Manual build
 Clone the repository:
 ```
 git clone "https://github.com/sapryx/nexora"
@@ -101,28 +112,4 @@ Build the application:
 chmod +x scripts/publish.sh
 ./scripts/publish.sh linux-x64
 ```
-</details>
-
-<details>
-<summary>macOS</summary>
-
-Dependencies:
-- .NET 10 SDK
-- Xcode Command Line Tools (provides `clang` and the linker Native AOT needs)
-- VLC
-
-Install dependencies via [Homebrew](https://brew.sh):
-```
-xcode-select --install
-brew install --cask dotnet-sdk vlc
-```
-
-> Note: some .NET SDK versions require the full Xcode app (not just the Command Line Tools) for AOT publishing. If the build fails with an `xcodebuild requires Xcode` error, install Xcode from the App Store, then run `sudo xcode-select --switch /Applications/Xcode.app`.
-
-Build the application:
-```
-chmod +x scripts/publish.sh
-./scripts/publish.sh osx-arm64
-```
-Use `osx-x64` instead if you're on an Intel Mac.
 </details>
