@@ -2,7 +2,7 @@ name: Build Release Artifacts
 
 on:
   release:
-    types: [ published ]
+    types: [published]
 
 permissions:
   contents: write
@@ -70,14 +70,14 @@ jobs:
         shell: powershell
         run: |
           Compress-Archive `
-            -Path "src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/Nexora.exe" `
+            -Path "src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish/*" `
             -DestinationPath "Nexora-${{ matrix.rid }}.zip"
 
       - name: Package artifact (Linux)
         if: runner.os != 'Windows'
         run: |
           tar -czvf "Nexora-${{ matrix.rid }}.tar.gz" \
-            -C "src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish" Nexora
+            -C "src/Nexora/bin/Release/net10.0/${{ matrix.rid }}/publish" .
 
       - name: Upload asset to release (Windows)
         if: runner.os == 'Windows'
@@ -92,4 +92,3 @@ jobs:
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: Nexora-${{ matrix.rid }}.tar.gz
-          
