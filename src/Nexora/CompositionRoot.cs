@@ -21,7 +21,6 @@ public static class CompositionRoot
         builder.AddSingleton(vlc);
 
         builder.AddSingleton<IPlayTrackCommand, PlayTrackCommand>();
-        builder.AddSingleton<IChangeVolumeCommand, ChangeVolumeCommand>();
         builder.AddSingleton<IPlayNextTrackCommand, PlayNextTrackCommand>();
         builder.AddSingleton<IPauseTrackCommand, PauseTrackCommand>();
         builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();

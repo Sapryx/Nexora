@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -28,21 +29,18 @@ public partial class PlaybackVm : ViewModelBase
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
     private readonly IAudioPlayer audioPlayer;
-    private readonly IChangeVolumeCommand changeVolumeCommand;
 
     public PlaybackVm(
         IPauseTrackCommand pauseTrackCommand, 
         IPlayNextTrackCommand playNextTrackCommand,
         IPlayPreviousTrackCommand playPreviousTrackCommand,
         IAudioPlayer audioPlayer,
-        IChangeVolumeCommand changeVolumeCommand,
         IAudioTrackVmFactory audioTrackVmFactory)
     {
         this.pauseTrackCommand = pauseTrackCommand;
         this.playNextTrackCommand = playNextTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
         this.audioPlayer = audioPlayer;
-        this.changeVolumeCommand = changeVolumeCommand;
         
         Volume = audioPlayer.Volume;
 
@@ -108,7 +106,7 @@ public partial class PlaybackVm : ViewModelBase
     {
         if(IsChangingVolume)
         {
-            changeVolumeCommand.Execute(value);
+            audioPlayer.Volume = Math.Clamp(value, 0, 100);
         }
     }
 
