@@ -1,4 +1,3 @@
-using Core.Commands;
 using Core.Integrations;
 using Core.Playback;
 using Core.Playlists;
@@ -19,17 +18,9 @@ public static class CompositionRoot
     {
         var vlc = new LibVLC("--no-video");
         builder.AddSingleton(vlc);
-
-        builder.AddSingleton<IPlayTrackCommand, PlayTrackCommand>();
-        builder.AddSingleton<IChangeVolumeCommand, ChangeVolumeCommand>();
-        builder.AddSingleton<IPlayNextTrackCommand, PlayNextTrackCommand>();
-        builder.AddSingleton<IPauseTrackCommand, PauseTrackCommand>();
-        builder.AddSingleton<IPlayPreviousTrackCommand, PlayPreviousTrackCommand>();
-        builder.AddSingleton<IToggleTrackCommand, ToggleTrackCommand>();
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
-        builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();

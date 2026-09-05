@@ -1,9 +1,8 @@
+using System;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core.Commands;
 using Core.Playback;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
@@ -20,29 +19,18 @@ public partial class PlaybackVm : ViewModelBase
     
     [ObservableProperty]
     public partial int Volume { get; set; }
+    
+    [ObservableProperty]
+    public partial bool IsMuted { get; private set; }
 
     public bool IsChangingVolume { get; set; }
     public bool IsSeeking { get; set; }
     
-    private readonly IPauseTrackCommand pauseTrackCommand;
-    private readonly IPlayNextTrackCommand playNextTrackCommand;
-    private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
     private readonly IAudioPlayer audioPlayer;
-    private readonly IChangeVolumeCommand changeVolumeCommand;
 
-    public PlaybackVm(
-        IPauseTrackCommand pauseTrackCommand, 
-        IPlayNextTrackCommand playNextTrackCommand,
-        IPlayPreviousTrackCommand playPreviousTrackCommand,
-        IAudioPlayer audioPlayer,
-        IChangeVolumeCommand changeVolumeCommand,
-        IAudioTrackVmFactory audioTrackVmFactory)
+    public PlaybackVm(IAudioPlayer audioPlayer)
     {
-        this.pauseTrackCommand = pauseTrackCommand;
-        this.playNextTrackCommand = playNextTrackCommand;
-        this.playPreviousTrackCommand = playPreviousTrackCommand;
         this.audioPlayer = audioPlayer;
-        this.changeVolumeCommand = changeVolumeCommand;
         
         Volume = audioPlayer.Volume;
 
@@ -66,7 +54,7 @@ public partial class PlaybackVm : ViewModelBase
 
         audioPlayer.PlaybackFinished += () => Dispatcher.UIThread.Post(() =>
         {
-            playNextTrackCommand.Execute();
+            audioPlayer.PlayNextTrack();
         });
         
         audioPlayer.PlaybackPositionChanged += value => Dispatcher.UIThread.Post(() =>
@@ -84,31 +72,52 @@ public partial class PlaybackVm : ViewModelBase
                 Volume = (int)newVolume;
             }
         });
+        
+        audioPlayer.MuteChanged += isMuted => Dispatcher.UIThread.Post(() =>
+        {
+            IsMuted = isMuted;
+        });
     }
 
     [RelayCommand]
-    public void PressPauseButton()
+    public void Pause()
     {
-        pauseTrackCommand.Execute();
+        audioPlayer.TogglePause();
     }
 
     [RelayCommand]
-    public void PressNextTrackButton()
+    public void PlayNextTrack()
     {
-        playNextTrackCommand.Execute();
+        audioPlayer.PlayNextTrack();
     }
 
     [RelayCommand]
-    public void PressPreviousTrackButton()
+    public void PlayPreviousTrack()
     {
-        playPreviousTrackCommand.Execute();
+        audioPlayer.PlayPreviousTrack();
+    }
+
+    [RelayCommand]
+    public void ToggleMute()
+    {
+        audioPlayer.Mute = !audioPlayer.Mute;
+    }
+
+    public void SkipForward()
+    {
+        audioPlayer.SkipForward();
+    }
+
+    public void SkipBack()
+    {
+        audioPlayer.SkipBack();
     }
     
     partial void OnVolumeChanged(int value)
     {
         if(IsChangingVolume)
         {
-            changeVolumeCommand.Execute(value);
+            audioPlayer.Volume = Math.Clamp(value, 0, 100);
         }
     }
 
@@ -116,7 +125,6 @@ public partial class PlaybackVm : ViewModelBase
     {
         if(IsSeeking)
         {
-            // TODO Replace with a command
             audioPlayer.PlaybackPosition = value;
         }
     }

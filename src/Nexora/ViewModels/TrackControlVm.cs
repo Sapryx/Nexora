@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core.Commands;
 using Core.Playback;
 using Core.Playlists;
 
@@ -29,15 +28,11 @@ public partial class TrackControlVm : ViewModelBase
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
-    private readonly IToggleTrackCommand toggleTrackCommand;
     private readonly IAudioPlayer audioPlayer;
     private IPlaylistItem? playlistItem;
 
-    public TrackControlVm(
-        IToggleTrackCommand toggleTrackCommand,
-        IAudioPlayer audioPlayer)
+    public TrackControlVm(IAudioPlayer audioPlayer)
     {
-        this.toggleTrackCommand = toggleTrackCommand;
         this.audioPlayer = audioPlayer;
 
         audioPlayer.PlaybackStarted += () =>
@@ -80,6 +75,13 @@ public partial class TrackControlVm : ViewModelBase
     [RelayCommand]
     public void PressPlayButton()
     {
-        toggleTrackCommand.Execute(playlistItem!);
+        if(audioPlayer.NowPlaying == playlistItem!)
+        {
+            audioPlayer.TogglePause();
+        }
+        else
+        {
+            audioPlayer.PlayTrack(playlistItem!);
+        }
     }
 }
