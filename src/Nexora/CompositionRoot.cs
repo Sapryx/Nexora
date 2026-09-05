@@ -21,7 +21,6 @@ public static class CompositionRoot
         
         builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
-        builder.AddSingleton<IAudioEngine, VlcAudioEngine>();
         builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
