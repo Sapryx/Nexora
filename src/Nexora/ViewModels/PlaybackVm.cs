@@ -19,6 +19,9 @@ public partial class PlaybackVm : ViewModelBase
     
     [ObservableProperty]
     public partial int Volume { get; set; }
+    
+    [ObservableProperty]
+    public partial bool IsMuted { get; private set; }
 
     public bool IsChangingVolume { get; set; }
     public bool IsSeeking { get; set; }
@@ -69,6 +72,11 @@ public partial class PlaybackVm : ViewModelBase
                 Volume = (int)newVolume;
             }
         });
+        
+        audioPlayer.MuteChanged += isMuted => Dispatcher.UIThread.Post(() =>
+        {
+            IsMuted = isMuted;
+        });
     }
 
     [RelayCommand]
@@ -87,6 +95,12 @@ public partial class PlaybackVm : ViewModelBase
     public void PlayPreviousTrack()
     {
         audioPlayer.PlayPreviousTrack();
+    }
+
+    [RelayCommand]
+    public void ToggleMute()
+    {
+        audioPlayer.Mute = !audioPlayer.Mute;
     }
 
     public void SkipForward()

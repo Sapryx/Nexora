@@ -8,6 +8,7 @@ public interface IAudioPlayer
     public bool IsPlaying { get; }
     public int Volume { get; set; }
     public float PlaybackPosition { get; set; }
+    public bool Mute { get; set; }
     
     public event Action? PlaybackStarted;
     public event Action<float>? PlaybackPositionChanged;
@@ -15,6 +16,7 @@ public interface IAudioPlayer
     public event Action? PlaybackFinished;
     public event Action? PlaybackResumed;
     public event Action<float>? VolumeChanged;
+    public event Action<bool>? MuteChanged;
     
     public void PlayTrack(IPlaylistItem playlistItem);
     public void PlayNextTrack();

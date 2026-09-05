@@ -19,6 +19,12 @@ public class VlcAudioEngine : IAudioEngine
         set => mediaPlayer.Position = value;
     }
 
+    public bool Mute
+    {
+        get => mediaPlayer.Mute;
+        set => mediaPlayer.Mute = value;
+    }
+
     private readonly LibVLC vlc;
     private readonly MediaPlayer mediaPlayer;
     
@@ -28,6 +34,7 @@ public class VlcAudioEngine : IAudioEngine
     public event Action? PlaybackPaused;
     public event Action? PlaybackResumed;
     public event Action<float>? VolumeChanged;
+    public event Action<bool>? MuteChanged;
     
     public VlcAudioEngine(LibVLC vlc)
     {
@@ -39,6 +46,8 @@ public class VlcAudioEngine : IAudioEngine
         mediaPlayer.Paused += OnPaused;
         mediaPlayer.Playing += OnPlaying;
         mediaPlayer.VolumeChanged += OnVolumeChange;
+        mediaPlayer.Muted += OnMuteChanged;
+        mediaPlayer.Unmuted += OnMuteChanged;
     }
 
     public void StartPlayback(IAudioTrack audioTrack)
@@ -81,5 +90,10 @@ public class VlcAudioEngine : IAudioEngine
     private void OnVolumeChange(object? sender, MediaPlayerVolumeChangedEventArgs args)
     {
         VolumeChanged?.Invoke(args.Volume * 100f);
+    }
+
+    private void OnMuteChanged(object? sender, EventArgs e)
+    {
+        MuteChanged?.Invoke(Mute);
     }
 }

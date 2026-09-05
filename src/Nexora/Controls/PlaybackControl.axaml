@@ -63,7 +63,18 @@
                             Margin="0 0 16 0"
                             HorizontalAlignment="Right">
                     
-                    <controls:Icon IconName="speaker_loud" />
+                    <Button Command="{Binding ToggleMute}"
+                            CornerRadius="100"
+                            Padding="8"
+                            Background="Transparent">
+                        <Panel>
+                            <controls:Icon IconName="speaker_loud"
+                                           IsVisible="{Binding !IsMuted}" />
+
+                            <controls:Icon IconName="speaker_mute"
+                                           IsVisible="{Binding IsMuted}" />
+                        </Panel>
+                    </Button>
                     
                     <Slider x:Name="VolumeSlider"
                             Value="{Binding Volume, Mode=TwoWay}"

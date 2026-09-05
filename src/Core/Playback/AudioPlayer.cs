@@ -19,6 +19,12 @@ public class AudioPlayer : IAudioPlayer
         set => audioEngine.PlaybackPosition = value;
     }
 
+    public bool Mute
+    {
+        get => audioEngine.Mute;
+        set => audioEngine.Mute = value;
+    }
+
     private readonly IAudioEngine audioEngine;
 
     public event Action? PlaybackStarted
@@ -55,6 +61,12 @@ public class AudioPlayer : IAudioPlayer
     {
         add => audioEngine.VolumeChanged += value;
         remove => audioEngine.VolumeChanged -= value;
+    }
+    
+    public event Action<bool>? MuteChanged
+    {
+        add => audioEngine.MuteChanged += value;
+        remove => audioEngine.MuteChanged -= value;
     }
 
     public AudioPlayer(IAudioEngine audioEngine)
