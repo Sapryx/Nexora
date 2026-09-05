@@ -17,5 +17,7 @@ public interface IAudioPlayer
     public event Action<float>? VolumeChanged;
     
     public void PlayTrack(IPlaylistItem playlistItem);
+    public void PlayNextTrack();
+    public void PlayPreviousTrack();
     public void TogglePause();
 }

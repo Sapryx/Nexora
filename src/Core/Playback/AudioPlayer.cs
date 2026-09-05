@@ -68,6 +68,26 @@ public class AudioPlayer : IAudioPlayer
         audioEngine.StartPlayback(NowPlaying.AudioTrack);
     }
 
+    public void PlayNextTrack()
+    {
+        var nextTrack = NowPlaying?.GetNext();
+
+        if(nextTrack != null)
+        {
+            PlayTrack(nextTrack);
+        }
+    }
+
+    public void PlayPreviousTrack()
+    {
+        var previousTrack = NowPlaying?.GetPrevious();
+
+        if(previousTrack != null)
+        {
+            PlayTrack(previousTrack);
+        }
+    }
+
     public void TogglePause()
     {
         if(NowPlaying == null)

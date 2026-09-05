@@ -2,9 +2,7 @@ using System;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core.Commands;
 using Core.Playback;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
@@ -25,18 +23,10 @@ public partial class PlaybackVm : ViewModelBase
     public bool IsChangingVolume { get; set; }
     public bool IsSeeking { get; set; }
     
-    private readonly IPlayNextTrackCommand playNextTrackCommand;
-    private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
     private readonly IAudioPlayer audioPlayer;
 
-    public PlaybackVm(
-        IPlayNextTrackCommand playNextTrackCommand,
-        IPlayPreviousTrackCommand playPreviousTrackCommand,
-        IAudioPlayer audioPlayer,
-        IAudioTrackVmFactory audioTrackVmFactory)
+    public PlaybackVm(IAudioPlayer audioPlayer)
     {
-        this.playNextTrackCommand = playNextTrackCommand;
-        this.playPreviousTrackCommand = playPreviousTrackCommand;
         this.audioPlayer = audioPlayer;
         
         Volume = audioPlayer.Volume;
@@ -61,7 +51,7 @@ public partial class PlaybackVm : ViewModelBase
 
         audioPlayer.PlaybackFinished += () => Dispatcher.UIThread.Post(() =>
         {
-            playNextTrackCommand.Execute();
+            audioPlayer.PlayNextTrack();
         });
         
         audioPlayer.PlaybackPositionChanged += value => Dispatcher.UIThread.Post(() =>
@@ -90,13 +80,13 @@ public partial class PlaybackVm : ViewModelBase
     [RelayCommand]
     public void PressNextTrackButton()
     {
-        playNextTrackCommand.Execute();
+        audioPlayer.PlayNextTrack();
     }
 
     [RelayCommand]
     public void PressPreviousTrackButton()
     {
-        playPreviousTrackCommand.Execute();
+        audioPlayer.PlayPreviousTrack();
     }
     
     partial void OnVolumeChanged(int value)
@@ -111,7 +101,6 @@ public partial class PlaybackVm : ViewModelBase
     {
         if(IsSeeking)
         {
-            // TODO Replace with a command
             audioPlayer.PlaybackPosition = value;
         }
     }
