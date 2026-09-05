@@ -72,19 +72,19 @@ public partial class PlaybackVm : ViewModelBase
     }
 
     [RelayCommand]
-    public void PressPauseButton()
+    public void Pause()
     {
         audioPlayer.TogglePause();
     }
 
     [RelayCommand]
-    public void PressNextTrackButton()
+    public void PlayNextTrack()
     {
         audioPlayer.PlayNextTrack();
     }
 
     [RelayCommand]
-    public void PressPreviousTrackButton()
+    public void PlayPreviousTrack()
     {
         audioPlayer.PlayPreviousTrack();
     }
