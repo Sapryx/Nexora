@@ -25,19 +25,16 @@ public partial class PlaybackVm : ViewModelBase
     public bool IsChangingVolume { get; set; }
     public bool IsSeeking { get; set; }
     
-    private readonly IPauseTrackCommand pauseTrackCommand;
     private readonly IPlayNextTrackCommand playNextTrackCommand;
     private readonly IPlayPreviousTrackCommand playPreviousTrackCommand;
     private readonly IAudioPlayer audioPlayer;
 
     public PlaybackVm(
-        IPauseTrackCommand pauseTrackCommand, 
         IPlayNextTrackCommand playNextTrackCommand,
         IPlayPreviousTrackCommand playPreviousTrackCommand,
         IAudioPlayer audioPlayer,
         IAudioTrackVmFactory audioTrackVmFactory)
     {
-        this.pauseTrackCommand = pauseTrackCommand;
         this.playNextTrackCommand = playNextTrackCommand;
         this.playPreviousTrackCommand = playPreviousTrackCommand;
         this.audioPlayer = audioPlayer;
@@ -87,7 +84,7 @@ public partial class PlaybackVm : ViewModelBase
     [RelayCommand]
     public void PressPauseButton()
     {
-        pauseTrackCommand.Execute();
+        audioPlayer.TogglePause();
     }
 
     [RelayCommand]
