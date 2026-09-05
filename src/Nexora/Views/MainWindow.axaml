@@ -15,13 +15,17 @@
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
+        <Style Selector="controls|TrackArea">
+            <Setter Property="Margin" Value="256 0 0 0" />
+        </Style>
+        
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
             </Style>
 
-            <Style Selector="ItemsControl#trackContainer">
-                <Setter Property="Margin" Value="0, 0, 32, 0" />
+            <Style Selector="controls|TrackArea">
+                <Setter Property="Margin" Value="32 0 0 0" />
             </Style>
         </ContainerQuery>
     </Window.Styles>
@@ -34,23 +38,23 @@
         </render:DitheringControl>
 
         <DockPanel LastChildFill="True">
-            <Border
-                DockPanel.Dock="Top"
-                Height="32"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Top"
-                Background="rgba(0, 0, 0, 40%)">
+            <!-- <Border -->
+            <!--     DockPanel.Dock="Top" -->
+            <!--     Height="32" -->
+            <!--     HorizontalAlignment="Stretch" -->
+            <!--     VerticalAlignment="Top" -->
+            <!--     Background="rgba(0, 0, 0, 40%)"> -->
+            <!-- -->
+            <!-- </Border> -->
 
-            </Border>
-
-            <Border
-                x:Name="sidebar"
-                DockPanel.Dock="Left"
-                Width="240"
-                VerticalAlignment="Stretch"
-                HorizontalAlignment="Left"
-                Background="rgba(0, 0, 0, 25%)">
-            </Border>
+            <!-- <Border -->
+            <!--     x:Name="sidebar" -->
+            <!--     DockPanel.Dock="Left" -->
+            <!--     Width="240" -->
+            <!--     VerticalAlignment="Stretch" -->
+            <!--     HorizontalAlignment="Left" -->
+            <!--     Background="rgba(0, 0, 0, 25%)"> -->
+            <!-- </Border> -->
 
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
@@ -62,8 +66,7 @@
                 <controls:TrackArea Grid.Row="1" 
                                     TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                     HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"
-                                    Margin="64 0 0 0"/>
+                                    VerticalAlignment="Stretch"/>
 
                 <controls:PlaybackControl Grid.Row="2"
                                           DataContext="{Binding PlaybackVm}"

@@ -3,7 +3,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
-             xmlns:views="clr-namespace:Nexora.Views"
              xmlns:controls="clr-namespace:Nexora.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Nexora.Controls.TrackArea"
@@ -15,7 +14,7 @@
                       AllowAutoHide="False">
             <ItemsControl
                 ItemsSource="{Binding #Root.TrackVms}"
-                Margin="0 0 16 0">
+                Margin="0 0 32 0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="viewModels:TrackControlVm">
                         <controls:AudioTrackView />
