@@ -12,7 +12,13 @@ public partial class MainWindow : Window
     private readonly Dictionary<Key, Action<MainWindowVm>> KeyActions = new()
     {
         {
-            Key.Space, vm => vm.PlaybackVm.PressPauseButton()
+            Key.Space, vm => vm.PlaybackVm.Pause()
+        },
+        {
+            Key.Left, vm => vm.PlaybackVm.SkipBack()
+        },
+        {
+            Key.Right, vm => vm.PlaybackVm.SkipForward()
         }
     };
 

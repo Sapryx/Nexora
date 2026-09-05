@@ -88,6 +88,16 @@ public partial class PlaybackVm : ViewModelBase
     {
         audioPlayer.PlayPreviousTrack();
     }
+
+    public void SkipForward()
+    {
+        audioPlayer.SkipForward();
+    }
+
+    public void SkipBack()
+    {
+        audioPlayer.SkipBack();
+    }
     
     partial void OnVolumeChanged(int value)
     {

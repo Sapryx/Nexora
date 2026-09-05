@@ -20,4 +20,6 @@ public interface IAudioPlayer
     public void PlayNextTrack();
     public void PlayPreviousTrack();
     public void TogglePause();
+    public void SkipForward();
+    public void SkipBack();
 }

@@ -90,11 +90,28 @@ public class AudioPlayer : IAudioPlayer
 
     public void TogglePause()
     {
-        if(NowPlaying == null)
+        if(NowPlaying != null)
         {
-            return;
+            audioEngine.TogglePause();
         }
-        
-        audioEngine.TogglePause();
+    }
+
+    public void SkipForward()
+    {
+        Skip(5);
+    }
+
+    public void SkipBack()
+    {
+        Skip(-5);
+    }
+
+    private void Skip(float amount)
+    {
+        if(NowPlaying != null)
+        {
+            var normalizedAmount = amount / (float)NowPlaying.AudioTrack.Properties.Duration.TotalSeconds;
+            audioEngine.PlaybackPosition += normalizedAmount;
+        }
     }
 }
