@@ -4,15 +4,15 @@ namespace Core.Playlists;
 
 public class PlaylistItem : IPlaylistItem
 {
-    public IAudioTrack AudioTrack { get; private set; }
+    public IAudioTrack AudioTrack { get; }
     public Playlist Playlist { get; set; }
     public int Index { get; set; }
 
     public PlaylistItem(IAudioTrack audioTrack, Playlist playlist, int index)
     {
-        this.AudioTrack = audioTrack;
+        AudioTrack = audioTrack;
         Playlist = playlist;
-        this.Index = index;
+        Index = index;
     }
 
     public IPlaylistItem? GetNext()
@@ -33,7 +33,7 @@ public class PlaylistItem : IPlaylistItem
     {
         int previousIndex = Index - 1;
 
-        if(previousIndex > 0)
+        if(previousIndex >= 0)
         {
             return Playlist.GetItem(previousIndex);
         }
