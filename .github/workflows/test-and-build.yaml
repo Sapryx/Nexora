@@ -5,6 +5,13 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 env:
   DOTNET_VERSION: '10.0.x'
   DOTNET_NOLOGO: true
@@ -13,22 +20,20 @@ env:
 jobs:
   test:
     name: Unit Tests
-    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7.0.1
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6.0.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Restore dependencies
-        run: dotnet restore Nexora.sln
+          cache: true
+          cache-dependency-path: '**/*.csproj'
 
       - name: Run unit tests
-        run: dotnet test tests/Core.Tests -c Release --no-restore
+        run: dotnet test tests/Core.Tests -c Release
 
   build:
     name: Build (${{ matrix.os }})
@@ -44,25 +49,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7.0.1
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6.0.0
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ matrix.rid }}-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            nuget-${{ runner.os }}-${{ matrix.rid }}-
+          cache: true
+          cache-dependency-path: '**/*.csproj'
 
       - name: Exclude workspace from Defender scanning (Windows)
         if: runner.os == 'Windows'
         run: Add-MpPreference -ExclusionPath "${{ github.workspace }}"
-        shell: powershell
+        shell: pwsh
 
       - name: Install native build tools (Linux)
         if: runner.os == 'Linux'
@@ -73,11 +72,10 @@ jobs:
       - name: Run Windows build script
         if: runner.os == 'Windows'
         run: ./scripts/Publish.ps1 -Rid ${{ matrix.rid }}
-        shell: powershell
+        shell: pwsh
 
       - name: Run Linux build script
         if: runner.os != 'Windows'
         run: |
           chmod +x ./scripts/publish.sh
           ./scripts/publish.sh ${{ matrix.rid }}
-          
