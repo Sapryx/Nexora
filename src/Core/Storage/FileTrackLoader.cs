@@ -9,7 +9,6 @@ public class FileTrackLoader : ITrackLoader
 {
     private readonly ILogger<FileTrackLoader> logger;
     private readonly IMetadataLoader metadataLoader;
-    private readonly ITrackPropertyLoader propertyLoader;
     private readonly ISupportedAudioFormatsProvider supportedAudioFormatsProvider;
     private readonly IDegreeOfParallelismProvider degreeOfParallelismProvider;
     private readonly IMusicDirectoryProvider musicDirectoryProvider;
@@ -17,14 +16,12 @@ public class FileTrackLoader : ITrackLoader
     public FileTrackLoader(
         ILogger<FileTrackLoader> logger,
         IMetadataLoader metadataLoader,
-        ITrackPropertyLoader propertyLoader,
         ISupportedAudioFormatsProvider supportedAudioFormatsProvider,
         IDegreeOfParallelismProvider<FileTrackLoader> degreeOfParallelismProvider,
         IMusicDirectoryProvider musicDirectoryProvider)
     {
         this.logger = logger;
         this.metadataLoader = metadataLoader;
-        this.propertyLoader = propertyLoader;
         this.supportedAudioFormatsProvider = supportedAudioFormatsProvider;
         this.degreeOfParallelismProvider = degreeOfParallelismProvider;
         this.musicDirectoryProvider = musicDirectoryProvider;
@@ -35,23 +32,22 @@ public class FileTrackLoader : ITrackLoader
         var audioTracks = new ConcurrentBag<IAudioTrack>();
         var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelismProvider.Value };
         var supportedFormats = supportedAudioFormatsProvider.GetFormats();
-        
+
         var musicDirectoryEnumerator = musicDirectoryProvider
             .GetFiles()
             .Where(file => supportedFormats.Contains(Path.GetExtension(file)));
-        
+
         logger.Info($"Started loading tracks...");
 
         Parallel.ForEach(musicDirectoryEnumerator, parallelOptions, file =>
         {
             var metadata = metadataLoader.Load(file);
-            var properties = propertyLoader.Load(file);
-            var audioTrack = new AudioTrack(file, metadata, properties);
-            
+            var audioTrack = new AudioTrack(file, metadata);
+
             audioTracks.Add(audioTrack);
             logger.Info($"Loaded track {audioTrack.ToString()}");
         });
-        
+
         logger.Info($"Loaded {audioTracks.Count} tracks");
 
         return audioTracks.ToList();

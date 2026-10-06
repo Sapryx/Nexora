@@ -49,10 +49,11 @@ public partial class SearchBarVm : ViewModelBase
     partial void OnSearchQueryChanged(string value)
     {
         string rawQuery = value;
-        
+        string query = rawQuery.Trim().ToLower();
+
         DisplayedAudioTrackVms.Clear();
 
-        if(string.IsNullOrEmpty(rawQuery.Trim()))
+        if(string.IsNullOrEmpty(query))
         {
             foreach(var audioTrackVm in AudioTrackVms.Values)
             {
@@ -64,17 +65,16 @@ public partial class SearchBarVm : ViewModelBase
 
         foreach(var audioTrack in AudioTrackVms.Keys)
         {
-            if(ShouldBeDisplayed(audioTrack, rawQuery))
+            if(ShouldBeDisplayed(audioTrack, query))
             {
                 var audioTrackVm = AudioTrackVms[audioTrack];
                 DisplayedAudioTrackVms.Add(audioTrackVm);
             }
         }
     }
-    
-    private bool ShouldBeDisplayed(IAudioTrack audioTrack, string rawQuery)
+
+    private bool ShouldBeDisplayed(IAudioTrack audioTrack, string query)
     {
-        string query = rawQuery.Trim().ToLower();
         string title = audioTrack.Metadata.Title.ToLower();
         string artists = audioTrack.Metadata.Artists.ToLower();
         bool titleMatches = title.Contains(query);

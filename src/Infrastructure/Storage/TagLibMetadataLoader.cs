@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Core.Storage;
-using TagLib;
 using File = TagLib.File;
 
 namespace Infrastructure.Storage;
@@ -16,7 +15,6 @@ public class TagLibMetadataLoader : IMetadataLoader
         using var tagFile = File.Create(filePath);
         string title = tagFile.Tag.Title;
         var artists = string.Join(", ", tagFile.Tag.Performers);
-        var albumCoverRaw = LoadAlbumCover(tagFile.Tag);
 
         if(string.IsNullOrEmpty(title))
         {
@@ -27,19 +25,7 @@ public class TagLibMetadataLoader : IMetadataLoader
         {
             Title = title,
             Artists = artists,
-            TrackCoverRaw = albumCoverRaw
+            Duration = tagFile.Properties.Duration
         };
-    }
-
-    private byte[]? LoadAlbumCover(Tag tag)
-    {
-        if(tag.Pictures.Length > 0)
-        {
-            return tag.Pictures[0].Data.Data;
-        }
-        else
-        {
-            return null;
-        }
     }
 }

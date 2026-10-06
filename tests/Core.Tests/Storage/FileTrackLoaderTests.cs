@@ -9,7 +9,6 @@ namespace Core.Tests.Storage;
 public class FileTrackLoaderTests
 {
     private readonly Mock<IMetadataLoader> metadataLoaderMock;
-    private readonly Mock<ITrackPropertyLoader> propertyLoaderMock;
     private readonly Mock<ISupportedAudioFormatsProvider> supportedAudioFormatsProviderMock;
     private readonly Mock<IDegreeOfParallelismProvider<FileTrackLoader>> degreeOfParallelismProviderMock;
     private readonly Mock<IMusicDirectoryProvider> musicDirectoryProviderMock;
@@ -18,7 +17,6 @@ public class FileTrackLoaderTests
     public FileTrackLoaderTests()
     {
         metadataLoaderMock = new Mock<IMetadataLoader>();
-        propertyLoaderMock = new Mock<ITrackPropertyLoader>();
         supportedAudioFormatsProviderMock = new Mock<ISupportedAudioFormatsProvider>();
         degreeOfParallelismProviderMock = new Mock<IDegreeOfParallelismProvider<FileTrackLoader>>();
         musicDirectoryProviderMock = new Mock<IMusicDirectoryProvider>();
@@ -26,7 +24,7 @@ public class FileTrackLoaderTests
         degreeOfParallelismProviderMock
             .SetupGet(it => it.Value)
             .Returns(1);
-        
+
         supportedAudioFormatsProviderMock
             .Setup(it => it.GetFormats())
             .Returns(ImmutableHashSet.Create(".mp3", ".flac"));
@@ -34,7 +32,6 @@ public class FileTrackLoaderTests
         loader = new FileTrackLoader(
             NullLogger<FileTrackLoader>.Instance,
             metadataLoaderMock.Object,
-            propertyLoaderMock.Object,
             supportedAudioFormatsProviderMock.Object,
             degreeOfParallelismProviderMock.Object,
             musicDirectoryProviderMock.Object);
@@ -103,21 +100,7 @@ public class FileTrackLoaderTests
     }
 
     [Fact]
-    public void Load_SupportedFile_LoadsPropertiesForThatFile()
-    {
-        var properties = new TrackProperties(TimeSpan.FromMinutes(3));
-        propertyLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(properties);
-
-        musicDirectoryProviderMock.Setup(it => it.GetFiles()).Returns(["/music/one.mp3"]);
-
-        var result = loader.Load();
-
-        propertyLoaderMock.Verify(it => it.Load("/music/one.mp3"), Times.Once);
-        Assert.Same(properties, result[0].Properties);
-    }
-
-    [Fact]
-    public void Load_UnsupportedFile_DoesNotLoadMetadataOrProperties()
+    public void Load_UnsupportedFile_DoesNotLoadMetadata()
     {
         musicDirectoryProviderMock
             .Setup(it => it.GetFiles())
@@ -126,7 +109,6 @@ public class FileTrackLoaderTests
         loader.Load();
 
         metadataLoaderMock.Verify(it => it.Load(It.IsAny<string>()), Times.Never);
-        propertyLoaderMock.Verify(it => it.Load(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]

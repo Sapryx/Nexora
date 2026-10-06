@@ -1,38 +1,17 @@
-using System.IO;
-using Avalonia.Media.Imaging;
-using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Playlists;
+using Nexora.Media;
 
 namespace Nexora.ViewModels;
 
-public partial class TrackViewVm : ViewModelBase
+public partial class TrackViewVm : CoveredTrackVm
 {
-    [ObservableProperty]
-    public partial Bitmap? Cover { get; set; }
+    public TrackViewVm(ICoverCache coverCache) : base(coverCache)
+    {
+    }
 
-    [ObservableProperty]
-    public partial string Title { get; set; }
-
-    [ObservableProperty]
-    public partial string Artists { get; set; }
-    
     public void Update(IPlaylistItem playlistItem)
     {
-        Title = playlistItem.AudioTrack.Metadata.Title;
-        Artists = playlistItem.AudioTrack.Metadata.Artists;
-        
-        var coverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
-
-        if(coverRaw != null)
-        {
-            using(var albumCoverStream = new MemoryStream(coverRaw))
-            {
-                Cover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
-            }
-        }
-        else
-        {
-            Cover = null;
-        }
+        var metadata = playlistItem.AudioTrack.Metadata;
+        SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
     }
 }
