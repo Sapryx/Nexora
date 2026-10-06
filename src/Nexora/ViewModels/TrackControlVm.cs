@@ -1,27 +1,16 @@
-using System.IO;
-using System.Threading.Tasks;
-using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
+using Nexora.Media;
 
 namespace Nexora.ViewModels;
 
-public partial class TrackControlVm : ViewModelBase
+public partial class TrackControlVm : CoveredTrackVm
 {
     [ObservableProperty]
-    public partial Bitmap? Cover { get; set; }
+    public partial string Duration { get; set; } = "";
 
-    [ObservableProperty]
-    public partial string Title { get; set; }
-
-    [ObservableProperty]
-    public partial string Artists { get; set; }
-
-    [ObservableProperty]
-    public partial string Duration { get; set; }
-    
     [ObservableProperty]
     public partial bool IsActiveAndPlaying { get; set; }
     
@@ -31,13 +20,13 @@ public partial class TrackControlVm : ViewModelBase
     private readonly IAudioPlayer audioPlayer;
     private IPlaylistItem? playlistItem;
 
-    public TrackControlVm(IAudioPlayer audioPlayer)
+    public TrackControlVm(IAudioPlayer audioPlayer, ICoverCache coverCache) : base(coverCache)
     {
         this.audioPlayer = audioPlayer;
 
         audioPlayer.PlaybackStarted += () =>
         {
-            IsActive = audioPlayer.NowPlaying == this.playlistItem;
+            IsActive = audioPlayer.NowPlaying == playlistItem;
             IsActiveAndPlaying = IsActive;
         };
 
@@ -47,29 +36,16 @@ public partial class TrackControlVm : ViewModelBase
         };
     }
 
-    public async Task SetTrack(IPlaylistItem item)
+    public void SetTrack(IPlaylistItem item)
     {
         playlistItem = item;
-        IsActive = audioPlayer.NowPlaying == playlistItem;
+        IsActive = audioPlayer.NowPlaying == item;
         IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
-        
-        Title = playlistItem.AudioTrack.Metadata.Title;
-        Artists = playlistItem.AudioTrack.Metadata.Artists;
-        Duration = $"{playlistItem.AudioTrack.Metadata.Duration.TotalMinutes:00}:" +
-                   $"{playlistItem.AudioTrack.Metadata.Duration.Seconds:00}";
-        
-        var coverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
 
-        if(coverRaw == null)
-        {
-            return;
-        }
-
-        await Task.Run(() =>
-        {
-            using var albumCoverStream = new MemoryStream(coverRaw);
-            Cover = Bitmap.DecodeToWidth(albumCoverStream, 128, BitmapInterpolationMode.HighQuality);
-        });
+        var metadata = item.AudioTrack.Metadata;
+        var duration = metadata.Duration;
+        SetTrackInfo(metadata.Title, metadata.Artists, item.AudioTrack.AudioPath);
+        Duration = $"{duration.TotalMinutes:00}:{duration.Seconds:00}";
     }
 
     [RelayCommand]

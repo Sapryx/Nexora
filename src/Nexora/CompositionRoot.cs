@@ -7,6 +7,7 @@ using Infrastructure.Playback;
 using Infrastructure.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Nexora.Media;
 using Nexora.ViewModels;
 using Nexora.ViewModels.Factories;
 
@@ -25,9 +26,10 @@ public static class CompositionRoot
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
-        // builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
+        builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<IAudioPlayer, AudioPlayer>();
+        builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
 
         builder.AddSingleton<MainWindowVm>();

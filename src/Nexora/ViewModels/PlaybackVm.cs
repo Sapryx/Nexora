@@ -3,6 +3,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
+using Nexora.Media;
 
 namespace Nexora.ViewModels;
 
@@ -28,7 +29,7 @@ public partial class PlaybackVm : ViewModelBase
     
     private readonly IAudioPlayer audioPlayer;
 
-    public PlaybackVm(IAudioPlayer audioPlayer)
+    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache)
     {
         this.audioPlayer = audioPlayer;
         
@@ -36,9 +37,7 @@ public partial class PlaybackVm : ViewModelBase
 
         audioPlayer.PlaybackStarted += () =>
         {
-            PlayingTrackViewVm ??= new TrackViewVm();
-            
-            // TODO The cover should probably NOT be re-created every time you switch a track
+            PlayingTrackViewVm ??= new TrackViewVm(coverCache);
             PlayingTrackViewVm.Update(audioPlayer.NowPlaying!);
         };
 
