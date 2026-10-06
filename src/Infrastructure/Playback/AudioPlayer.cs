@@ -104,7 +104,7 @@ public class AudioPlayer : IAudioPlayer
     {
         if(NowPlaying != null)
         {
-            var normalizedAmount = amount / (float)NowPlaying.AudioTrack.Properties.Duration.TotalSeconds;
+            var normalizedAmount = amount / (float)NowPlaying.AudioTrack.Metadata.Duration.TotalSeconds;
             mediaPlayer.Position += normalizedAmount;
         }
     }

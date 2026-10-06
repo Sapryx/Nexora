@@ -27,7 +27,8 @@ public class TagLibMetadataLoader : IMetadataLoader
         {
             Title = title,
             Artists = artists,
-            TrackCoverRaw = albumCoverRaw
+            TrackCoverRaw = albumCoverRaw,
+            Duration = tagFile.Properties.Duration
         };
     }
 

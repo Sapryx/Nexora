@@ -55,8 +55,8 @@ public partial class TrackControlVm : ViewModelBase
         
         Title = playlistItem.AudioTrack.Metadata.Title;
         Artists = playlistItem.AudioTrack.Metadata.Artists;
-        Duration = $"{playlistItem.AudioTrack.Properties.Duration.TotalMinutes:00}:" +
-                   $"{playlistItem.AudioTrack.Properties.Duration.Seconds:00}";
+        Duration = $"{playlistItem.AudioTrack.Metadata.Duration.TotalMinutes:00}:" +
+                   $"{playlistItem.AudioTrack.Metadata.Duration.Seconds:00}";
         
         var coverRaw = playlistItem.AudioTrack.Metadata.TrackCoverRaw;
 

@@ -25,7 +25,7 @@ public static class CompositionRoot
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
-        builder.AddSingleton<ITrackPropertyLoader, TagLibTrackPropertyLoader>();
+        // builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<IAudioPlayer, AudioPlayer>();
         builder.AddSingleton<PlaylistRegistry>();
