@@ -9,25 +9,48 @@
              x:DataType="controls:TrackArea"
              x:Name="Root">
     <Border Margin="0, 16, 0, 0">
-        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto"
-                      AllowAutoHide="False">
-            <ItemsControl
-                ItemsSource="{Binding #Root.TrackVms}"
-                Margin="0 0 32 0">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="viewModels:TrackControlVm">
-                        <controls:AudioTrackView />
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
+        <ListBox ItemsSource="{Binding #Root.TrackVms}"
+                 Margin="0 0 32 0"
+                 SelectionChanged="OnSelectionChanged"
+                 ScrollViewer.AllowAutoHide="False"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0">
 
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel Orientation="Vertical"
-                                    Spacing="8" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-        </ScrollViewer>
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="viewModels:TrackControlVm">
+                    <controls:AudioTrackView Margin="0 0 0 8" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+
+            <ListBox.ItemContainerTheme>
+                <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="MinWidth" Value="0" />
+                    <Setter Property="CornerRadius" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+
+                    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+
+                    <Style Selector="^:selected /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+
+                    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ControlTheme>
+            </ListBox.ItemContainerTheme>
+
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
     </Border>
 </UserControl>
