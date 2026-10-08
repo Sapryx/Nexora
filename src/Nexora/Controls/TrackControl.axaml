@@ -63,7 +63,6 @@
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
                     Command="{Binding PressPlayButton}"
-                    Cursor="Hand"
                     Padding="0"
                     CornerRadius="4"
                     BorderThickness="0">

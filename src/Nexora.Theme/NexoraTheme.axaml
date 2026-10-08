@@ -6,6 +6,10 @@
     
     <StyleInclude Source="avares://Nexora.Theme/Styles/Typography.axaml" />
 
+    <Style Selector="Button">
+        <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
