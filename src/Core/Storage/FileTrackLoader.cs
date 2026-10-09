@@ -50,6 +50,9 @@ public class FileTrackLoader : ITrackLoader
 
         logger.Info($"Loaded {audioTracks.Count} tracks");
 
-        return audioTracks.ToList();
+        return audioTracks
+            .OrderBy(track => track.Metadata.Title, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(track => track.Metadata.Artists, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
     }
 }

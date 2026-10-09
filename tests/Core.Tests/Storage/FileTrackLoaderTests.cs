@@ -25,6 +25,10 @@ public class FileTrackLoaderTests
             .SetupGet(it => it.Value)
             .Returns(1);
 
+        metadataLoaderMock
+            .Setup(it => it.Load(It.IsAny<string>()))
+            .Returns(new Metadata());
+
         supportedAudioFormatsProviderMock
             .Setup(it => it.GetFormats())
             .Returns(ImmutableHashSet.Create(".mp3", ".flac"));
@@ -121,5 +125,34 @@ public class FileTrackLoaderTests
         loader.Load();
 
         degreeOfParallelismProviderMock.VerifyGet(it => it.Value, Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void Load_TracksWithDifferentTitles_ReturnsThemSortedByTitleIgnoringCase()
+    {
+        metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(new Metadata() { Title = "charlie" });
+        metadataLoaderMock.Setup(it => it.Load("/music/two.mp3")).Returns(new Metadata() { Title = "Alpha" });
+        metadataLoaderMock.Setup(it => it.Load("/music/three.mp3")).Returns(new Metadata() { Title = "bravo" });
+        musicDirectoryProviderMock
+            .Setup(it => it.GetFiles())
+            .Returns(["/music/one.mp3", "/music/two.mp3", "/music/three.mp3"]);
+
+        var result = loader.Load();
+
+        Assert.Equal(["Alpha", "bravo", "charlie"], result.Select(it => it.Metadata.Title));
+    }
+
+    [Fact]
+    public void Load_TracksWithSameTitle_ReturnsThemSortedByArtists()
+    {
+        metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(new Metadata() { Title = "Song", Artists = "Zed" });
+        metadataLoaderMock.Setup(it => it.Load("/music/two.mp3")).Returns(new Metadata() { Title = "Song", Artists = "Abba" });
+        musicDirectoryProviderMock
+            .Setup(it => it.GetFiles())
+            .Returns(["/music/one.mp3", "/music/two.mp3"]);
+
+        var result = loader.Load();
+
+        Assert.Equal(["Abba", "Zed"], result.Select(it => it.Metadata.Artists));
     }
 }
