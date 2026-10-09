@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Nexora.Media;
 
@@ -51,12 +52,18 @@ public abstract partial class CoveredTrackVm : ViewModelBase
 
     private async Task LoadCoverAsync()
     {
-        var path = audioPath;
+        string path = audioPath;
         var bitmap = await CoverCache.GetOrLoadAsync(path).ConfigureAwait(false);
 
-        if(path == audioPath && bitmap != null)
+        if(bitmap != null)
         {
-            OnPropertyChanged(nameof(Cover));
+            Dispatcher.UIThread.Post(() =>
+            {
+                if(path == audioPath)
+                {
+                    OnPropertyChanged(nameof(Cover));
+                }
+            });
         }
     }
 }

@@ -35,11 +35,12 @@ public partial class PlaybackVm : ViewModelBase
         
         Volume = audioPlayer.Volume;
 
-        audioPlayer.PlaybackStarted += () =>
+        audioPlayer.PlaybackStarted += () => Dispatcher.UIThread.Post(() =>
         {
-            PlayingTrackViewVm ??= new TrackViewVm(coverCache);
-            PlayingTrackViewVm.Update(audioPlayer.NowPlaying!);
-        };
+            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache);
+            trackViewVm.Update(audioPlayer.NowPlaying!);
+            PlayingTrackViewVm = trackViewVm;
+        });
 
         audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
         {
