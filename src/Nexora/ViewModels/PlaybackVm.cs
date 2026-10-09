@@ -28,6 +28,7 @@ public partial class PlaybackVm : ViewModelBase
     public bool IsSeeking { get; set; }
     
     private readonly IAudioPlayer audioPlayer;
+    private int volumeBeforeMute;
 
     public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache)
     {
@@ -67,15 +68,21 @@ public partial class PlaybackVm : ViewModelBase
 
         audioPlayer.VolumeChanged += newVolume => Dispatcher.UIThread.Post(() =>
         {
-            if(!IsChangingVolume)
+            int volume = (int)MathF.Round(newVolume);
+
+            if(IsMuted)
             {
-                Volume = (int)newVolume;
+                volumeBeforeMute = volume;
+            }
+            else if(!IsChangingVolume)
+            {
+                Volume = volume;
             }
         });
-        
+
         audioPlayer.MuteChanged += isMuted => Dispatcher.UIThread.Post(() =>
         {
-            IsMuted = isMuted;
+            ApplyMuteState(isMuted);
         });
     }
 
@@ -100,7 +107,7 @@ public partial class PlaybackVm : ViewModelBase
     [RelayCommand]
     public void ToggleMute()
     {
-        audioPlayer.Mute = !audioPlayer.Mute;
+        SetMuted(!IsMuted);
     }
 
     public void SkipForward()
@@ -115,9 +122,43 @@ public partial class PlaybackVm : ViewModelBase
     
     partial void OnVolumeChanged(int value)
     {
-        if(IsChangingVolume)
+        if(!IsChangingVolume)
         {
-            audioPlayer.Volume = Math.Clamp(value, 0, 100);
+            return;
+        }
+
+        audioPlayer.Volume = Math.Clamp(value, 0, 100);
+
+        if(IsMuted && value > 0)
+        {
+            volumeBeforeMute = value;
+            SetMuted(false);
+        }
+    }
+
+    private void SetMuted(bool isMuted)
+    {
+        audioPlayer.Mute = isMuted;
+        ApplyMuteState(isMuted);
+    }
+
+    private void ApplyMuteState(bool isMuted)
+    {
+        if(IsMuted == isMuted)
+        {
+            return;
+        }
+
+        IsMuted = isMuted;
+
+        if(isMuted)
+        {
+            volumeBeforeMute = Volume;
+            Volume = 0;
+        }
+        else if(!IsChangingVolume)
+        {
+            Volume = volumeBeforeMute;
         }
     }
 
