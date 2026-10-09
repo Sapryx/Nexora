@@ -14,6 +14,7 @@ All text in the project must be in English: code, comments, log messages, except
 - `src/Nexora` — the application: `ViewModels/` (`*Vm`, factories in `Factories/`), `Controls/` and `Views/` (axaml + code-behind), `Media/CoverCache`, `Render/` (SkSL dithering shader), `Logging/`.
 - DI registrations: `src/Nexora/CompositionRoot.cs`. Register new services there.
 - `tests/Core.Tests` — xUnit + Moq, covers Core only.
+- Shared build properties: `Directory.Build.props`. Package versions are managed centrally in `Directory.Packages.props` — `PackageReference` items in `.csproj` have no `Version`.
 
 ## Commands
 
@@ -48,6 +49,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - VM properties: `[ObservableProperty] public partial T Name { get; set; }`, reactions — `partial void OnNameChanged`.
 - Local variables: lowercase built-in types (`bool`, `byte`, `sbyte`, `char`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `nint`, `nuint`, `float`, `double`, `decimal`, `string`) are spelled out explicitly (`int count = 0;`); everything else uses `var`.
 - No local functions. Lambdas are fine.
+- No target-typed `new()`: always spell out the type (`new Playlist()`).
 - Collections via collection expressions (`[]`). UI updates from background events — via `Dispatcher.UIThread.Post`.
 - Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers.
 
@@ -76,6 +78,8 @@ Build in Release (`dotnet build Nexora.sln -c Release -v q -nologo -clp:ErrorsOn
 ## Commits
 
 Conventional Commits with a scope: `feat(core): ...`, `fix(ui): ...`, `perf(storage): ...`, `refactor(viewmodels): ...`, `chore: ...`. Lowercase, imperative, no trailing period.
+
+Every commit must build on its own. A feature may be incomplete, but the app must start and have no critical bugs at each commit. When splitting changes into several commits, make sure each intermediate state satisfies this.
 
 ## Do not read
 
