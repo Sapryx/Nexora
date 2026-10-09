@@ -32,6 +32,11 @@ public partial class MainWindow : Window
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
+        if(e.Source is TextBox)
+        {
+            return;
+        }
+
         if(DataContext is not MainWindowVm vm || !keyActions.TryGetValue(e.Key, out var action))
         {
             return;
