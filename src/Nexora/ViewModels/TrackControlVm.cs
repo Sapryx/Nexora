@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
@@ -33,16 +34,16 @@ public partial class TrackControlVm : CoveredTrackVm
         SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
         Duration = $"{duration.TotalMinutes:00}:{duration.Seconds:00}";
 
-        audioPlayer.PlaybackStarted += () =>
+        audioPlayer.PlaybackStarted += () => Dispatcher.UIThread.Post(() =>
         {
             IsActive = audioPlayer.NowPlaying == playlistItem;
             IsActiveAndPlaying = IsActive;
-        };
+        });
 
-        audioPlayer.PlaybackPaused += () =>
+        audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
         {
             IsActiveAndPlaying = false;
-        };
+        });
     }
 
     [RelayCommand]
