@@ -12,7 +12,8 @@ All text in the project must be in English: code, comments, log messages, except
 - `src/Nexora.Theme` — styles and resources (`*.axaml`), no logic.
 - `src/Nexora` — the application: `ViewModels/` (`*Vm`, factories in `Factories/`), `Controls/` and `Views/` (axaml + code-behind), `Media/CoverCache`, `Threading/` (`IUiDispatcher`), `Render/` (SkSL dithering shader), `Logging/`.
 - DI registrations: `src/Nexora/CompositionRoot.cs`. Register new services there.
-- `tests/Core.Tests` — xUnit + Moq, covers Core only.
+- `tests/Core.Tests` — xUnit + Moq, covers Core.
+- `tests/Nexora.Tests` — xUnit + Moq, covers view models (no Avalonia platform needed: `IUiDispatcher` is mocked to run actions inline).
 - Shared build properties: `Directory.Build.props`. Package versions are managed centrally in `Directory.Packages.props` — `PackageReference` items in `.csproj` have no `Version`.
 
 ## Commands
@@ -24,6 +25,7 @@ dotnet build Nexora.sln -v q -nologo -clp:ErrorsOnly
 Tests (minimal output):
 ```
 dotnet test tests/Core.Tests -v q -nologo --logger "console;verbosity=minimal"
+dotnet test tests/Nexora.Tests -v q -nologo --logger "console;verbosity=minimal"
 ```
 Single test: add `--filter "FullyQualifiedName~LruCacheTests"`.
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
@@ -60,7 +62,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 
 ## Null safety
 
-Nullable reference types are enabled in all projects; Release uses `TreatWarningsAsErrors`, so any nullability warning fails the build (in `Core.Tests` — in every configuration).
+Nullable reference types are enabled in all projects; Release uses `TreatWarningsAsErrors`, so any nullability warning fails the build (in the test projects — in every configuration).
 - Annotate types precisely: `T?` only where `null` is a valid value, non-nullable otherwise.
 - Handle `null` explicitly (checks, `?.`, `??`, `is not null`) instead of suppressing warnings.
 - Use the `!` operator only when non-null is guaranteed by logic the compiler can't see; never to silence a warning. No `#nullable disable` / `#pragma warning disable`.
