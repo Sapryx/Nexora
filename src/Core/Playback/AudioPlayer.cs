@@ -1,8 +1,7 @@
-using Core.Playback;
 using Core.Playlists;
 using LibVLCSharp.Shared;
 
-namespace Infrastructure.Playback;
+namespace Core.Playback;
 
 public class AudioPlayer : IAudioPlayer
 {

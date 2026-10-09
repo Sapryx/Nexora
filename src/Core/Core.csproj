@@ -5,7 +5,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="DiscordRichPresence" />
+        <PackageReference Include="LibVLCSharp" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="TagLibSharp" />
         <PackageReference Include="ZLogger" />
     </ItemGroup>
 

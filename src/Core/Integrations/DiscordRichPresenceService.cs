@@ -1,9 +1,8 @@
-using Core.Integrations;
 using Core.Playback;
 using DiscordRPC;
 using DiscordRPC.Logging;
 
-namespace Infrastructure.Integrations;
+namespace Core.Integrations;
 
 public class DiscordRichPresenceService : IRichPresenceService
 {

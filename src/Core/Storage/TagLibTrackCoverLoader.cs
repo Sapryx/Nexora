@@ -1,7 +1,6 @@
-using Core.Storage;
 using File = TagLib.File;
 
-namespace Infrastructure.Storage;
+namespace Core.Storage;
 
 public class TagLibTrackCoverLoader : ITrackCoverLoader
 {
