@@ -4,16 +4,18 @@ using Nexora.Media;
 
 namespace Nexora.ViewModels.Factories;
 
-public class AudioTrackVmFactory : IAudioTrackVmFactory
+public class TrackControlVmFactory : ITrackControlVmFactory
 {
+    private readonly IAudioPlayer audioPlayer;
     private readonly ICoverCache coverCache;
 
-    public AudioTrackVmFactory(ICoverCache coverCache)
+    public TrackControlVmFactory(IAudioPlayer audioPlayer, ICoverCache coverCache)
     {
+        this.audioPlayer = audioPlayer;
         this.coverCache = coverCache;
     }
 
-    public TrackControlVm Create(IPlaylistItem playlistItem, IAudioPlayer audioPlayer)
+    public TrackControlVm Create(IPlaylistItem playlistItem)
     {
         var vm = new TrackControlVm(audioPlayer, coverCache);
         vm.SetTrack(playlistItem);

@@ -20,7 +20,7 @@ public static class CompositionRoot
         var vlc = new LibVLC("--no-video");
         builder.AddSingleton(vlc);
         
-        builder.AddSingleton<IAudioTrackVmFactory, AudioTrackVmFactory>();
+        builder.AddSingleton<ITrackControlVmFactory, TrackControlVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
         builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();

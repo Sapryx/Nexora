@@ -10,8 +10,7 @@ namespace Nexora.ViewModels;
 
 public partial class SearchBarVm : ViewModelBase
 {
-    private readonly IAudioTrackVmFactory audioTrackVmFactory;
-    private readonly IAudioPlayer audioPlayer;
+    private readonly ITrackControlVmFactory trackControlVmFactory;
 
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
@@ -21,11 +20,9 @@ public partial class SearchBarVm : ViewModelBase
 
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
-        IAudioTrackVmFactory audioTrackVmFactory,
-        IAudioPlayer audioPlayer)
+        ITrackControlVmFactory trackControlVmFactory)
     {
-        this.audioTrackVmFactory = audioTrackVmFactory;
-        this.audioPlayer = audioPlayer;
+        this.trackControlVmFactory = trackControlVmFactory;
         
         playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => Dispatcher.UIThread.Post(() =>
         {
@@ -40,7 +37,7 @@ public partial class SearchBarVm : ViewModelBase
     
     private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
-        var audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
+        var audioTrackVm = trackControlVmFactory.Create(playlistItem);
         AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
 
         return audioTrackVm;
