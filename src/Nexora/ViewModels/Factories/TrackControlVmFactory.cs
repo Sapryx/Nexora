@@ -17,9 +17,6 @@ public class TrackControlVmFactory : ITrackControlVmFactory
 
     public TrackControlVm Create(IPlaylistItem playlistItem)
     {
-        var vm = new TrackControlVm(audioPlayer, coverCache);
-        vm.SetTrack(playlistItem);
-
-        return vm;
+        return new TrackControlVm(playlistItem, audioPlayer, coverCache);
     }
 }
