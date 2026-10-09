@@ -12,6 +12,7 @@
         Title="Nexora"
         MinWidth="640"
         MinHeight="480"
+        WindowStartupLocation="CenterScreen"
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
