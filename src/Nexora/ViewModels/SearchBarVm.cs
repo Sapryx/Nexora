@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Playback;
 using Core.Playlists;
+using Core.Search;
 using Nexora.Threading;
 using Nexora.ViewModels.Factories;
 
@@ -11,6 +12,7 @@ namespace Nexora.ViewModels;
 public partial class SearchBarVm : ViewModelBase
 {
     private readonly ITrackControlVmFactory trackControlVmFactory;
+    private TrackSearchQuery searchQuery = new TrackSearchQuery("");
 
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
@@ -29,7 +31,7 @@ public partial class SearchBarVm : ViewModelBase
         {
             var trackVm = AddAudioTrackVm(playlistItem);
 
-            if(ShouldBeDisplayed(playlistItem.AudioTrack, SearchQuery))
+            if(searchQuery.Matches(playlistItem.AudioTrack))
             {
                 DisplayedAudioTrackVms.Add(trackVm);
             }
@@ -46,38 +48,15 @@ public partial class SearchBarVm : ViewModelBase
     
     partial void OnSearchQueryChanged(string value)
     {
-        string rawQuery = value;
-        string query = rawQuery.Trim().ToLower();
-
+        searchQuery = new TrackSearchQuery(value);
         DisplayedAudioTrackVms.Clear();
 
-        if(string.IsNullOrEmpty(query))
+        foreach(var (audioTrack, audioTrackVm) in AudioTrackVms)
         {
-            foreach(var audioTrackVm in AudioTrackVms.Values)
+            if(searchQuery.Matches(audioTrack))
             {
                 DisplayedAudioTrackVms.Add(audioTrackVm);
             }
-
-            return;
         }
-
-        foreach(var audioTrack in AudioTrackVms.Keys)
-        {
-            if(ShouldBeDisplayed(audioTrack, query))
-            {
-                var audioTrackVm = AudioTrackVms[audioTrack];
-                DisplayedAudioTrackVms.Add(audioTrackVm);
-            }
-        }
-    }
-
-    private bool ShouldBeDisplayed(IAudioTrack audioTrack, string query)
-    {
-        string title = audioTrack.Metadata.Title.ToLower();
-        string artists = audioTrack.Metadata.Artists.ToLower();
-        bool titleMatches = title.Contains(query);
-        bool artistsMatch = artists.Contains(query);
-
-        return titleMatches || artistsMatch;
     }
 }
