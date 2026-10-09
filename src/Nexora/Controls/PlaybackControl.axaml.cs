@@ -47,7 +47,7 @@ public partial class PlaybackControl : UserControl
     {
         if(DataContext is PlaybackVm vm)
         {
-            vm.IsChangingVolume = true;
+            vm.IsDraggingVolume = true;
         }
     }
 
@@ -55,7 +55,7 @@ public partial class PlaybackControl : UserControl
     {
         if(DataContext is PlaybackVm vm)
         {
-            vm.IsChangingVolume = false;
+            vm.IsDraggingVolume = false;
         }
     }
 
@@ -63,7 +63,7 @@ public partial class PlaybackControl : UserControl
     {
         if(DataContext is PlaybackVm vm)
         {
-            vm.IsSeeking = true;
+            vm.IsDraggingPosition = true;
         }
     }
 
@@ -71,7 +71,7 @@ public partial class PlaybackControl : UserControl
     {
         if(DataContext is PlaybackVm vm)
         {
-            vm.IsSeeking = false;
+            vm.IsDraggingPosition = false;
         }
     }
 }

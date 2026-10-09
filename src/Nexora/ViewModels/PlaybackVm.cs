@@ -24,17 +24,18 @@ public partial class PlaybackVm : ViewModelBase
     [ObservableProperty]
     public partial bool IsMuted { get; private set; }
 
-    public bool IsChangingVolume { get; set; }
-    public bool IsSeeking { get; set; }
+    public bool IsDraggingVolume { get; set; }
+    public bool IsDraggingPosition { get; set; }
     
     private readonly IAudioPlayer audioPlayer;
     private int volumeBeforeMute;
+    private bool isUpdatingDisplay;
 
     public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache)
     {
         this.audioPlayer = audioPlayer;
         
-        Volume = audioPlayer.Volume;
+        SetVolumeDisplay(audioPlayer.Volume);
 
         audioPlayer.PlaybackStarted += () => Dispatcher.UIThread.Post(() =>
         {
@@ -60,9 +61,9 @@ public partial class PlaybackVm : ViewModelBase
         
         audioPlayer.PlaybackPositionChanged += value => Dispatcher.UIThread.Post(() =>
         {
-            if(!IsSeeking)
+            if(!IsDraggingPosition)
             {
-                PlaybackPosition = value;
+                SetPlaybackPositionDisplay(value);
             }
         });
 
@@ -74,9 +75,9 @@ public partial class PlaybackVm : ViewModelBase
             {
                 volumeBeforeMute = volume;
             }
-            else if(!IsChangingVolume)
+            else if(!IsDraggingVolume)
             {
-                Volume = volume;
+                SetVolumeDisplay(volume);
             }
         });
 
@@ -122,7 +123,7 @@ public partial class PlaybackVm : ViewModelBase
     
     partial void OnVolumeChanged(int value)
     {
-        if(!IsChangingVolume)
+        if(isUpdatingDisplay)
         {
             return;
         }
@@ -154,19 +155,33 @@ public partial class PlaybackVm : ViewModelBase
         if(isMuted)
         {
             volumeBeforeMute = Volume;
-            Volume = 0;
+            SetVolumeDisplay(0);
         }
-        else if(!IsChangingVolume)
+        else if(!IsDraggingVolume)
         {
-            Volume = volumeBeforeMute;
+            SetVolumeDisplay(volumeBeforeMute);
         }
     }
 
     partial void OnPlaybackPositionChanged(float value)
     {
-        if(IsSeeking)
+        if(!isUpdatingDisplay)
         {
             audioPlayer.PlaybackPosition = value;
         }
+    }
+
+    private void SetVolumeDisplay(int volume)
+    {
+        isUpdatingDisplay = true;
+        Volume = volume;
+        isUpdatingDisplay = false;
+    }
+
+    private void SetPlaybackPositionDisplay(float position)
+    {
+        isUpdatingDisplay = true;
+        PlaybackPosition = position;
+        isUpdatingDisplay = false;
     }
 }

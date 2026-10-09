@@ -12,6 +12,8 @@
                 Value="{Binding PlaybackPosition, Mode=TwoWay}"
                 Minimum="0"
                 Maximum="1"
+                SmallChange="0.01"
+                LargeChange="0.1"
                 Height="8"
                 HorizontalAlignment="Stretch"
                 Margin="12 0"
