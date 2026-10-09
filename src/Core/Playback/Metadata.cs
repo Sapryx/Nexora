@@ -1,4 +1,4 @@
-namespace Core.Storage;
+namespace Core.Playback;
 
 public class Metadata
 {
