@@ -1,9 +1,9 @@
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
 using Nexora.Media;
+using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -21,7 +21,11 @@ public partial class TrackControlVm : CoveredTrackVm
     private readonly IPlaylistItem playlistItem;
     private readonly IAudioPlayer audioPlayer;
 
-    public TrackControlVm(IPlaylistItem playlistItem, IAudioPlayer audioPlayer, ICoverCache coverCache) : base(coverCache)
+    public TrackControlVm(
+        IPlaylistItem playlistItem,
+        IAudioPlayer audioPlayer,
+        ICoverCache coverCache,
+        IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
     {
         this.playlistItem = playlistItem;
         this.audioPlayer = audioPlayer;
@@ -34,13 +38,13 @@ public partial class TrackControlVm : CoveredTrackVm
         SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
         Duration = $"{duration.TotalMinutes:00}:{duration.Seconds:00}";
 
-        audioPlayer.PlaybackStarted += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
         {
             IsActive = audioPlayer.NowPlaying == playlistItem;
             IsActiveAndPlaying = IsActive;
         });
 
-        audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
         {
             IsActiveAndPlaying = false;
         });

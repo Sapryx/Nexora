@@ -5,6 +5,7 @@ using Core.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Nexora.Media;
+using Nexora.Threading;
 using Nexora.ViewModels;
 using Nexora.ViewModels.Factories;
 
@@ -17,6 +18,7 @@ public static class CompositionRoot
         var vlc = new LibVLC("--no-video");
         builder.AddSingleton(vlc);
         
+        builder.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         builder.AddSingleton<ITrackControlVmFactory, TrackControlVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
         builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();

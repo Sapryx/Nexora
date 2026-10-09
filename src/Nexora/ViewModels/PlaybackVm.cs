@@ -1,9 +1,9 @@
 using System;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Nexora.Media;
+using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -31,35 +31,35 @@ public partial class PlaybackVm : ViewModelBase
     private int volumeBeforeMute;
     private bool isUpdatingDisplay;
 
-    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache)
+    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache, IUiDispatcher uiDispatcher)
     {
         this.audioPlayer = audioPlayer;
         
         SetVolumeDisplay(audioPlayer.Volume);
 
-        audioPlayer.PlaybackStarted += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
         {
-            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache);
+            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, uiDispatcher);
             trackViewVm.Update(audioPlayer.NowPlaying!);
             PlayingTrackViewVm = trackViewVm;
         });
 
-        audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
         {
             IsPlaying = false;
         });
         
-        audioPlayer.PlaybackResumed += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackResumed += () => uiDispatcher.Post(() =>
         {
             IsPlaying = true;
         });
 
-        audioPlayer.PlaybackFinished += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackFinished += () => uiDispatcher.Post(() =>
         {
             audioPlayer.PlayNextTrack();
         });
         
-        audioPlayer.PlaybackPositionChanged += value => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackPositionChanged += value => uiDispatcher.Post(() =>
         {
             if(!IsDraggingPosition)
             {
@@ -67,7 +67,7 @@ public partial class PlaybackVm : ViewModelBase
             }
         });
 
-        audioPlayer.VolumeChanged += newVolume => Dispatcher.UIThread.Post(() =>
+        audioPlayer.VolumeChanged += newVolume => uiDispatcher.Post(() =>
         {
             int volume = (int)MathF.Round(newVolume);
 
@@ -81,7 +81,7 @@ public partial class PlaybackVm : ViewModelBase
             }
         });
 
-        audioPlayer.MuteChanged += isMuted => Dispatcher.UIThread.Post(() =>
+        audioPlayer.MuteChanged += isMuted => uiDispatcher.Post(() =>
         {
             ApplyMuteState(isMuted);
         });

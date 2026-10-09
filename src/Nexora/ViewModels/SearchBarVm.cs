@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Playback;
 using Core.Playlists;
+using Nexora.Threading;
 using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
@@ -20,11 +20,12 @@ public partial class SearchBarVm : ViewModelBase
 
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
-        ITrackControlVmFactory trackControlVmFactory)
+        ITrackControlVmFactory trackControlVmFactory,
+        IUiDispatcher uiDispatcher)
     {
         this.trackControlVmFactory = trackControlVmFactory;
         
-        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => Dispatcher.UIThread.Post(() =>
+        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
 

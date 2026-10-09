@@ -10,7 +10,7 @@ All text in the project must be in English: code, comments, log messages, except
 
 - `src/Core` — domain logic and its implementations, no UI: `Playback` (`IAudioTrack`, `IAudioPlayer`, `AudioPlayer` on LibVLC), `Playlists` (`Playlist`, `PlaylistRegistry` with `GlobalPlaylist`), `Storage` (`FileTrackLoader`, `TagLib*Loader` for metadata and covers, music directory/format/parallelism providers), `Collections/LruCache`, `Integrations` (`DiscordRichPresenceService`), `Logging`. Must not depend on Avalonia or other UI libraries.
 - `src/Nexora.Theme` — styles and resources (`*.axaml`), no logic.
-- `src/Nexora` — the application: `ViewModels/` (`*Vm`, factories in `Factories/`), `Controls/` and `Views/` (axaml + code-behind), `Media/CoverCache`, `Render/` (SkSL dithering shader), `Logging/`.
+- `src/Nexora` — the application: `ViewModels/` (`*Vm`, factories in `Factories/`), `Controls/` and `Views/` (axaml + code-behind), `Media/CoverCache`, `Threading/` (`IUiDispatcher`), `Render/` (SkSL dithering shader), `Logging/`.
 - DI registrations: `src/Nexora/CompositionRoot.cs`. Register new services there.
 - `tests/Core.Tests` — xUnit + Moq, covers Core only.
 - Shared build properties: `Directory.Build.props`. Package versions are managed centrally in `Directory.Packages.props` — `PackageReference` items in `.csproj` have no `Version`.
@@ -49,7 +49,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - Local variables: lowercase built-in types (`bool`, `byte`, `sbyte`, `char`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `nint`, `nuint`, `float`, `double`, `decimal`, `string`) are spelled out explicitly (`int count = 0;`); everything else uses `var`.
 - No local functions. Lambdas are fine.
 - No target-typed `new()`: always spell out the type (`new Playlist()`). Parentheses are required even with an object initializer: `new Metadata() { Title = title }`.
-- Collections via collection expressions (`[]`). UI updates from background events — via `Dispatcher.UIThread.Post`.
+- Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), not `Dispatcher.UIThread` directly, so view models stay testable.
 - Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers.
 
 ## Logging

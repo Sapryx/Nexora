@@ -1,11 +1,12 @@
 using Core.Playlists;
 using Nexora.Media;
+using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
 public partial class TrackViewVm : CoveredTrackVm
 {
-    public TrackViewVm(ICoverCache coverCache) : base(coverCache)
+    public TrackViewVm(ICoverCache coverCache, IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
     {
     }
 

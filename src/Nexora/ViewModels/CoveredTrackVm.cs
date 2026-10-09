@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Nexora.Media;
+using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -16,6 +16,7 @@ public abstract partial class CoveredTrackVm : ViewModelBase
 
     private string audioPath = "";
     private readonly ICoverCache coverCache;
+    private readonly IUiDispatcher uiDispatcher;
 
     public Bitmap? Cover
     {
@@ -32,9 +33,10 @@ public abstract partial class CoveredTrackVm : ViewModelBase
         }
     }
 
-    protected CoveredTrackVm(ICoverCache coverCache)
+    protected CoveredTrackVm(ICoverCache coverCache, IUiDispatcher uiDispatcher)
     {
         this.coverCache = coverCache;
+        this.uiDispatcher = uiDispatcher;
     }
 
     protected void SetTrackInfo(string title, string artists, string audioPath)
@@ -57,7 +59,7 @@ public abstract partial class CoveredTrackVm : ViewModelBase
 
         if(bitmap != null)
         {
-            Dispatcher.UIThread.Post(() =>
+            uiDispatcher.Post(() =>
             {
                 if(path == audioPath)
                 {
