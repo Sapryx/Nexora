@@ -13,6 +13,7 @@
         MinWidth="640"
         MinHeight="480"
         WindowStartupLocation="CenterScreen"
+        Focusable="True"
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>

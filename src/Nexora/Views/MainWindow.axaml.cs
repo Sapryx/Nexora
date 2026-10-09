@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.VisualTree;
 using Nexora.ViewModels;
 
 namespace Nexora.Views;
@@ -28,6 +30,22 @@ public partial class MainWindow : Window
 
         AddHandler(KeyDownEvent, OnPreviewKey, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnPreviewKey, RoutingStrategies.Tunnel);
+        AddHandler(PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+    }
+
+    private void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if(FocusManager?.GetFocusedElement() is not TextBox textBox)
+        {
+            return;
+        }
+
+        if(e.Source is Visual source && textBox.IsVisualAncestorOf(source))
+        {
+            return;
+        }
+
+        Focus();
     }
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
