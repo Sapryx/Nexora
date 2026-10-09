@@ -2,7 +2,7 @@ namespace Core.Collections;
 
 public class LruCache<TKey, TValue> where TKey : notnull
 {
-    private readonly Lock gate = new();
+    private readonly Lock gate = new Lock();
     private readonly int capacity;
     private readonly Dictionary<TKey, LinkedListNode<CacheEntry>> map = [];
     private readonly LinkedList<CacheEntry> order = [];

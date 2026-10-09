@@ -33,7 +33,7 @@ public class DiscordRichPresenceService : IRichPresenceService
 
     public void UpdateStatus(string title, string artist)
     {
-        var richPresence = new RichPresence
+        var richPresence = new RichPresence()
         {
             Details = title,
             State = artist,

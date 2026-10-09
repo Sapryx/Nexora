@@ -4,7 +4,7 @@ public class MusicDirectoryProvider : IMusicDirectoryProvider
 {
     public IEnumerable<string> GetFiles()
     {
-        var musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
+        string musicDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic);
         return Directory.EnumerateFiles(musicDirectory);
     }
 }

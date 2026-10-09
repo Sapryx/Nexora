@@ -15,13 +15,13 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     public partial string Artists { get; set; } = "";
 
     private string audioPath = "";
-    private ICoverCache CoverCache { get; }
+    private readonly ICoverCache coverCache;
 
     public Bitmap? Cover
     {
         get
         {
-            var cached = CoverCache.Get(audioPath);
+            var cached = coverCache.Get(audioPath);
 
             if(cached == null)
             {
@@ -34,7 +34,7 @@ public abstract partial class CoveredTrackVm : ViewModelBase
 
     protected CoveredTrackVm(ICoverCache coverCache)
     {
-        CoverCache = coverCache;
+        this.coverCache = coverCache;
     }
 
     protected void SetTrackInfo(string title, string artists, string audioPath)
@@ -53,7 +53,7 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     private async Task LoadCoverAsync()
     {
         string path = audioPath;
-        var bitmap = await CoverCache.GetOrLoadAsync(path).ConfigureAwait(false);
+        var bitmap = await coverCache.GetOrLoadAsync(path).ConfigureAwait(false);
 
         if(bitmap != null)
         {

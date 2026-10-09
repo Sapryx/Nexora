@@ -22,7 +22,7 @@ public static class LoggingInitializer
     {
         Directory.CreateDirectory(LogsDirectory);
 
-        var sessionLogPath = Path.Combine(LogsDirectory, "session.log");
+        string sessionLogPath = Path.Combine(LogsDirectory, "session.log");
 
         if(File.Exists(sessionLogPath))
         {

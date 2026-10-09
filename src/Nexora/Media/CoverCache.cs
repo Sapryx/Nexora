@@ -13,7 +13,7 @@ public class CoverCache : ICoverCache
     private const int DecodeWidth = 128;
     
     private readonly ITrackCoverLoader coverLoader;
-    private readonly LruCache<string, Bitmap?> cache = new(Capacity);
+    private readonly LruCache<string, Bitmap?> cache = new LruCache<string, Bitmap?>(Capacity);
     private readonly ConcurrentDictionary<string, Task<Bitmap?>> inFlight = [];
 
     public CoverCache(ITrackCoverLoader coverLoader)

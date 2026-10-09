@@ -15,7 +15,7 @@ public class TagLibMetadataLoader : IMetadataLoader
     {
         using var tagFile = File.Create(filePath);
         string title = tagFile.Tag.Title;
-        var artists = string.Join(", ", tagFile.Tag.Performers);
+        string artists = string.Join(", ", tagFile.Tag.Performers);
 
         if(string.IsNullOrEmpty(title))
         {

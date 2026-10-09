@@ -72,7 +72,7 @@ public class LruCacheTests
     }
 
     [Fact]
-    public async Task ConcurrentAccess_AllSetsAndGetsAreSafe()
+    public async Task SetAndTryGet_ConcurrentAccess_CountStaysWithinCapacity()
     {
         var cache = new LruCache<int, int>(64);
         var tasks = Enumerable.Range(0, 8).Select(worker => Task.Run(() =>

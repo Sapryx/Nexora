@@ -17,7 +17,7 @@ namespace Nexora;
 
 public partial class App : Application
 {
-    private static ServiceProvider Provider = null!;
+    private static ServiceProvider provider = null!;
 
     public override void Initialize()
     {
@@ -30,7 +30,7 @@ public partial class App : Application
         LoggingInitializer.Initialize(builder);
         RegisterDiContainer(builder);
         InitializeMainWindowVm();
-        Provider.GetService<IRichPresenceService>()?.Initialize();
+        provider.GetService<IRichPresenceService>()?.Initialize();
         LibVLCSharp.Shared.Core.Initialize();
 
         base.OnFrameworkInitializationCompleted();
@@ -39,7 +39,7 @@ public partial class App : Application
     private void RegisterDiContainer(ServiceCollection builder)
     {
         CompositionRoot.Configure(builder);
-        Provider = builder.BuildServiceProvider();
+        provider = builder.BuildServiceProvider();
     }
 
     private void InitializeMainWindowVm()
@@ -49,18 +49,18 @@ public partial class App : Application
             return;
         }
 
-        var audioTrackLoaders = Provider.GetServices<ITrackLoader>();
-        var playlistRegistry = Provider.GetService<PlaylistRegistry>()!;
+        var audioTrackLoaders = provider.GetServices<ITrackLoader>();
+        var playlistRegistry = provider.GetRequiredService<PlaylistRegistry>();
 
-        var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();
+        var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
 
-        desktop.MainWindow = new MainWindow
+        desktop.MainWindow = new MainWindow()
         {
             DataContext = mainWindowVm
         };
 
-        var logger = Provider.GetService<ILogger<App>>()!;
+        var logger = provider.GetRequiredService<ILogger<App>>();
 
         foreach(var loader in audioTrackLoaders)
         {

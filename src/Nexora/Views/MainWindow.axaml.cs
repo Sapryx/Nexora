@@ -9,7 +9,7 @@ namespace Nexora.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly Dictionary<Key, Action<MainWindowVm>> KeyActions = new()
+    private readonly Dictionary<Key, Action<MainWindowVm>> keyActions = new Dictionary<Key, Action<MainWindowVm>>()
     {
         {
             Key.Space, vm => vm.PlaybackVm.Pause()
@@ -32,7 +32,7 @@ public partial class MainWindow : Window
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
-        if(DataContext is not MainWindowVm vm || !KeyActions.TryGetValue(e.Key, out var action))
+        if(DataContext is not MainWindowVm vm || !keyActions.TryGetValue(e.Key, out var action))
         {
             return;
         }

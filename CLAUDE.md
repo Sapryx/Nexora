@@ -49,7 +49,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - VM properties: `[ObservableProperty] public partial T Name { get; set; }`, reactions — `partial void OnNameChanged`.
 - Local variables: lowercase built-in types (`bool`, `byte`, `sbyte`, `char`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `nint`, `nuint`, `float`, `double`, `decimal`, `string`) are spelled out explicitly (`int count = 0;`); everything else uses `var`.
 - No local functions. Lambdas are fine.
-- No target-typed `new()`: always spell out the type (`new Playlist()`).
+- No target-typed `new()`: always spell out the type (`new Playlist()`). Parentheses are required even with an object initializer: `new Metadata() { Title = title }`.
 - Collections via collection expressions (`[]`). UI updates from background events — via `Dispatcher.UIThread.Post`.
 - Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers.
 

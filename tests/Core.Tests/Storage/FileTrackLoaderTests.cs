@@ -89,7 +89,7 @@ public class FileTrackLoaderTests
     [Fact]
     public void Load_SupportedFile_LoadsMetadataForThatFile()
     {
-        var metadata = new Metadata { Title = "Title", Artists = "Artist" };
+        var metadata = new Metadata() { Title = "Title", Artists = "Artist" };
         metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(metadata);
         musicDirectoryProviderMock.Setup(it => it.GetFiles()).Returns(["/music/one.mp3"]);
 
@@ -112,7 +112,7 @@ public class FileTrackLoaderTests
     }
 
     [Fact]
-    public void Load_UsesDegreeOfParallelismFromProvider()
+    public void Load_FilesFound_ReadsDegreeOfParallelismFromProvider()
     {
         musicDirectoryProviderMock
             .Setup(it => it.GetFiles())
