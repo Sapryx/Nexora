@@ -33,7 +33,9 @@ jobs:
           cache-dependency-path: '**/*.csproj'
 
       - name: Run unit tests
-        run: dotnet test tests/Core.Tests -c Release
+        run: |
+          dotnet test tests/Core.Tests -c Release
+          dotnet test tests/Nexora.Tests -c Release
 
   build:
     name: Build (${{ matrix.os }})

@@ -1,31 +1,53 @@
-﻿using Avalonia;
+using Avalonia;
 using System;
+using System.Threading;
+using Nexora.Logging;
 
 namespace Nexora;
 
 sealed class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
-    [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    public static bool IsWaylandSession => OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
+    private const string InstanceMutexName = "Nexora.SingleInstance";
 
-    // Avalonia configuration, don't remove; also used by visual designer.
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        var mutexOptions = new NamedWaitHandleOptions() { CurrentUserOnly = true, CurrentSessionOnly = false };
+        using var instanceMutex = new Mutex(true, InstanceMutexName, mutexOptions, out bool isFirstInstance);
+
+        if(!isFirstInstance)
+        {
+            return;
+        }
+
+        using var loggerFactory = LoggingInitializer.Initialize(args);
+        var crashLogger = new CrashLogger(loggerFactory);
+        crashLogger.Register();
+
+        BuildAvaloniaApp(() => new App(loggerFactory))
+            .AfterSetup(_ => crashLogger.RegisterUiThread())
+            .StartWithClassicDesktopLifetime(args);
+    }
+
     public static AppBuilder BuildAvaloniaApp()
     {
-        var builder = AppBuilder.Configure<App>().UsePlatformDetect();
+        return BuildAvaloniaApp(() => new App()).LogToTrace();
+    }
 
-        if(OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null)
+    private static AppBuilder BuildAvaloniaApp(Func<App> createApp)
+    {
+        var builder = AppBuilder.Configure(createApp).UsePlatformDetect();
+
+        if(IsWaylandSession)
         {
             builder = builder.UseWayland();
         }
-        
+
         return builder
 #if DEBUG
             .WithDeveloperTools()
 #endif
-            .WithInterFont()
-            .LogToTrace();
+            .WithInterFont();
     }
 }

@@ -1,0 +1,35 @@
+<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <AvaloniaVersion>12.1.0</AvaloniaVersion>
+        <MicrosoftExtensionsVersion>10.0.10</MicrosoftExtensionsVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="Avalonia" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="Avalonia.Wayland" Version="$(AvaloniaVersion)" />
+        <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3" />
+        <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageVersion Include="DiscordRichPresence" Version="1.6.1.70" />
+        <PackageVersion Include="LibVLCSharp" Version="3.10.0" />
+        <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsVersion)" />
+        <PackageVersion Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.13" />
+        <PackageVersion Include="TagLibSharp" Version="2.3.0" />
+        <PackageVersion Include="VideoLAN.LibVLC.Windows" Version="3.0.23.1" />
+        <PackageVersion Include="ZLogger" Version="2.5.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageVersion Include="Moq" Version="4.20.72" />
+        <PackageVersion Include="ReportGenerator" Version="5.5.11" />
+        <PackageVersion Include="xunit" Version="2.9.3" />
+        <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    </ItemGroup>
+</Project>

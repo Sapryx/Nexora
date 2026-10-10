@@ -43,16 +43,6 @@ public class Playlist : IEnumerable<IPlaylistItem>
         }
     }
 
-    public void RemoveItem(int index)
-    {
-        if(IsEmpty)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index));
-        }
-        
-        items.RemoveAt(index);
-    }
-
     public IEnumerator<IPlaylistItem> GetEnumerator()
     {
         foreach(var item in items)

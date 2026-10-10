@@ -2,5 +2,5 @@ namespace Core.Playlists;
 
 public class PlaylistRegistry
 {
-    public readonly Playlist GlobalPlaylist = new Playlist();
+    public Playlist GlobalPlaylist { get; } = new Playlist();
 }

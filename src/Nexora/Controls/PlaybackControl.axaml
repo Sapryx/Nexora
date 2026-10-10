@@ -12,10 +12,16 @@
                 Value="{Binding PlaybackPosition, Mode=TwoWay}"
                 Minimum="0"
                 Maximum="1"
+                SmallChange="0.01"
+                LargeChange="0.1"
                 Height="8"
                 HorizontalAlignment="Stretch"
                 Margin="12 0"
-                CornerRadius="8 8 0 0" />
+                CornerRadius="8 8 0 0"
+                ToolTip.Tip="{Binding SeekPreviewTime}"
+                ToolTip.Placement="Top"
+                ToolTip.VerticalOffset="-8"
+                ToolTip.ShowDelay="0" />
         <Border Background="#2C2C2C"
                 CornerRadius="12"
                 BorderThickness="1"
@@ -67,13 +73,7 @@
                             CornerRadius="100"
                             Padding="8"
                             Background="Transparent">
-                        <Panel>
-                            <controls:Icon IconName="speaker_loud"
-                                           IsVisible="{Binding !IsMuted}" />
-
-                            <controls:Icon IconName="speaker_mute"
-                                           IsVisible="{Binding IsMuted}" />
-                        </Panel>
+                        <controls:Icon IconName="{Binding VolumeIconName}" />
                     </Button>
                     
                     <Slider x:Name="VolumeSlider"

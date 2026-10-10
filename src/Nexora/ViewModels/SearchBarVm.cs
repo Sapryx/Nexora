@@ -1,17 +1,20 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
+using Core.Search;
+using Nexora.Threading;
 using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
 public partial class SearchBarVm : ViewModelBase
 {
-    private readonly IAudioTrackVmFactory audioTrackVmFactory;
-    private readonly IAudioPlayer audioPlayer;
+    private readonly ITrackControlVmFactory trackControlVmFactory;
+    private readonly KeyboardLayoutTranslator layoutTranslator;
+    private TrackSearchQuery searchQuery;
 
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
@@ -21,17 +24,19 @@ public partial class SearchBarVm : ViewModelBase
 
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
-        IAudioTrackVmFactory audioTrackVmFactory,
-        IAudioPlayer audioPlayer)
+        ITrackControlVmFactory trackControlVmFactory,
+        KeyboardLayoutTranslator layoutTranslator,
+        IUiDispatcher uiDispatcher)
     {
-        this.audioTrackVmFactory = audioTrackVmFactory;
-        this.audioPlayer = audioPlayer;
-        
-        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => Dispatcher.UIThread.Post(() =>
+        this.trackControlVmFactory = trackControlVmFactory;
+        this.layoutTranslator = layoutTranslator;
+        searchQuery = new TrackSearchQuery("", layoutTranslator);
+
+        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
 
-            if(ShouldBeDisplayed(playlistItem.AudioTrack, SearchQuery))
+            if(searchQuery.Matches(playlistItem.AudioTrack))
             {
                 DisplayedAudioTrackVms.Add(trackVm);
             }
@@ -40,46 +45,29 @@ public partial class SearchBarVm : ViewModelBase
     
     private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
-        var audioTrackVm = audioTrackVmFactory.Create(playlistItem, audioPlayer);
+        var audioTrackVm = trackControlVmFactory.Create(playlistItem);
         AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
 
         return audioTrackVm;
     }
-    
-    partial void OnSearchQueryChanged(string value)
+
+    [RelayCommand]
+    public void ClearSearchQuery()
     {
-        string rawQuery = value;
-        string query = rawQuery.Trim().ToLower();
-
-        DisplayedAudioTrackVms.Clear();
-
-        if(string.IsNullOrEmpty(query))
-        {
-            foreach(var audioTrackVm in AudioTrackVms.Values)
-            {
-                DisplayedAudioTrackVms.Add(audioTrackVm);
-            }
-
-            return;
-        }
-
-        foreach(var audioTrack in AudioTrackVms.Keys)
-        {
-            if(ShouldBeDisplayed(audioTrack, query))
-            {
-                var audioTrackVm = AudioTrackVms[audioTrack];
-                DisplayedAudioTrackVms.Add(audioTrackVm);
-            }
-        }
+        SearchQuery = "";
     }
 
-    private bool ShouldBeDisplayed(IAudioTrack audioTrack, string query)
+    partial void OnSearchQueryChanged(string value)
     {
-        string title = audioTrack.Metadata.Title.ToLower();
-        string artists = audioTrack.Metadata.Artists.ToLower();
-        bool titleMatches = title.Contains(query);
-        bool artistsMatch = artists.Contains(query);
+        searchQuery = new TrackSearchQuery(value, layoutTranslator);
+        DisplayedAudioTrackVms.Clear();
 
-        return titleMatches || artistsMatch;
+        foreach(var (audioTrack, audioTrackVm) in AudioTrackVms)
+        {
+            if(searchQuery.Matches(audioTrack))
+            {
+                DisplayedAudioTrackVms.Add(audioTrackVm);
+            }
+        }
     }
 }

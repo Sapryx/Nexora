@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Nexora.ViewModels;
 
 namespace Nexora.Controls;
@@ -20,6 +21,16 @@ public partial class TrackArea : UserControl
     public TrackArea()
     {
         InitializeComponent();
+        TrackList.TemplateApplied += OnTrackListTemplateApplied;
+    }
+
+    private void OnTrackListTemplateApplied(object? sender, TemplateAppliedEventArgs e)
+    {
+        var scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
+        if(scrollViewer is not null)
+        {
+            new SmoothScroller(scrollViewer);
+        }
     }
 
     private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)

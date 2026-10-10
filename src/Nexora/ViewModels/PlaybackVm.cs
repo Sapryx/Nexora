@@ -1,9 +1,9 @@
 using System;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Nexora.Media;
+using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -19,62 +19,77 @@ public partial class PlaybackVm : ViewModelBase
     public partial TrackViewVm? PlayingTrackViewVm { get; set; }
     
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolumeIconName))]
     public partial int Volume { get; set; }
-    
+
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolumeIconName))]
     public partial bool IsMuted { get; private set; }
 
-    public bool IsChangingVolume { get; set; }
-    public bool IsSeeking { get; set; }
+    [ObservableProperty]
+    public partial string? SeekPreviewTime { get; private set; }
+
+    public string VolumeIconName => GetVolumeIconName();
+    public bool IsDraggingVolume { get; set; }
+    public bool IsDraggingPosition { get; set; }
     
     private readonly IAudioPlayer audioPlayer;
+    private int volumeBeforeMute;
+    private bool isUpdatingDisplay;
 
-    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache)
+    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache, IUiDispatcher uiDispatcher)
     {
         this.audioPlayer = audioPlayer;
         
-        Volume = audioPlayer.Volume;
+        SetVolumeDisplay(audioPlayer.Volume);
 
-        audioPlayer.PlaybackStarted += () =>
+        audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
         {
-            PlayingTrackViewVm ??= new TrackViewVm(coverCache);
-            PlayingTrackViewVm.Update(audioPlayer.NowPlaying!);
-        };
+            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, uiDispatcher);
+            trackViewVm.Update(audioPlayer.NowPlaying!);
+            PlayingTrackViewVm = trackViewVm;
+        });
 
-        audioPlayer.PlaybackPaused += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
         {
             IsPlaying = false;
         });
         
-        audioPlayer.PlaybackResumed += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackResumed += () => uiDispatcher.Post(() =>
         {
             IsPlaying = true;
         });
 
-        audioPlayer.PlaybackFinished += () => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackFinished += () => uiDispatcher.Post(() =>
         {
             audioPlayer.PlayNextTrack();
         });
         
-        audioPlayer.PlaybackPositionChanged += value => Dispatcher.UIThread.Post(() =>
+        audioPlayer.PlaybackPositionChanged += value => uiDispatcher.Post(() =>
         {
-            if(!IsSeeking)
+            if(!IsDraggingPosition)
             {
-                PlaybackPosition = value;
+                SetPlaybackPositionDisplay(value);
             }
         });
 
-        audioPlayer.VolumeChanged += newVolume => Dispatcher.UIThread.Post(() =>
+        audioPlayer.VolumeChanged += newVolume => uiDispatcher.Post(() =>
         {
-            if(!IsChangingVolume)
+            int volume = (int)MathF.Round(newVolume);
+
+            if(IsMuted)
             {
-                Volume = (int)newVolume;
+                volumeBeforeMute = volume;
+            }
+            else if(!IsDraggingVolume)
+            {
+                SetVolumeDisplay(volume);
             }
         });
-        
-        audioPlayer.MuteChanged += isMuted => Dispatcher.UIThread.Post(() =>
+
+        audioPlayer.MuteChanged += isMuted => uiDispatcher.Post(() =>
         {
-            IsMuted = isMuted;
+            ApplyMuteState(isMuted);
         });
     }
 
@@ -99,7 +114,7 @@ public partial class PlaybackVm : ViewModelBase
     [RelayCommand]
     public void ToggleMute()
     {
-        audioPlayer.Mute = !audioPlayer.Mute;
+        SetMuted(!IsMuted);
     }
 
     public void SkipForward()
@@ -111,20 +126,97 @@ public partial class PlaybackVm : ViewModelBase
     {
         audioPlayer.SkipBack();
     }
+
+    public void PreviewSeek(double position)
+    {
+        var nowPlaying = audioPlayer.NowPlaying;
+
+        if(nowPlaying is null)
+        {
+            SeekPreviewTime = null;
+            return;
+        }
+
+        var time = nowPlaying.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
+        SeekPreviewTime = $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
+    }
     
     partial void OnVolumeChanged(int value)
     {
-        if(IsChangingVolume)
+        if(isUpdatingDisplay)
         {
-            audioPlayer.Volume = Math.Clamp(value, 0, 100);
+            return;
+        }
+
+        audioPlayer.Volume = Math.Clamp(value, 0, 100);
+
+        if(IsMuted && value > 0)
+        {
+            volumeBeforeMute = value;
+            SetMuted(false);
+        }
+    }
+
+    private void SetMuted(bool isMuted)
+    {
+        audioPlayer.Mute = isMuted;
+        ApplyMuteState(isMuted);
+    }
+
+    private void ApplyMuteState(bool isMuted)
+    {
+        if(IsMuted == isMuted)
+        {
+            return;
+        }
+
+        IsMuted = isMuted;
+
+        if(isMuted)
+        {
+            volumeBeforeMute = Volume;
+            SetVolumeDisplay(0);
+        }
+        else if(!IsDraggingVolume)
+        {
+            SetVolumeDisplay(volumeBeforeMute);
         }
     }
 
     partial void OnPlaybackPositionChanged(float value)
     {
-        if(IsSeeking)
+        if(!isUpdatingDisplay)
         {
             audioPlayer.PlaybackPosition = value;
         }
+    }
+
+    private string GetVolumeIconName()
+    {
+        if(IsMuted)
+        {
+            return "speaker_mute";
+        }
+
+        if(Volume == 0)
+        {
+            return "speaker_silent";
+        }
+
+        return Volume <= 50 ? "speaker_low" : "speaker_loud";
+    }
+
+    private void SetVolumeDisplay(int volume)
+    {
+        isUpdatingDisplay = true;
+        Volume = volume;
+        isUpdatingDisplay = false;
+    }
+
+    private void SetPlaybackPositionDisplay(float position)
+    {
+        isUpdatingDisplay = true;
+        PlaybackPosition = position;
+        isUpdatingDisplay = false;
     }
 }

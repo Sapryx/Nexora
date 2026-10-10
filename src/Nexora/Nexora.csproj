@@ -1,15 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net10.0</TargetFramework>
-        <Nullable>enable</Nullable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <PublishAot>true</PublishAot>
-        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
         <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
         <IlcTreatWarningsAsErrors>false</IlcTreatWarningsAsErrors>
     </PropertyGroup>
@@ -19,37 +17,29 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="12.1.0" />
-        <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.0" />
-        <PackageReference Include="Avalonia.Wayland" Version="12.1.0" />
-        <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <PackageReference Include="Avalonia.Wayland" />
+        <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="LibVLCSharp" Version="3.10.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.10" />
-        <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="12.0.0.13" />
-        <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.23.1" />
-        <PackageReference Include="ZLogger" Version="2.5.10" />
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="LibVLCSharp" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+        <PackageReference Include="Svg.Controls.Skia.Avalonia" />
+        <PackageReference Include="VideoLAN.LibVLC.Windows" />
+        <PackageReference Include="ZLogger" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Core\Core.csproj" />
-        <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
         <ProjectReference Include="..\Nexora.Theme\Nexora.Theme.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <TrimmerRootAssembly Include="DiscordRPC" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Update="Controls\TrackControl.axaml.cs">
-        <DependentUpon>AudioTrack.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
     </ItemGroup>
 </Project>

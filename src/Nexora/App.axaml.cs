@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -9,7 +10,7 @@ using Core.Playlists;
 using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nexora.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Nexora.ViewModels;
 using Nexora.Views;
 
@@ -17,7 +18,17 @@ namespace Nexora;
 
 public partial class App : Application
 {
-    private static ServiceProvider Provider = null!;
+    private static ServiceProvider provider = null!;
+    private readonly ILoggerFactory loggerFactory;
+
+    public App() : this(NullLoggerFactory.Instance)
+    {
+    }
+
+    public App(ILoggerFactory loggerFactory)
+    {
+        this.loggerFactory = loggerFactory;
+    }
 
     public override void Initialize()
     {
@@ -27,10 +38,12 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         var builder = new ServiceCollection();
-        LoggingInitializer.Initialize(builder);
+        builder.AddSingleton(loggerFactory);
+        builder.AddLogging();
         RegisterDiContainer(builder);
+        LogEnvironment();
         InitializeMainWindowVm();
-        Provider.GetService<IRichPresenceService>()?.Initialize();
+        provider.GetService<IRichPresenceService>()?.Initialize();
         LibVLCSharp.Shared.Core.Initialize();
 
         base.OnFrameworkInitializationCompleted();
@@ -39,7 +52,40 @@ public partial class App : Application
     private void RegisterDiContainer(ServiceCollection builder)
     {
         CompositionRoot.Configure(builder);
-        Provider = builder.BuildServiceProvider();
+        provider = builder.BuildServiceProvider();
+    }
+
+    private static void LogEnvironment()
+    {
+        var logger = provider.GetRequiredService<ILogger<App>>();
+
+        logger.Info($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture}), .NET {Environment.Version}");
+        logger.Info($"Windowing backend: {GetWindowingBackendName()}");
+
+        if(OperatingSystem.IsLinux())
+        {
+            logger.Info($"Session type: {GetVariable("XDG_SESSION_TYPE")}, desktop: {GetVariable("XDG_CURRENT_DESKTOP")}, WAYLAND_DISPLAY: {GetVariable("WAYLAND_DISPLAY")}, DISPLAY: {GetVariable("DISPLAY")}");
+        }
+    }
+
+    private static string GetWindowingBackendName()
+    {
+        if(OperatingSystem.IsWindows())
+        {
+            return "Win32";
+        }
+
+        if(OperatingSystem.IsMacOS())
+        {
+            return "macOS";
+        }
+
+        return Program.IsWaylandSession ? "Wayland" : "X11";
+    }
+
+    private static string GetVariable(string name)
+    {
+        return Environment.GetEnvironmentVariable(name) ?? "<unset>";
     }
 
     private void InitializeMainWindowVm()
@@ -49,18 +95,18 @@ public partial class App : Application
             return;
         }
 
-        var audioTrackLoaders = Provider.GetServices<ITrackLoader>();
-        var playlistRegistry = Provider.GetService<PlaylistRegistry>()!;
+        var audioTrackLoaders = provider.GetServices<ITrackLoader>();
+        var playlistRegistry = provider.GetRequiredService<PlaylistRegistry>();
 
-        var mainWindowVm = Provider.GetRequiredService<MainWindowVm>();
+        var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
 
-        desktop.MainWindow = new MainWindow
+        desktop.MainWindow = new MainWindow()
         {
             DataContext = mainWindowVm
         };
 
-        var logger = Provider.GetService<ILogger<App>>()!;
+        var logger = provider.GetRequiredService<ILogger<App>>();
 
         foreach(var loader in audioTrackLoaders)
         {
@@ -73,7 +119,7 @@ public partial class App : Application
                 }
                 catch(Exception ex)
                 {
-                    logger.Crit(ex, $"");
+                    logger.Error(ex, $"Failed to load tracks");
                 }
             });
         }
