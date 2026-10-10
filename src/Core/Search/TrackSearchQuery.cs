@@ -7,13 +7,16 @@ public class TrackSearchQuery
 {
     private const int CharactersPerAllowedMismatch = 5;
     private const int MaxStackBufferLength = 512;
-    private readonly string text;
-    private readonly string[] words;
+    private readonly (string Text, string[] Words)[] variants;
 
-    public TrackSearchQuery(string rawQuery)
+    public TrackSearchQuery(string rawQuery, KeyboardLayoutTranslator layoutTranslator)
     {
-        text = Normalize(rawQuery);
-        words = text.Split(' ');
+        variants = layoutTranslator.Translate(rawQuery)
+            .Prepend(rawQuery)
+            .Select(Normalize)
+            .Distinct()
+            .Select(it => (it, it.Split(' ')))
+            .ToArray();
     }
 
     public bool Matches(IAudioTrack audioTrack)
@@ -21,6 +24,11 @@ public class TrackSearchQuery
         string title = Normalize(audioTrack.Metadata.Title);
         string artists = Normalize(audioTrack.Metadata.Artists);
 
+        return variants.Any(it => Matches(it.Text, it.Words, title, artists));
+    }
+
+    private static bool Matches(string text, string[] words, string title, string artists)
+    {
         if(ContainsApproximately(title, text) || ContainsApproximately(artists, text))
         {
             return true;

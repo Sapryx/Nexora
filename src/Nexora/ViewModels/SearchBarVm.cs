@@ -12,7 +12,8 @@ namespace Nexora.ViewModels;
 public partial class SearchBarVm : ViewModelBase
 {
     private readonly ITrackControlVmFactory trackControlVmFactory;
-    private TrackSearchQuery searchQuery = new TrackSearchQuery("");
+    private readonly KeyboardLayoutTranslator layoutTranslator;
+    private TrackSearchQuery searchQuery;
 
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
@@ -23,10 +24,13 @@ public partial class SearchBarVm : ViewModelBase
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
         ITrackControlVmFactory trackControlVmFactory,
+        KeyboardLayoutTranslator layoutTranslator,
         IUiDispatcher uiDispatcher)
     {
         this.trackControlVmFactory = trackControlVmFactory;
-        
+        this.layoutTranslator = layoutTranslator;
+        searchQuery = new TrackSearchQuery("", layoutTranslator);
+
         playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
@@ -48,7 +52,7 @@ public partial class SearchBarVm : ViewModelBase
     
     partial void OnSearchQueryChanged(string value)
     {
-        searchQuery = new TrackSearchQuery(value);
+        searchQuery = new TrackSearchQuery(value, layoutTranslator);
         DisplayedAudioTrackVms.Clear();
 
         foreach(var (audioTrack, audioTrackVm) in AudioTrackVms)

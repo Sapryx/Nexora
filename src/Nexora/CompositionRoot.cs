@@ -1,9 +1,12 @@
+using System;
 using Core.Integrations;
 using Core.Playback;
 using Core.Playlists;
+using Core.Search;
 using Core.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Nexora.Input;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
@@ -30,6 +33,20 @@ public static class CompositionRoot
         builder.AddSingleton<IAudioPlayer, AudioPlayer>();
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
+        builder.AddSingleton<KeyboardLayoutTranslator>();
+
+        if(OperatingSystem.IsWindows())
+        {
+            builder.AddSingleton<IKeyboardLayoutProvider, WindowsKeyboardLayoutProvider>();
+        }
+        else if(Program.IsWaylandSession)
+        {
+            builder.AddSingleton<IKeyboardLayoutProvider, WaylandKeyboardLayoutProvider>();
+        }
+        else
+        {
+            builder.AddSingleton<IKeyboardLayoutProvider, UnsupportedKeyboardLayoutProvider>();
+        }
 
         builder.AddSingleton<MainWindowVm>();
         builder.AddSingleton<SearchBarVm>();

@@ -1,5 +1,7 @@
 using Core.Playback;
 using Core.Playlists;
+using Core.Search;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
@@ -33,7 +35,11 @@ public class SearchBarVmTests
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object));
 
-        vm = new SearchBarVm(playlistRegistry, trackControlVmFactoryMock.Object, uiDispatcherMock.Object);
+        var layoutTranslator = new KeyboardLayoutTranslator(
+            Mock.Of<IKeyboardLayoutProvider>(it => it.GetLayouts() == Array.Empty<KeyboardLayout>()),
+            NullLogger<KeyboardLayoutTranslator>.Instance);
+
+        vm = new SearchBarVm(playlistRegistry, trackControlVmFactoryMock.Object, layoutTranslator, uiDispatcherMock.Object);
     }
 
     [Fact]
