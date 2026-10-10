@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -29,6 +30,7 @@ public partial class App : Application
         var builder = new ServiceCollection();
         LoggingInitializer.Initialize(builder);
         RegisterDiContainer(builder);
+        LogEnvironment();
         InitializeMainWindowVm();
         provider.GetService<IRichPresenceService>()?.Initialize();
         LibVLCSharp.Shared.Core.Initialize();
@@ -40,6 +42,39 @@ public partial class App : Application
     {
         CompositionRoot.Configure(builder);
         provider = builder.BuildServiceProvider();
+    }
+
+    private static void LogEnvironment()
+    {
+        var logger = provider.GetRequiredService<ILogger<App>>();
+
+        logger.Info($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture}), .NET {Environment.Version}");
+        logger.Info($"Windowing backend: {GetWindowingBackendName()}");
+
+        if(OperatingSystem.IsLinux())
+        {
+            logger.Info($"Session type: {GetVariable("XDG_SESSION_TYPE")}, desktop: {GetVariable("XDG_CURRENT_DESKTOP")}, WAYLAND_DISPLAY: {GetVariable("WAYLAND_DISPLAY")}, DISPLAY: {GetVariable("DISPLAY")}");
+        }
+    }
+
+    private static string GetWindowingBackendName()
+    {
+        if(OperatingSystem.IsWindows())
+        {
+            return "Win32";
+        }
+
+        if(OperatingSystem.IsMacOS())
+        {
+            return "macOS";
+        }
+
+        return Program.IsWaylandSession ? "Wayland" : "X11";
+    }
+
+    private static string GetVariable(string name)
+    {
+        return Environment.GetEnvironmentVariable(name) ?? "<unset>";
     }
 
     private void InitializeMainWindowVm()

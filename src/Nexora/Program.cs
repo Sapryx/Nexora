@@ -5,6 +5,8 @@ namespace Nexora;
 
 sealed class Program
 {
+    public static bool IsWaylandSession => OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
+
     [STAThread]
     public static void Main(string[] args) => BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
 
@@ -12,7 +14,7 @@ sealed class Program
     {
         var builder = AppBuilder.Configure<App>().UsePlatformDetect();
 
-        if(OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null)
+        if(IsWaylandSession)
         {
             builder = builder.UseWayland();
         }
