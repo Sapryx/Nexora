@@ -36,7 +36,7 @@ public partial class TrackControlVm : CoveredTrackVm
         var metadata = playlistItem.AudioTrack.Metadata;
         var duration = metadata.Duration;
         SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
-        Duration = $"{duration.TotalMinutes:00}:{duration.Seconds:00}";
+        Duration = $"{(int)duration.TotalMinutes:00}:{duration.Seconds:00}";
 
         audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
         {
