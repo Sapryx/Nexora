@@ -31,6 +31,10 @@ Single test: add `--filter "FullyQualifiedName~LruCacheTests"`.
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
 Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 
+## Verification
+
+Cover changes with unit tests. Run the app and verify the change in it (integration testing) only when unit tests can't cover the behavior: layout and rendering, focus and input handling, window behavior, real playback, startup and DI wiring. Pure logic (Core, view models) is verified by unit tests alone.
+
 ## Debugging
 
 - Logs: `%APPDATA%/Nexora/logs/session.log` (overwritten on every launch), crashes — `crash-*.log` in the same folder. Read the log tail instead of taking screenshots.
