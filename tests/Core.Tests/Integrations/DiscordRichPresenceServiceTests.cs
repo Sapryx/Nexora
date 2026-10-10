@@ -1,6 +1,10 @@
 using Core.Integrations;
+using Core.Logging;
 using Core.Playback;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Tests.Shared.Logging;
 
 namespace Core.Tests.Integrations;
 
@@ -48,9 +52,49 @@ public class DiscordRichPresenceServiceTests
     }
 
     [Fact]
+    public void OnConnectionFailed_CalledRepeatedly_LogsInfoOnce()
+    {
+        var logger = new TestLogger<DiscordRichPresenceService>();
+        using var service = new DiscordRichPresenceService(Mock.Of<IAudioPlayer>(), logger, NullLogger<DiscordRpcLogger>.Instance);
+
+        service.OnConnectionFailed();
+        service.OnConnectionFailed();
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Information, entry.Level);
+        Assert.StartsWith("(Discord)", entry.Message);
+    }
+
+    [Fact]
+    public void OnConnectionFailed_AfterReady_LogsAgain()
+    {
+        var logger = new TestLogger<DiscordRichPresenceService>();
+        using var service = new DiscordRichPresenceService(Mock.Of<IAudioPlayer>(), logger, NullLogger<DiscordRpcLogger>.Instance);
+        service.OnConnectionFailed();
+        service.OnReady("user");
+
+        service.OnConnectionFailed();
+
+        Assert.Equal(2, logger.Entries.Count(it => it.Message.Contains("not running")));
+    }
+
+    [Fact]
+    public void OnReady_Called_LogsInfoWithUsername()
+    {
+        var logger = new TestLogger<DiscordRichPresenceService>();
+        using var service = new DiscordRichPresenceService(Mock.Of<IAudioPlayer>(), logger, NullLogger<DiscordRpcLogger>.Instance);
+
+        service.OnReady("user");
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Information, entry.Level);
+        Assert.Equal("(Discord) Connected as user", entry.Message);
+    }
+
+    [Fact]
     public void UpdateStatus_TextLongerThanLimit_DoesNotThrow()
     {
-        using var service = new DiscordRichPresenceService(Mock.Of<IAudioPlayer>());
+        using var service = new DiscordRichPresenceService(Mock.Of<IAudioPlayer>(), NullLogger<DiscordRichPresenceService>.Instance, NullLogger<DiscordRpcLogger>.Instance);
         string text = new string('a', 300);
 
         var exception = Record.Exception(() => service.UpdateStatus(text, text));

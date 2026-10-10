@@ -1,4 +1,5 @@
 using Core.Logging;
+using Microsoft.Extensions.Logging;
 using Nexora.Logging;
 
 namespace Nexora.Tests.Logging;
@@ -38,6 +39,19 @@ public class LoggingInitializerTests : IDisposable
         loggerFactory.CreateLogger("Test").Info($"Running");
 
         Assert.True(SpinWait.SpinUntil(() => ReadShared(logPath).Contains("[Info] Running"), TimeSpan.FromSeconds(5)));
+    }
+
+    [Fact]
+    public void CreateLoggerFactory_DiscordRpcMessagesBelowInfo_AreNotWritten()
+    {
+        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath))
+        {
+            var rpcLogger = new DiscordRpcLogger(loggerFactory.CreateLogger<DiscordRpcLogger>());
+            rpcLogger.Error("Failed connection to discord-ipc-0.");
+            loggerFactory.CreateLogger("Test").Info($"After Discord");
+        }
+
+        Assert.EndsWith("[Info] After Discord", File.ReadAllLines(logPath).Single());
     }
 
     private static string ReadShared(string path)

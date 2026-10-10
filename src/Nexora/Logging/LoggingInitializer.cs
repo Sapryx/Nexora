@@ -1,5 +1,7 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using Core.Logging;
 using Microsoft.Extensions.Logging;
 using ZLogger;
 using AvaloniaLogger = Avalonia.Logging.Logger;
@@ -19,6 +21,7 @@ public static class LoggingInitializer
         var loggerFactory = CreateLoggerFactory(sessionLogPath);
 
         AvaloniaLogger.Sink = new AvaloniaLogSink(loggerFactory.CreateLogger<AvaloniaLogSink>());
+        Trace.Listeners.Add(new DiagnosticsLogListener(loggerFactory.CreateLogger<DiagnosticsLogListener>()));
         SessionLogFiles.DeleteOld(sessionLogPath, KeptSessionLogCount, loggerFactory.CreateLogger(typeof(SessionLogFiles)));
 
         return loggerFactory;
@@ -29,6 +32,7 @@ public static class LoggingInitializer
         return LoggerFactory.Create(logging =>
         {
             logging.SetMinimumLevel(LogLevel.Trace);
+            logging.AddFilter(typeof(DiscordRpcLogger).FullName, LogLevel.Information);
             logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
 
             if(!OperatingSystem.IsWindows() || WindowsConsole.TryAttachStandardOutput())
