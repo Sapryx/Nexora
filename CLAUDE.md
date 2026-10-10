@@ -63,9 +63,25 @@ If the `rider` MCP server is available (Rider must be running with this project)
 
 ## Logging
 
+- Everything logging-related (adapters for third-party loggers, sinks, crash logging, test loggers) lives in a `Logging` directory and namespace: `Core.Logging`, `Nexora.Logging`, `Tests.Shared.Logging`, and `Core.Tests.Logging`/`Nexora.Tests.Logging` for tests of logging code.
 - Inject `ILogger<T>` via the constructor.
 - Log through the `Core.Logging` extensions (ZLogger-based) with interpolated strings: `logger.Info($"Loaded {count} tracks")`. Levels: `Trace`, `Debug`, `Info`, `Warn`, `Error`, `Crit`; each has an overload taking an `Exception` first.
 - Do not use `LogInformation`/`ZLogInformation` and friends directly.
+- Levels:
+  - `Trace`/`Debug` — details of individual items and steps;
+  - `Info` — startup and one-off lifecycle events;
+  - `Warn` — recoverable failures the app works around (a skipped file, a missing cover, an optional integration failing);
+  - `Error` — an operation failed and its result is lost (track loading, playback);
+  - `Crit` — only unhandled exceptions (`CrashLogger`).
+- Name the subject in the message (file path, track) and pass the exception to the `Exception` overload instead of formatting it into the message.
+- Catch-all `catch(Exception)` only at boundaries where one failure must not break the rest (per file, per cover), and always log it.
+- Don't log in paths that run per keystroke, per frame or per playback position update.
+- Third-party libraries log into the same session log with a prefix and adjusted levels:
+  - `(Avalonia) <area>:` — `AvaloniaLogSink`, `Warning` as `Warn`, `Error`/`Fatal` as `Error`, lower levels dropped;
+  - `(LibVLC) <module>:` — `LibVlcLogForwarder`, errors as `Error`, warnings and notices as `Debug`, debug messages dropped. LibVLCSharp raises `Log` via `Task.Run`, so these lines may be slightly out of order and the last ones before a crash may be missing;
+  - `(Discord)` — `DiscordRpcLogger`, library errors as `Debug`, info and warnings as `Trace`, its trace dropped. The library reconnects forever while Discord is closed, so `LoggingInitializer` filters the `DiscordRpcLogger` category below `Information`, which hides all library output; lower that filter to debug the integration. `DiscordRichPresenceService` itself logs connecting, Discord errors (`Warn`) and, once per disconnect, that Discord is not running;
+  - `(Diagnostics)` — `DiagnosticsLogListener` for `System.Diagnostics.Trace`/`Debug` output (Svg parsing errors, LibVLCSharp native library loading): `Error` as `Warn`, `Warning` and plain `WriteLine` as `Debug`. Prefixes must not reuse level names, or a line looks like it has two levels.
+- Native libraries we call directly (libxkbcommon, libwayland-client) still print their own errors to stderr; our wrappers log the resulting failure.
 - Tests that check log output use `TestLogger<T>` (records `LogEntry` items with level, message and exception); ZLogger messages can't be matched with Moq `Verify` because they are formatted only during the `Log` call.
 
 ## Null safety
