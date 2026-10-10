@@ -1,4 +1,5 @@
 using Core.Playlists;
+using Core.Storage;
 using LibVLCSharp.Shared;
 
 namespace Core.Playback;
@@ -10,8 +11,13 @@ public class AudioPlayer : IAudioPlayer
 
     public int Volume
     {
-        get => mediaPlayer.Volume;
-        set => mediaPlayer.Volume = value;
+        get => volume;
+        set
+        {
+            volume = value;
+            mediaPlayer.Volume = value;
+            volumeStorage.Save(value);
+        }
     }
 
     public float PlaybackPosition
@@ -26,8 +32,11 @@ public class AudioPlayer : IAudioPlayer
         set => mediaPlayer.Mute = value;
     }
 
+    private const int DefaultVolume = 50;
     private readonly LibVLC vlc;
     private readonly MediaPlayer mediaPlayer;
+    private readonly IVolumeStorage volumeStorage;
+    private int volume;
 
     public event Action? PlaybackStarted;
     public event Action<float>? PlaybackPositionChanged;
@@ -37,17 +46,21 @@ public class AudioPlayer : IAudioPlayer
     public event Action<float>? VolumeChanged;
     public event Action<bool>? MuteChanged;
 
-    public AudioPlayer(LibVLC vlc)
+    public AudioPlayer(LibVLC vlc, IVolumeStorage volumeStorage)
     {
         this.vlc = vlc;
+        this.volumeStorage = volumeStorage;
         mediaPlayer = new MediaPlayer(vlc);
+
+        volume = volumeStorage.Load() ?? DefaultVolume;
+        mediaPlayer.Volume = volume;
 
         mediaPlayer.PositionChanged += (_, args) => PlaybackPositionChanged?.Invoke(args.Position);
         mediaPlayer.Playing += (_, _) => PlaybackStarted?.Invoke();
         mediaPlayer.Playing += (_, _) => PlaybackResumed?.Invoke();
         mediaPlayer.EndReached += (_, _) => PlaybackFinished?.Invoke();
         mediaPlayer.Paused += (_, _) => PlaybackPaused?.Invoke();
-        mediaPlayer.VolumeChanged += (_, args) => VolumeChanged?.Invoke(args.Volume * 100f);
+        mediaPlayer.VolumeChanged += (_, args) => OnVolumeChanged(args.Volume * 100f);
         mediaPlayer.Muted += (_, _) => MuteChanged?.Invoke(Mute);
         mediaPlayer.Unmuted += (_, _) => MuteChanged?.Invoke(Mute);
     }
@@ -97,6 +110,24 @@ public class AudioPlayer : IAudioPlayer
     public void SkipBack()
     {
         Skip(-5);
+    }
+
+    private void OnVolumeChanged(float newVolume)
+    {
+        if(newVolume < 0)
+        {
+            return;
+        }
+
+        int roundedVolume = (int)MathF.Round(newVolume);
+
+        if(roundedVolume != volume)
+        {
+            volume = roundedVolume;
+            volumeStorage.Save(roundedVolume);
+        }
+
+        VolumeChanged?.Invoke(newVolume);
     }
 
     private void Skip(float amount)

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Core.Integrations;
 using Core.Logging;
 using Core.Playback;
@@ -7,6 +8,7 @@ using Core.Search;
 using Core.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nexora.Input;
 using Nexora.Media;
 using Nexora.Threading;
@@ -17,6 +19,8 @@ namespace Nexora;
 
 public static class CompositionRoot
 {
+    private static readonly string VolumeFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify), "Nexora", "volume.txt");
+
     public static void Configure(ServiceCollection builder)
     {
         builder.AddSingleton<LibVlcLogForwarder>();
@@ -31,6 +35,7 @@ public static class CompositionRoot
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<IAudioPlayer, AudioPlayer>();
+        builder.AddSingleton<IVolumeStorage>(provider => new FileVolumeStorage(VolumeFilePath, provider.GetRequiredService<ILogger<FileVolumeStorage>>()));
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
         builder.AddSingleton<KeyboardLayoutTranslator>();
