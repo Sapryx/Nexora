@@ -40,6 +40,7 @@ Cover changes with unit tests. Run the app and verify the change in it (integrat
 
 - Logs: `%APPDATA%/Nexora/logs/session.log` (overwritten on every launch), crashes — `crash-*.log` in the same folder. Read the log tail instead of taking screenshots.
 - The same logs go to stdout; on Windows (`WinExe`) the app attaches to the console of the terminal it was started from, so `dotnet run` prints them.
+- Only one instance runs at a time (named mutex in `Program.Main`): a second launch exits immediately without logging.
 - Music is loaded from `Environment.SpecialFolder.MyMusic` (`MusicDirectoryProvider`).
 - Avalonia DevTools (F12) are available in Debug.
 
