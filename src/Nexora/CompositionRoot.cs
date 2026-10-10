@@ -1,5 +1,6 @@
 using System;
 using Core.Integrations;
+using Core.Logging;
 using Core.Playback;
 using Core.Playlists;
 using Core.Search;
@@ -18,9 +19,8 @@ public static class CompositionRoot
 {
     public static void Configure(ServiceCollection builder)
     {
-        var vlc = new LibVLC("--no-video");
-        builder.AddSingleton(vlc);
-        
+        builder.AddSingleton<LibVlcLogForwarder>();
+        builder.AddSingleton(provider => CreateLibVlc(provider.GetRequiredService<LibVlcLogForwarder>()));
         builder.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         builder.AddSingleton<ITrackControlVmFactory, TrackControlVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
@@ -51,5 +51,13 @@ public static class CompositionRoot
         builder.AddSingleton<MainWindowVm>();
         builder.AddSingleton<SearchBarVm>();
         builder.AddSingleton<PlaybackVm>();
+    }
+
+    private static LibVLC CreateLibVlc(LibVlcLogForwarder logForwarder)
+    {
+        var vlc = new LibVLC("--no-video");
+        vlc.Log += (_, e) => logForwarder.Forward(e.Level, e.Module, e.Message);
+
+        return vlc;
     }
 }
