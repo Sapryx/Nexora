@@ -41,11 +41,18 @@ public class FileTrackLoader : ITrackLoader
 
         Parallel.ForEach(musicDirectoryEnumerator, parallelOptions, file =>
         {
-            var metadata = metadataLoader.Load(file);
-            var audioTrack = new AudioTrack(file, metadata);
+            try
+            {
+                var metadata = metadataLoader.Load(file);
+                var audioTrack = new AudioTrack(file, metadata);
 
-            audioTracks.Add(audioTrack);
-            logger.Info($"Loaded track {audioTrack.ToString()}");
+                audioTracks.Add(audioTrack);
+                logger.Debug($"Loaded track {audioTrack.ToString()}");
+            }
+            catch(Exception ex)
+            {
+                logger.Warn(ex, $"Skipped unreadable file {file}");
+            }
         });
 
         logger.Info($"Loaded {audioTracks.Count} tracks");

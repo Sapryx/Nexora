@@ -108,7 +108,7 @@ public partial class App : Application
                 }
                 catch(Exception ex)
                 {
-                    logger.Crit(ex, $"");
+                    logger.Error(ex, $"Failed to load tracks");
                 }
             });
         }
