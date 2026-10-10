@@ -34,20 +34,27 @@ public static class LoggingInitializer
             logging.ClearProviders();
             logging.SetMinimumLevel(LogLevel.Trace);
 
-            logging.AddZLoggerFile(sessionLogPath, options =>
+            logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
+
+            if(!OperatingSystem.IsWindows() || WindowsConsole.TryAttachStandardOutput())
             {
-                options.UsePlainTextFormatter(formatter =>
-                {
-                    // "hh:mm:ss [Info] message"
-                    formatter.SetPrefixFormatter($"{0} [{1}] ",
-                        (in MessageTemplate template, in LogInfo info) =>
-                            template.Format(DateTime.Now.ToString("HH:mm:ss"), GetLevelName(info.LogLevel))
-                    );
-                });
-            });
+                logging.AddZLoggerConsole(UsePlainTextFormatter);
+            }
         });
     }
-    
+
+    private static void UsePlainTextFormatter(ZLoggerOptions options)
+    {
+        options.UsePlainTextFormatter(formatter =>
+        {
+            // "hh:mm:ss [Info] message"
+            formatter.SetPrefixFormatter($"{0} [{1}] ",
+                (in MessageTemplate template, in LogInfo info) =>
+                    template.Format(DateTime.Now.ToString("HH:mm:ss"), GetLevelName(info.LogLevel))
+            );
+        });
+    }
+
     private static string GetLevelName(LogLevel level) => level switch
     {
         LogLevel.Trace => "Trace",
