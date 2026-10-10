@@ -6,10 +6,11 @@ namespace Core.Integrations;
 
 public class DiscordRichPresenceService : IRichPresenceService
 {
+    private const string AppId = "1494383204252258484"; // TODO Pass from outside
+    private const int MaxTextLength = 128;
+    private const string Ellipsis = "…";
     private readonly IAudioPlayer audioPlayer;
     private readonly DiscordRpcClient client;
-    
-    private const string AppId = "1494383204252258484"; // TODO Pass from outside
 
     public DiscordRichPresenceService(IAudioPlayer audioPlayer)
     {
@@ -32,14 +33,34 @@ public class DiscordRichPresenceService : IRichPresenceService
 
     public void UpdateStatus(string title, string artist)
     {
-        var richPresence = new RichPresence()
+        client.SetPresence(CreatePresence(title, artist));
+    }
+
+    public static RichPresence CreatePresence(string title, string artist)
+    {
+        return new RichPresence()
         {
-            Details = title,
-            State = artist,
+            Details = Truncate(title),
+            State = Truncate(artist),
             Type = ActivityType.Listening
         };
-        
-        client.SetPresence(richPresence);
+    }
+
+    private static string Truncate(string text)
+    {
+        if(text.Length <= MaxTextLength)
+        {
+            return text;
+        }
+
+        int length = MaxTextLength - Ellipsis.Length;
+
+        if(char.IsHighSurrogate(text[length - 1]))
+        {
+            length--;
+        }
+
+        return text.Substring(0, length) + Ellipsis;
     }
 
     private void OnPlaybackStarted()
