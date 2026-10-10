@@ -58,6 +58,8 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - Local variables: lowercase built-in types (`bool`, `byte`, `sbyte`, `char`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `nint`, `nuint`, `float`, `double`, `decimal`, `string`) are spelled out explicitly (`int count = 0;`); everything else uses `var`.
 - No local functions. Lambdas are fine.
 - No target-typed `new()`: always spell out the type (`new Playlist()`). Parentheses are required even with an object initializer: `new Metadata() { Title = title }`.
+- No tuples (`(int, string)`, `(a, b) = ...`, tuple literals in asserts): declare a small class with named properties instead.
+- No range syntax with two dots: neither ranges (`text[..length]`, `items[1..]`) nor spread in collection expressions (`[.. items]`). Use `Substring`, `Take`/`Skip`, `ToList()`/`Concat()` instead.
 - Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), not `Dispatcher.UIThread` directly, so view models stay testable.
 - Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers (`TestLogger<T>` when the test checks what is logged).
 
