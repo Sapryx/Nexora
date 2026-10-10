@@ -14,6 +14,7 @@ All text in the project must be in English: code, comments, log messages, except
 - DI registrations: `src/Nexora/CompositionRoot.cs`. Register new services there.
 - `tests/Core.Tests` — xUnit + Moq, covers Core.
 - `tests/Nexora.Tests` — xUnit + Moq, covers view models (no Avalonia platform needed: `IUiDispatcher` is mocked to run actions inline).
+- `tests/Tests.Shared` — class library with test helpers shared by both test projects (`Logging/TestLogger`, `Logging/LogEntry`). Put a helper here instead of copying it into each test project.
 - Shared build properties: `Directory.Build.props`. Package versions are managed centrally in `Directory.Packages.props` — `PackageReference` items in `.csproj` have no `Version`.
 
 ## Commands
@@ -57,13 +58,14 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - No local functions. Lambdas are fine.
 - No target-typed `new()`: always spell out the type (`new Playlist()`). Parentheses are required even with an object initializer: `new Metadata() { Title = title }`.
 - Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), not `Dispatcher.UIThread` directly, so view models stay testable.
-- Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers.
+- Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers (`TestLogger<T>` when the test checks what is logged).
 
 ## Logging
 
 - Inject `ILogger<T>` via the constructor.
 - Log through the `Core.Logging` extensions (ZLogger-based) with interpolated strings: `logger.Info($"Loaded {count} tracks")`. Levels: `Trace`, `Debug`, `Info`, `Warn`, `Error`, `Crit`; each has an overload taking an `Exception` first.
 - Do not use `LogInformation`/`ZLogInformation` and friends directly.
+- Tests that check log output use `TestLogger<T>` (records `LogEntry` items with level, message and exception); ZLogger messages can't be matched with Moq `Verify` because they are formatted only during the `Log` call.
 
 ## Null safety
 
