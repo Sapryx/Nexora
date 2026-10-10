@@ -9,7 +9,8 @@
              x:DataType="controls:TrackArea"
              x:Name="Root">
     <Border Margin="0, 16, 0, 0">
-        <ListBox ItemsSource="{Binding #Root.TrackVms}"
+        <ListBox x:Name="TrackList"
+                 ItemsSource="{Binding #Root.TrackVms}"
                  SelectionChanged="OnSelectionChanged"
                  ScrollViewer.AllowAutoHide="False"
                  Background="Transparent"
