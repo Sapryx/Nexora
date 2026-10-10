@@ -39,7 +39,7 @@ Cover changes with unit tests. Run the app and verify the change in it (integrat
 ## Debugging
 
 - Logs: `%APPDATA%/Nexora/logs/session-<yyyy-MM-dd_HH-mm-ss>.log` (`~/.config/Nexora/logs` on Linux), one file per launch, the 10 newest are kept. Unhandled exceptions are written there as `[Crit]` with the stack trace. Read the log tail instead of taking screenshots.
-- The same logs go to stdout; on Windows (`WinExe`) the app attaches to the console of the terminal it was started from, so `dotnet run` prints them.
+- The same logs go to stdout; on Windows (`WinExe`) the app attaches to the console of the terminal it was started from, so `dotnet run` prints them. Console lines are colored as a whole with ANSI codes (gray Trace/Debug, yellow Warn, red Error, white on red Crit, including the exception text), also when stdout is redirected; only the log file is plain text. When grepping captured stdout, strip `\x1b[...m` codes first.
 - Only one instance runs at a time (named mutex in `Program.Main`): a second launch exits immediately without logging.
 - Music is loaded from `Environment.SpecialFolder.MyMusic` (`MusicDirectoryProvider`).
 - Avalonia DevTools (F12) are available in Debug.
