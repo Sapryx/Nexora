@@ -1,4 +1,5 @@
 using Core.Playback;
+using Core.Playlists;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
@@ -228,5 +229,43 @@ public class PlaybackVmTests
         audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.3f);
 
         Assert.Equal(0.8f, vm.PlaybackPosition);
+    }
+
+    [Fact]
+    public void PreviewSeek_TrackPlaying_ShowsTimeAtPosition()
+    {
+        SetupNowPlaying(TimeSpan.FromSeconds(200));
+
+        vm.PreviewSeek(0.5);
+
+        Assert.Equal("01:40", vm.SeekPreviewTime);
+    }
+
+    [Fact]
+    public void PreviewSeek_PositionOutOfRange_ClampsToTrackBounds()
+    {
+        SetupNowPlaying(TimeSpan.FromSeconds(200));
+
+        vm.PreviewSeek(1.5);
+
+        Assert.Equal("03:20", vm.SeekPreviewTime);
+    }
+
+    [Fact]
+    public void PreviewSeek_NothingPlaying_HidesPreview()
+    {
+        vm.PreviewSeek(0.5);
+
+        Assert.Null(vm.SeekPreviewTime);
+    }
+
+    private void SetupNowPlaying(TimeSpan duration)
+    {
+        var metadata = new Metadata() { Duration = duration };
+        var playlistItem = Mock.Of<IPlaylistItem>(it => it.AudioTrack.Metadata == metadata);
+
+        audioPlayerMock
+            .SetupGet(it => it.NowPlaying)
+            .Returns(playlistItem);
     }
 }

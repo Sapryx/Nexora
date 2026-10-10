@@ -24,6 +24,9 @@ public partial class PlaybackVm : ViewModelBase
     [ObservableProperty]
     public partial bool IsMuted { get; private set; }
 
+    [ObservableProperty]
+    public partial string? SeekPreviewTime { get; private set; }
+
     public bool IsDraggingVolume { get; set; }
     public bool IsDraggingPosition { get; set; }
     
@@ -119,6 +122,20 @@ public partial class PlaybackVm : ViewModelBase
     public void SkipBack()
     {
         audioPlayer.SkipBack();
+    }
+
+    public void PreviewSeek(double position)
+    {
+        var nowPlaying = audioPlayer.NowPlaying;
+
+        if(nowPlaying is null)
+        {
+            SeekPreviewTime = null;
+            return;
+        }
+
+        var time = nowPlaying.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
+        SeekPreviewTime = $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
     }
     
     partial void OnVolumeChanged(int value)

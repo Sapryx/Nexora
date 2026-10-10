@@ -41,6 +41,8 @@ public partial class PlaybackControl : UserControl
             PointerCaptureLostEvent,
             PlaybackPositionSlider_OnPointerReleased,
             RoutingStrategies.Bubble);
+
+        PlaybackPositionSlider.PointerMoved += PlaybackPositionSlider_OnPointerMoved;
     }
 
     private void VolumeSlider_OnPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -73,5 +75,20 @@ public partial class PlaybackControl : UserControl
         {
             vm.IsDraggingPosition = false;
         }
+    }
+
+    private void PlaybackPositionSlider_OnPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if(DataContext is not PlaybackVm vm)
+        {
+            return;
+        }
+
+        double pointerX = e.GetPosition(PlaybackPositionSlider).X;
+        double width = PlaybackPositionSlider.Bounds.Width;
+
+        vm.PreviewSeek(pointerX / width);
+        ToolTip.SetHorizontalOffset(PlaybackPositionSlider, pointerX - width / 2);
+        ToolTip.SetIsOpen(PlaybackPositionSlider, vm.SeekPreviewTime is not null);
     }
 }
