@@ -66,9 +66,33 @@ public class TrackSearchQueryTests
     }
 
     [Fact]
-    public void Matches_MissingLetter_ReturnsFalse()
+    public void Matches_MissingLetter_ReturnsTrue()
     {
-        Assert.False(new TrackSearchQuery("metalica").Matches(enterSandman));
+        Assert.True(new TrackSearchQuery("metalica").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_ExtraLetter_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("sandmman").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_TransposedAdjacentLetters_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("metlalica").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_MissingLetterInFourCharacterQuery_ReturnsFalse()
+    {
+        Assert.False(new TrackSearchQuery("sadm").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_MissingAndExtraLetterInNineCharacterQuery_ReturnsFalse()
+    {
+        Assert.False(new TrackSearchQuery("mettalica").Matches(enterSandman));
     }
 
     [Fact]

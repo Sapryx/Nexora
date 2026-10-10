@@ -8,7 +8,7 @@ All text in the project must be in English: code, comments, log messages, except
 
 ## Structure
 
-- `src/Core` — domain logic and its implementations, no UI: `Playback` (`IAudioTrack`, `IAudioPlayer`, `AudioPlayer` on LibVLC), `Playlists` (`Playlist`, `PlaylistRegistry` with `GlobalPlaylist`), `Storage` (`FileTrackLoader`, `TagLib*Loader` for metadata and covers, music directory/format/parallelism providers), `Search` (`TrackSearchQuery`: case-insensitive substring search over title/artists tolerating substitution typos by Hamming distance), `Collections/LruCache`, `Integrations` (`DiscordRichPresenceService`), `Logging`. Must not depend on Avalonia or other UI libraries.
+- `src/Core` — domain logic and its implementations, no UI: `Playback` (`IAudioTrack`, `IAudioPlayer`, `AudioPlayer` on LibVLC), `Playlists` (`Playlist`, `PlaylistRegistry` with `GlobalPlaylist`), `Storage` (`FileTrackLoader`, `TagLib*Loader` for metadata and covers, music directory/format/parallelism providers), `Search` (`TrackSearchQuery`: case-insensitive substring search over title/artists tolerating typos by optimal string alignment Damerau-Levenshtein distance), `Collections/LruCache`, `Integrations` (`DiscordRichPresenceService`), `Logging`. Must not depend on Avalonia or other UI libraries.
 - `src/Nexora.Theme` — styles and resources (`*.axaml`), no logic.
 - `src/Nexora` — the application: `ViewModels/` (`*Vm`, factories in `Factories/`), `Controls/` and `Views/` (axaml + code-behind), `Media/CoverCache`, `Threading/` (`IUiDispatcher`), `Render/` (SkSL dithering shader), `Logging/`.
 - DI registrations: `src/Nexora/CompositionRoot.cs`. Register new services there.
