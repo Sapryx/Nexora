@@ -38,7 +38,8 @@ Cover changes with unit tests. Run the app and verify the change in it (integrat
 
 ## Debugging
 
-- Logs: `%APPDATA%/Nexora/logs/session-<yyyy-MM-dd_HH-mm-ss>.log` (`~/.config/Nexora/logs` on Linux), one file per launch, the 10 newest are kept. Unhandled exceptions are written there as `[Crit]` with the stack trace. Read the log tail instead of taking screenshots.
+- Logs: `%APPDATA%/Nexora/logs/session-<yyyy-MM-dd_HH-mm-ss>.log` (`~/.config/Nexora/logs` on Linux), one file per launch, the 10 newest are kept. Unhandled exceptions are written there as `[Crit ]` with the stack trace. Level names are padded to 5 characters inside the brackets (`[Info ]`, `[Warn ]`, `[Crit ]`) so messages line up. Read the log tail instead of taking screenshots.
+- Minimum log level is `Info` by default; pass `--log-level trace|debug|info|warn|error|crit` to change it (`LogLevelArgument`), e.g. `dotnet run --project src/Nexora -- --log-level trace`. The log starts with a level legend (`LoggingInitializer.LogLevelLegend`): one line per level, written at that level so the console shows its color, with `<--` at the chosen one; its category bypasses the minimum level, so these lines (including `[Error]` and `[Crit ]`) are in every log and are not real errors. An unknown value logs a warning and keeps the default.
 - The same logs go to stdout; on Windows (`WinExe`) the app attaches to the console of the terminal it was started from, so `dotnet run` prints them. Console lines are colored as a whole with ANSI codes (gray Trace/Debug, yellow Warn, red Error, white on red Crit, including the exception text), also when stdout is redirected; only the log file is plain text. When grepping captured stdout, strip `\x1b[...m` codes first.
 - Only one instance runs at a time (named mutex in `Program.Main`): a second launch exits immediately without logging.
 - Music is loaded from `Environment.SpecialFolder.MyMusic` (`MusicDirectoryProvider`).
@@ -74,7 +75,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
   - `Info` — startup and one-off lifecycle events;
   - `Warn` — recoverable failures the app works around (a skipped file, a missing cover, an optional integration failing);
   - `Error` — an operation failed and its result is lost (track loading, playback);
-  - `Crit` — only unhandled exceptions (`CrashLogger`).
+  - `Crit` — only unhandled exceptions (`CrashLogger`), plus the empty `[Crit ]` line of the startup level legend.
 - Name the subject in the message (file path, track) and pass the exception to the `Exception` overload instead of formatting it into the message.
 - Catch-all `catch(Exception)` only at boundaries where one failure must not break the rest (per file, per cover), and always log it.
 - Don't log in paths that run per keystroke, per frame or per playback position update.

@@ -21,7 +21,7 @@ sealed class Program
             return;
         }
 
-        using var loggerFactory = LoggingInitializer.Initialize();
+        using var loggerFactory = LoggingInitializer.Initialize(args);
         var crashLogger = new CrashLogger(loggerFactory);
         crashLogger.Register();
 

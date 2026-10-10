@@ -26,15 +26,15 @@ public class CrashLoggerTests : IDisposable
     [Fact]
     public void LogUnhandledException_AfterOtherEntries_FlushesAllOfThemWithStackTraceToFile()
     {
-        var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath);
+        var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Trace);
         var crashLogger = new CrashLogger(loggerFactory);
         loggerFactory.CreateLogger("Test").Info($"Before crash");
 
         crashLogger.LogUnhandledException(CreateThrownException());
 
         string[] lines = File.ReadAllLines(logPath);
-        Assert.EndsWith("[Info] Before crash", lines[0]);
-        Assert.EndsWith("[Crit] Unhandled exception, the application is terminating", lines[1]);
+        Assert.EndsWith("[Info ] Before crash", lines[0]);
+        Assert.EndsWith("[Crit ] Unhandled exception, the application is terminating", lines[1]);
         Assert.Equal("System.InvalidOperationException: Boom", lines[2]);
         Assert.Contains(lines, it => it.Contains(nameof(CreateThrownException)));
     }

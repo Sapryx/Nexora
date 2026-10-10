@@ -27,35 +27,60 @@ public class LoggingInitializerTests : IDisposable
     [Fact]
     public void CreateLoggerFactory_MessageLogged_WritesTimeWithMillisecondsAndLevel()
     {
-        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath))
+        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Trace))
         {
             loggerFactory.CreateLogger("Test").Warn($"Hello");
         }
 
-        Assert.Matches(@"^\d{2}:\d{2}:\d{2}\.\d{3} \[Warn\] Hello$", File.ReadAllLines(logPath).Single());
+        Assert.Matches(@"^\d{2}:\d{2}:\d{2}\.\d{3} \[Warn \] Hello$", File.ReadAllLines(logPath).Single());
     }
 
     [Fact]
     public void CreateLoggerFactory_MessageLogged_IsReadableFromFileWhileFactoryIsAlive()
     {
-        using var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath);
+        using var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Trace);
 
         loggerFactory.CreateLogger("Test").Info($"Running");
 
-        Assert.True(SpinWait.SpinUntil(() => ReadShared(logPath).Contains("[Info] Running"), TimeSpan.FromSeconds(5)));
+        Assert.True(SpinWait.SpinUntil(() => ReadShared(logPath).Contains("[Info ] Running"), TimeSpan.FromSeconds(5)));
     }
 
     [Fact]
     public void CreateLoggerFactory_DiscordRpcMessagesBelowInfo_AreNotWritten()
     {
-        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath))
+        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Trace))
         {
             var rpcLogger = new DiscordRpcLogger(loggerFactory.CreateLogger<DiscordRpcLogger>());
             rpcLogger.Error("Failed connection to discord-ipc-0.");
             loggerFactory.CreateLogger("Test").Info($"After Discord");
         }
 
-        Assert.EndsWith("[Info] After Discord", File.ReadAllLines(logPath).Single());
+        Assert.EndsWith("[Info ] After Discord", File.ReadAllLines(logPath).Single());
+    }
+
+    [Fact]
+    public void CreateLoggerFactory_MessagesBelowMinimumLevel_AreNotWritten()
+    {
+        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Information))
+        {
+            var logger = loggerFactory.CreateLogger("Test");
+            logger.Debug($"Hidden");
+            logger.Info($"Shown");
+        }
+
+        Assert.EndsWith("[Info ] Shown", File.ReadAllLines(logPath).Single());
+    }
+
+    [Fact]
+    public void LogLevelLegend_MinimumLevelAboveTrace_WritesAllLevelsAndMarksCurrent()
+    {
+        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Warning))
+        {
+            LoggingInitializer.LogLevelLegend(loggerFactory, LogLevel.Warning);
+        }
+
+        string[] messages = File.ReadAllLines(logPath).Select(it => it.Substring(it.IndexOf('[')).TrimEnd()).ToArray();
+        Assert.Equal(["[Info ] Minimum log level:", "[Trace]", "[Debug]", "[Info ]", "[Warn ] <--", "[Error]", "[Crit ]"], messages);
     }
 
     [Theory]
@@ -67,7 +92,7 @@ public class LoggingInitializerTests : IDisposable
     {
         string output = LogColored(logger => logger.Log(level, "(LibVLC) main: Hello"));
 
-        Assert.Matches($@"^{Regex.Escape(color)}\d{{2}}:\d{{2}}:\d{{2}}\.\d{{3}} \[\w+\] \(LibVLC\) main: Hello{Regex.Escape(ResetColor)}\r?\n$", output);
+        Assert.Matches($@"^{Regex.Escape(color)}\d{{2}}:\d{{2}}:\d{{2}}\.\d{{3}} \[[\w ]{{5}}\] \(LibVLC\) main: Hello{Regex.Escape(ResetColor)}\r?\n$", output);
     }
 
     [Fact]
@@ -75,7 +100,7 @@ public class LoggingInitializerTests : IDisposable
     {
         string output = LogColored(logger => logger.Info($"Hello"));
 
-        Assert.Matches($@"^\d{{2}}:\d{{2}}:\d{{2}}\.\d{{3}} \[Info\] Hello{Regex.Escape(ResetColor)}\r?\n$", output);
+        Assert.Matches($@"^\d{{2}}:\d{{2}}:\d{{2}}\.\d{{3}} \[Info \] Hello{Regex.Escape(ResetColor)}\r?\n$", output);
     }
 
     [Fact]
@@ -91,7 +116,7 @@ public class LoggingInitializerTests : IDisposable
     [Fact]
     public void CreateLoggerFactory_MessageLogged_WritesNoColorCodesToFile()
     {
-        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath))
+        using(var loggerFactory = LoggingInitializer.CreateLoggerFactory(logPath, LogLevel.Trace))
         {
             loggerFactory.CreateLogger("Test").Error($"Hello");
         }
