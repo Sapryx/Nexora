@@ -10,7 +10,7 @@ using Core.Playlists;
 using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nexora.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Nexora.ViewModels;
 using Nexora.Views;
 
@@ -19,6 +19,16 @@ namespace Nexora;
 public partial class App : Application
 {
     private static ServiceProvider provider = null!;
+    private readonly ILoggerFactory loggerFactory;
+
+    public App() : this(NullLoggerFactory.Instance)
+    {
+    }
+
+    public App(ILoggerFactory loggerFactory)
+    {
+        this.loggerFactory = loggerFactory;
+    }
 
     public override void Initialize()
     {
@@ -28,7 +38,8 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         var builder = new ServiceCollection();
-        LoggingInitializer.Initialize(builder);
+        builder.AddSingleton(loggerFactory);
+        builder.AddLogging();
         RegisterDiContainer(builder);
         LogEnvironment();
         InitializeMainWindowVm();

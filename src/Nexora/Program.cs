@@ -1,6 +1,7 @@
 using Avalonia;
 using System;
 using System.Threading;
+using Nexora.Logging;
 
 namespace Nexora;
 
@@ -20,12 +21,23 @@ sealed class Program
             return;
         }
 
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        using var loggerFactory = LoggingInitializer.Initialize();
+        var crashLogger = new CrashLogger(loggerFactory);
+        crashLogger.Register();
+
+        BuildAvaloniaApp(() => new App(loggerFactory))
+            .AfterSetup(_ => crashLogger.RegisterUiThread())
+            .StartWithClassicDesktopLifetime(args);
     }
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        var builder = AppBuilder.Configure<App>().UsePlatformDetect();
+        return BuildAvaloniaApp(() => new App()).LogToTrace();
+    }
+
+    private static AppBuilder BuildAvaloniaApp(Func<App> createApp)
+    {
+        var builder = AppBuilder.Configure(createApp).UsePlatformDetect();
 
         if(IsWaylandSession)
         {
@@ -36,7 +48,6 @@ sealed class Program
 #if DEBUG
             .WithDeveloperTools()
 #endif
-            .WithInterFont()
-            .LogToTrace();
+            .WithInterFont();
     }
 }

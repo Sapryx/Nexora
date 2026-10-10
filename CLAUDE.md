@@ -38,7 +38,7 @@ Cover changes with unit tests. Run the app and verify the change in it (integrat
 
 ## Debugging
 
-- Logs: `%APPDATA%/Nexora/logs/session.log` (overwritten on every launch), crashes — `crash-*.log` in the same folder. Read the log tail instead of taking screenshots.
+- Logs: `%APPDATA%/Nexora/logs/session-<yyyy-MM-dd_HH-mm-ss>.log` (`~/.config/Nexora/logs` on Linux), one file per launch, the 10 newest are kept. Unhandled exceptions are written there as `[Crit]` with the stack trace. Read the log tail instead of taking screenshots.
 - The same logs go to stdout; on Windows (`WinExe`) the app attaches to the console of the terminal it was started from, so `dotnet run` prints them.
 - Only one instance runs at a time (named mutex in `Program.Main`): a second launch exits immediately without logging.
 - Music is loaded from `Environment.SpecialFolder.MyMusic` (`MusicDirectoryProvider`).

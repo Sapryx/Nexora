@@ -1,8 +1,5 @@
 using System;
 using System.IO;
-using System.Threading.Tasks;
-using Avalonia.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ZLogger;
 
@@ -10,30 +7,26 @@ namespace Nexora.Logging;
 
 public static class LoggingInitializer
 {
-    public static readonly string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Nexora/logs");
+    private const int KeptSessionLogCount = 10;
+    private static readonly string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify), "Nexora/logs");
 
-    public static void Initialize(ServiceCollection builder)
-    {
-        ConfigureLogging(builder);
-        ConfigureCrashLogging();
-    }
-
-    private static void ConfigureLogging(ServiceCollection builder)
+    public static ILoggerFactory Initialize()
     {
         Directory.CreateDirectory(LogsDirectory);
 
-        string sessionLogPath = Path.Combine(LogsDirectory, "session.log");
+        string sessionLogPath = SessionLogFiles.GetPath(LogsDirectory, DateTime.Now);
+        var loggerFactory = CreateLoggerFactory(sessionLogPath);
 
-        if(File.Exists(sessionLogPath))
-        {
-            File.Delete(sessionLogPath);
-        }
+        SessionLogFiles.DeleteOld(sessionLogPath, KeptSessionLogCount, loggerFactory.CreateLogger(typeof(SessionLogFiles)));
 
-        builder.AddLogging(logging =>
+        return loggerFactory;
+    }
+
+    public static ILoggerFactory CreateLoggerFactory(string sessionLogPath)
+    {
+        return LoggerFactory.Create(logging =>
         {
-            logging.ClearProviders();
             logging.SetMinimumLevel(LogLevel.Trace);
-
             logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
 
             if(!OperatingSystem.IsWindows() || WindowsConsole.TryAttachStandardOutput())
@@ -47,10 +40,9 @@ public static class LoggingInitializer
     {
         options.UsePlainTextFormatter(formatter =>
         {
-            // "hh:mm:ss [Info] message"
-            formatter.SetPrefixFormatter($"{0} [{1}] ",
-                (in MessageTemplate template, in LogInfo info) =>
-                    template.Format(DateTime.Now.ToString("HH:mm:ss"), GetLevelName(info.LogLevel))
+            // "hh:mm:ss.fff [Info] message"
+            formatter.SetPrefixFormatter($"{0:HH:mm:ss.fff} [{1}] ",
+                (in template, in info) => template.Format(info.Timestamp, GetLevelName(info.LogLevel))
             );
         });
     }
@@ -65,37 +57,4 @@ public static class LoggingInitializer
         LogLevel.Critical => "Crit",
         _ => "None"
     };
-
-    private static void ConfigureCrashLogging()
-    {
-        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
-        {
-            WriteCrashLog(e.ExceptionObject as Exception, "AppDomain.UnhandledException");
-        };
-        
-        Dispatcher.UIThread.UnhandledException += (_, e) =>
-        {
-            WriteCrashLog(e.Exception, "Avalonia.UIThread");
-        };
-
-        TaskScheduler.UnobservedTaskException += (_, e) =>
-        {
-            WriteCrashLog(e.Exception, "TaskScheduler.UnobservedTaskException");
-            e.SetObserved();
-        };
-    }
-
-    private static void WriteCrashLog(Exception? ex, string source)
-    {
-        Directory.CreateDirectory(LogsDirectory);
-
-        string currentDateString = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}";
-        string crashLogPath = Path.Combine(LogsDirectory, $"crash-{currentDateString}.log");
-
-        string entry =
-            $"{currentDateString} [CRT] ({source}){Environment.NewLine}" +
-            $"{ex}{Environment.NewLine}{new string('-', 60)}{Environment.NewLine}";
-
-        File.AppendAllText(crashLogPath, entry);
-    }
 }
