@@ -96,6 +96,36 @@ public class TrackSearchQueryTests
     }
 
     [Fact]
+    public void Matches_WordsFromTitleAndArtists_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("metallica sandman").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_WordsInReversedOrder_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("sandman enter").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_TypoInOneOfWords_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("sandman metalica").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_TypoInShortWordOfPhrase_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("entr sandman").Matches(enterSandman));
+    }
+
+    [Fact]
+    public void Matches_OneOfWordsNotFound_ReturnsFalse()
+    {
+        Assert.False(new TrackSearchQuery("metallica complicated").Matches(enterSandman));
+    }
+
+    [Fact]
     public void Matches_QueryLongerThanFields_ReturnsFalse()
     {
         Assert.False(new TrackSearchQuery("enter sandman by metallica").Matches(enterSandman));
