@@ -125,6 +125,32 @@ public class TrackSearchQueryTests
         Assert.False(new TrackSearchQuery("metallica complicated").Matches(enterSandman));
     }
 
+    [Theory]
+    [InlineData("beyonce", "Halo", "Beyoncé")]
+    [InlineData("Beyoncé", "Halo", "Beyonce")]
+    [InlineData("motorhead", "Ace of Spades", "Motörhead")]
+    [InlineData("елка", "Ёлка", "Unknown")]
+    public void Matches_DiacriticsDiffer_ReturnsTrue(string rawQuery, string title, string artists)
+    {
+        Assert.True(new TrackSearchQuery(rawQuery).Matches(CreateTrack(title, artists)));
+    }
+
+    [Theory]
+    [InlineData("im yours", "I'm Yours", "Jason Mraz")]
+    [InlineData("acdc", "Thunderstruck", "AC/DC")]
+    [InlineData("guns n roses", "Paradise City", "Guns N' Roses")]
+    [InlineData("ACDC: thunderstruck!", "Thunderstruck", "AC/DC")]
+    public void Matches_PunctuationDiffers_ReturnsTrue(string rawQuery, string title, string artists)
+    {
+        Assert.True(new TrackSearchQuery(rawQuery).Matches(CreateTrack(title, artists)));
+    }
+
+    [Fact]
+    public void Matches_SpacesAroundRemovedPunctuation_ReturnsTrue()
+    {
+        Assert.True(new TrackSearchQuery("rock and roll").Matches(CreateTrack("Rock - and - Roll", "Unknown")));
+    }
+
     [Fact]
     public void Matches_QueryLongerThanFields_ReturnsFalse()
     {

@@ -1,3 +1,4 @@
+using System.Text;
 using Core.Playback;
 
 namespace Core.Search;
@@ -11,14 +12,14 @@ public class TrackSearchQuery
 
     public TrackSearchQuery(string rawQuery)
     {
-        text = rawQuery.Trim().ToLowerInvariant();
-        words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        text = Normalize(rawQuery);
+        words = text.Split(' ');
     }
 
     public bool Matches(IAudioTrack audioTrack)
     {
-        string title = audioTrack.Metadata.Title.ToLowerInvariant();
-        string artists = audioTrack.Metadata.Artists.ToLowerInvariant();
+        string title = Normalize(audioTrack.Metadata.Title);
+        string artists = Normalize(audioTrack.Metadata.Artists);
 
         if(ContainsApproximately(title, text) || ContainsApproximately(artists, text))
         {
@@ -26,6 +27,26 @@ public class TrackSearchQuery
         }
 
         return words.Length > 1 && words.All(word => ContainsApproximately(title, word) || ContainsApproximately(artists, word));
+    }
+
+    private static string Normalize(string value)
+    {
+        string decomposed = value.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(decomposed.Length);
+
+        foreach(char character in decomposed)
+        {
+            if(char.IsLetterOrDigit(character))
+            {
+                builder.Append(char.ToLowerInvariant(character));
+            }
+            else if(char.IsWhiteSpace(character) && builder.Length > 0 && builder[^1] != ' ')
+            {
+                builder.Append(' ');
+            }
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     private static bool ContainsApproximately(string value, string pattern)
