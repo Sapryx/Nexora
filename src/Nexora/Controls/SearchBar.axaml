@@ -27,8 +27,19 @@
                      Background="Transparent" 
                      Padding="0"
                      Margin="0"
-                     
-                     VerticalContentAlignment="Center"/>
+
+                     VerticalContentAlignment="Center">
+                <TextBox.InnerRightContent>
+                    <Button Command="{Binding ClearSearchQuery}"
+                            IsVisible="{Binding SearchQuery, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            Focusable="False"
+                            CornerRadius="100"
+                            Padding="0"
+                            Background="Transparent">
+                        <controls:Icon IconName="cross" />
+                    </Button>
+                </TextBox.InnerRightContent>
+            </TextBox>
         </Grid>
     </Border>
 </UserControl>

@@ -75,6 +75,19 @@ public class SearchBarVmTests
     }
 
     [Fact]
+    public void ClearSearchQuery_AfterSearch_ClearsQueryAndDisplaysAllTracks()
+    {
+        AddTrack("Enter Sandman", "Metallica");
+        AddTrack("Psycho", "Muse");
+        vm.SearchQuery = "muse";
+
+        vm.ClearSearchQueryCommand.Execute(null);
+
+        Assert.Equal("", vm.SearchQuery);
+        Assert.Equal(["Enter Sandman", "Psycho"], DisplayedTitles());
+    }
+
+    [Fact]
     public void ItemAdded_QueryWithSurroundingSpaces_DisplaysMatchingTrack()
     {
         vm.SearchQuery = "  MUSE ";

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
 using Core.Search;
@@ -49,7 +50,13 @@ public partial class SearchBarVm : ViewModelBase
 
         return audioTrackVm;
     }
-    
+
+    [RelayCommand]
+    public void ClearSearchQuery()
+    {
+        SearchQuery = "";
+    }
+
     partial void OnSearchQueryChanged(string value)
     {
         searchQuery = new TrackSearchQuery(value, layoutTranslator);
