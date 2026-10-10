@@ -73,13 +73,7 @@
                             CornerRadius="100"
                             Padding="8"
                             Background="Transparent">
-                        <Panel>
-                            <controls:Icon IconName="speaker_loud"
-                                           IsVisible="{Binding !IsMuted}" />
-
-                            <controls:Icon IconName="speaker_mute"
-                                           IsVisible="{Binding IsMuted}" />
-                        </Panel>
+                        <controls:Icon IconName="{Binding VolumeIconName}" />
                     </Button>
                     
                     <Slider x:Name="VolumeSlider"

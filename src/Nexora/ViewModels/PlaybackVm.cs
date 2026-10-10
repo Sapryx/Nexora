@@ -19,14 +19,17 @@ public partial class PlaybackVm : ViewModelBase
     public partial TrackViewVm? PlayingTrackViewVm { get; set; }
     
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolumeIconName))]
     public partial int Volume { get; set; }
-    
+
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(VolumeIconName))]
     public partial bool IsMuted { get; private set; }
 
     [ObservableProperty]
     public partial string? SeekPreviewTime { get; private set; }
 
+    public string VolumeIconName => GetVolumeIconName();
     public bool IsDraggingVolume { get; set; }
     public bool IsDraggingPosition { get; set; }
     
@@ -186,6 +189,21 @@ public partial class PlaybackVm : ViewModelBase
         {
             audioPlayer.PlaybackPosition = value;
         }
+    }
+
+    private string GetVolumeIconName()
+    {
+        if(IsMuted)
+        {
+            return "speaker_mute";
+        }
+
+        if(Volume == 0)
+        {
+            return "speaker_silent";
+        }
+
+        return Volume <= 50 ? "speaker_low" : "speaker_loud";
     }
 
     private void SetVolumeDisplay(int volume)

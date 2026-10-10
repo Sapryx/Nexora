@@ -74,6 +74,49 @@ public class PlaybackVmTests
         audioPlayerMock.VerifySet(it => it.Volume = 70);
     }
 
+    [Theory]
+    [InlineData(0, "speaker_silent")]
+    [InlineData(1, "speaker_low")]
+    [InlineData(50, "speaker_low")]
+    [InlineData(51, "speaker_loud")]
+    [InlineData(100, "speaker_loud")]
+    public void VolumeIconName_NotMuted_DependsOnVolume(int volume, string expected)
+    {
+        vm.Volume = volume;
+
+        Assert.Equal(expected, vm.VolumeIconName);
+    }
+
+    [Fact]
+    public void VolumeIconName_Muted_ReturnsMuteIcon()
+    {
+        vm.ToggleMute();
+
+        Assert.Equal("speaker_mute", vm.VolumeIconName);
+    }
+
+    [Fact]
+    public void Volume_Changed_NotifiesVolumeIconNameChanged()
+    {
+        List<string?> changedProperties = [];
+        vm.PropertyChanged += (_, e) => changedProperties.Add(e.PropertyName);
+
+        vm.Volume = 80;
+
+        Assert.Contains(nameof(PlaybackVm.VolumeIconName), changedProperties);
+    }
+
+    [Fact]
+    public void ToggleMute_NotMuted_NotifiesVolumeIconNameChanged()
+    {
+        List<string?> changedProperties = [];
+        vm.PropertyChanged += (_, e) => changedProperties.Add(e.PropertyName);
+
+        vm.ToggleMute();
+
+        Assert.Contains(nameof(PlaybackVm.VolumeIconName), changedProperties);
+    }
+
     [Fact]
     public void Volume_IncreasedByUserWhileMuted_UnmutesWithNewVolume()
     {
