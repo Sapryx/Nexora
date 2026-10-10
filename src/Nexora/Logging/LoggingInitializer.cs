@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using ZLogger;
+using AvaloniaLogger = Avalonia.Logging.Logger;
 
 namespace Nexora.Logging;
 
@@ -17,6 +18,7 @@ public static class LoggingInitializer
         string sessionLogPath = SessionLogFiles.GetPath(LogsDirectory, DateTime.Now);
         var loggerFactory = CreateLoggerFactory(sessionLogPath);
 
+        AvaloniaLogger.Sink = new AvaloniaLogSink(loggerFactory.CreateLogger<AvaloniaLogSink>());
         SessionLogFiles.DeleteOld(sessionLogPath, KeptSessionLogCount, loggerFactory.CreateLogger(typeof(SessionLogFiles)));
 
         return loggerFactory;
