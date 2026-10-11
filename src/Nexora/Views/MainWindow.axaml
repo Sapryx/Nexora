@@ -17,17 +17,17 @@
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
-        <Style Selector="controls|TrackArea">
-            <Setter Property="Margin" Value="256 0 0 0" />
+        <Style Selector="Border#sidebar Button">
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="12 8" />
         </Style>
 
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
-            </Style>
-
-            <Style Selector="controls|TrackArea">
-                <Setter Property="Margin" Value="32 0 0 0" />
             </Style>
         </ContainerQuery>
     </Window.Styles>
@@ -49,14 +49,27 @@
             <!-- -->
             <!-- </Border> -->
 
-            <!-- <Border -->
-            <!--     x:Name="sidebar" -->
-            <!--     DockPanel.Dock="Left" -->
-            <!--     Width="240" -->
-            <!--     VerticalAlignment="Stretch" -->
-            <!--     HorizontalAlignment="Left" -->
-            <!--     Background="rgba(0, 0, 0, 25%)"> -->
-            <!-- </Border> -->
+            <Border x:Name="sidebar"
+                    DockPanel.Dock="Left"
+                    Width="240"
+                    Padding="16"
+                    Background="rgba(0, 0, 0, 25%)">
+                <StackPanel Spacing="4">
+                    <Button>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <controls:Icon IconName="home" />
+                            <TextBlock Classes="Title" Text="Home" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <controls:Icon IconName="queue" />
+                            <TextBlock Classes="Title" Text="Queue" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
 
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
@@ -66,6 +79,7 @@
                                     MaxWidth="480" />
 
                 <controls:TrackArea Grid.Row="1"
+                                    Margin="32 0 0 0"
                                     TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"/>
