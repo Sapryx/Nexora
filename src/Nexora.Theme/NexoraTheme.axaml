@@ -10,6 +10,10 @@
         <Setter Property="Cursor" Value="Hand" />
     </Style>
 
+    <Style Selector="ToolTip">
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
