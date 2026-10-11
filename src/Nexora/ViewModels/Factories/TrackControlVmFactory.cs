@@ -7,12 +7,18 @@ namespace Nexora.ViewModels.Factories;
 
 public class TrackControlVmFactory : ITrackControlVmFactory
 {
+    private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
     private readonly ICoverCache coverCache;
     private readonly IUiDispatcher uiDispatcher;
 
-    public TrackControlVmFactory(IAudioPlayer audioPlayer, ICoverCache coverCache, IUiDispatcher uiDispatcher)
+    public TrackControlVmFactory(
+        PlaybackQueue playbackQueue,
+        IAudioPlayer audioPlayer,
+        ICoverCache coverCache,
+        IUiDispatcher uiDispatcher)
     {
+        this.playbackQueue = playbackQueue;
         this.audioPlayer = audioPlayer;
         this.coverCache = coverCache;
         this.uiDispatcher = uiDispatcher;
@@ -20,6 +26,6 @@ public class TrackControlVmFactory : ITrackControlVmFactory
 
     public TrackControlVm Create(IPlaylistItem playlistItem)
     {
-        return new TrackControlVm(playlistItem, audioPlayer, coverCache, uiDispatcher);
+        return new TrackControlVm(playlistItem, playbackQueue, audioPlayer, coverCache, uiDispatcher);
     }
 }

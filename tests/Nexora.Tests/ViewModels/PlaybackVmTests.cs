@@ -326,4 +326,21 @@ public class PlaybackVmTests
             .SetupGet(it => it.NowPlaying)
             .Returns(playlistItem);
     }
+
+    [Fact]
+    public void PlaybackStopped_TrackWasPlaying_ClearsPlayingTrackAndPosition()
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it =>
+            it.AudioTrack.Metadata == new Metadata() && it.AudioTrack.AudioPath == "");
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackResumed += null);
+        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
+
+        audioPlayerMock.Raise(it => it.PlaybackStopped += null);
+
+        Assert.False(vm.IsPlaying);
+        Assert.Null(vm.PlayingTrackViewVm);
+        Assert.Equal(0, vm.PlaybackPosition);
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = It.IsAny<float>(), Times.Never);
+    }
 }

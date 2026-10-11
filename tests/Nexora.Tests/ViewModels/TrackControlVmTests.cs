@@ -9,11 +9,15 @@ namespace Nexora.Tests.ViewModels;
 
 public class TrackControlVmTests
 {
+    private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
     private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
+    private readonly PlaybackQueue playbackQueue;
 
     public TrackControlVmTests()
     {
+        playbackQueue = new PlaybackQueue(audioPlayerMock.Object);
+
         uiDispatcherMock
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
@@ -56,6 +60,101 @@ public class TrackControlVmTests
         Assert.False(vm.IsActiveAndPlaying);
     }
 
+    [Fact]
+    public void Constructor_QueueItem_IsInQueue()
+    {
+        playbackQueue.AddTrack(CreateTrack());
+
+        var vm = CreateVm(playbackQueue.GetItem(0));
+
+        Assert.True(vm.IsInQueue);
+    }
+
+    [Fact]
+    public void Constructor_GlobalPlaylistItem_IsNotInQueue()
+    {
+        playlistRegistry.GlobalPlaylist.AddTrack(CreateTrack());
+
+        var vm = CreateVm(playlistRegistry.GlobalPlaylist.GetItem(0));
+
+        Assert.False(vm.IsInQueue);
+    }
+
+    [Fact]
+    public void AddToQueue_NonEmptyQueue_AddsTrackToEnd()
+    {
+        var queued = CreateTrack();
+        var track = CreateTrack();
+        playbackQueue.AddTrack(queued);
+        playlistRegistry.GlobalPlaylist.AddTrack(track);
+        var vm = CreateVm(playlistRegistry.GlobalPlaylist.GetItem(0));
+
+        vm.AddToQueue();
+
+        Assert.Equal([queued, track], playbackQueue.Select(it => it.AudioTrack));
+    }
+
+    [Fact]
+    public void AddToQueue_CalledTwice_AddsTrackTwice()
+    {
+        var track = CreateTrack();
+        playlistRegistry.GlobalPlaylist.AddTrack(track);
+        var vm = CreateVm(playlistRegistry.GlobalPlaylist.GetItem(0));
+
+        vm.AddToQueue();
+        vm.AddToQueue();
+
+        Assert.Equal([track, track], playbackQueue.Select(it => it.AudioTrack));
+    }
+
+    [Fact]
+    public void RemoveFromQueue_QueueItem_RemovesOnlyThatItem()
+    {
+        var track = CreateTrack();
+        playbackQueue.AddTrack(track);
+        playbackQueue.AddTrack(track);
+        var item = playbackQueue.GetItem(0);
+        var vm = CreateVm(item);
+
+        vm.RemoveFromQueue();
+
+        Assert.Equal([track], playbackQueue.Select(it => it.AudioTrack));
+        Assert.DoesNotContain(item, playbackQueue);
+    }
+
+    [Fact]
+    public void RemoveFromQueue_PlayingItem_PlaysNextItem()
+    {
+        playbackQueue.AddTrack(CreateTrack());
+        playbackQueue.AddTrack(CreateTrack());
+        var item = playbackQueue.GetItem(0);
+        var next = playbackQueue.GetItem(1);
+        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(item);
+        var vm = CreateVm(item);
+
+        vm.RemoveFromQueue();
+
+        audioPlayerMock.Verify(it => it.PlayTrack(next));
+    }
+
+    [Fact]
+    public void PlaybackStopped_ActiveTrack_MarksTrackInactive()
+    {
+        var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
+        var vm = CreateVm(playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+
+        audioPlayerMock.Raise(it => it.PlaybackStopped += null);
+
+        Assert.False(vm.IsActive);
+        Assert.False(vm.IsActiveAndPlaying);
+    }
+
+    private static IAudioTrack CreateTrack()
+    {
+        return Mock.Of<IAudioTrack>(it => it.Metadata == new Metadata() && it.AudioPath == "");
+    }
+
     private static IPlaylistItem CreatePlaylistItem(TimeSpan duration)
     {
         var metadata = new Metadata() { Duration = duration };
@@ -68,6 +167,7 @@ public class TrackControlVmTests
     {
         return new TrackControlVm(
             playlistItem,
+            playbackQueue,
             audioPlayerMock.Object,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);

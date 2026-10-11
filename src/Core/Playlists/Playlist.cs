@@ -12,6 +12,7 @@ public class Playlist : IEnumerable<IPlaylistItem>
     private readonly List<IPlaylistItem> items = [];
 
     public event Action<IPlaylistItem>? ItemAdded;
+    public event Action<IPlaylistItem>? ItemRemoved;
 
     public IEnumerable<IPlaylistItem> GetAllItems()
     {
@@ -33,6 +34,25 @@ public class Playlist : IEnumerable<IPlaylistItem>
         var item = new PlaylistItem(audioTrack, this, items.Count);
         items.Add(item);
         ItemAdded?.Invoke(item);
+    }
+
+    public virtual void RemoveItem(IPlaylistItem item)
+    {
+        int removedIndex = items.IndexOf(item);
+
+        if(removedIndex < 0)
+        {
+            return;
+        }
+
+        items.RemoveAt(removedIndex);
+
+        for(int index = removedIndex; index < items.Count; index++)
+        {
+            items[index].Index = index;
+        }
+
+        ItemRemoved?.Invoke(item);
     }
 
     public void AddTracks(IEnumerable<IAudioTrack> audioTracks)

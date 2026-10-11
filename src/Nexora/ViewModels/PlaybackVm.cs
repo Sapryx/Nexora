@@ -32,7 +32,6 @@ public partial class PlaybackVm : ViewModelBase
     public string VolumeIconName => GetVolumeIconName();
     public bool IsDraggingVolume { get; set; }
     public bool IsDraggingPosition { get; set; }
-
     private readonly IAudioPlayer audioPlayer;
     private int volumeBeforeMute;
     private bool isUpdatingDisplay;
@@ -58,6 +57,13 @@ public partial class PlaybackVm : ViewModelBase
         audioPlayer.PlaybackResumed += () => uiDispatcher.Post(() =>
         {
             IsPlaying = true;
+        });
+
+        audioPlayer.PlaybackStopped += () => uiDispatcher.Post(() =>
+        {
+            IsPlaying = false;
+            PlayingTrackViewVm = null;
+            SetPlaybackPositionDisplay(0);
         });
 
         audioPlayer.PlaybackFinished += () => uiDispatcher.Post(() =>

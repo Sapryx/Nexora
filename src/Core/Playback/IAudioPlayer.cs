@@ -15,6 +15,7 @@ public interface IAudioPlayer
     public event Action? PlaybackPaused;
     public event Action? PlaybackFinished;
     public event Action? PlaybackResumed;
+    public event Action? PlaybackStopped;
     public event Action<float>? VolumeChanged;
     public event Action<bool>? MuteChanged;
 
@@ -22,6 +23,7 @@ public interface IAudioPlayer
     public void PlayNextTrack();
     public void PlayPreviousTrack();
     public void TogglePause();
+    public void Stop();
     public void SkipForward();
     public void SkipBack();
 }

@@ -18,17 +18,23 @@ public partial class TrackControlVm : CoveredTrackVm
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
+    public bool IsInQueue { get; }
     private readonly IPlaylistItem playlistItem;
+    private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
 
     public TrackControlVm(
         IPlaylistItem playlistItem,
+        PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
     {
         this.playlistItem = playlistItem;
         this.audioPlayer = audioPlayer;
+        this.playbackQueue = playbackQueue;
+
+        IsInQueue = playlistItem.Playlist == playbackQueue;
 
         IsActive = audioPlayer.NowPlaying == playlistItem;
         IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
@@ -48,6 +54,12 @@ public partial class TrackControlVm : CoveredTrackVm
         {
             IsActiveAndPlaying = false;
         });
+
+        audioPlayer.PlaybackStopped += () => uiDispatcher.Post(() =>
+        {
+            IsActive = false;
+            IsActiveAndPlaying = false;
+        });
     }
 
     [RelayCommand]
@@ -61,5 +73,17 @@ public partial class TrackControlVm : CoveredTrackVm
         {
             audioPlayer.PlayTrack(playlistItem);
         }
+    }
+
+    [RelayCommand]
+    public void AddToQueue()
+    {
+        playbackQueue.AddTrack(playlistItem.AudioTrack);
+    }
+
+    [RelayCommand]
+    public void RemoveFromQueue()
+    {
+        playbackQueue.RemoveItem(playlistItem);
     }
 }

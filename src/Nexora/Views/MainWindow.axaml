@@ -25,6 +25,10 @@
             <Setter Property="Padding" Value="12 8" />
         </Style>
 
+        <Style Selector="Border#sidebar Button.selected">
+            <Setter Property="Background" Value="rgba(255, 255, 255, 10%)" />
+        </Style>
+
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
@@ -55,14 +59,16 @@
                     Padding="16"
                     Background="rgba(0, 0, 0, 25%)">
                 <StackPanel Spacing="4">
-                    <Button>
+                    <Button Command="{Binding OpenHomeCommand}"
+                            Classes.selected="{Binding !IsQueueOpen}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <controls:Icon IconName="home" />
                             <TextBlock Classes="Title" Text="Home" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
-                    <Button>
+                    <Button Command="{Binding OpenQueueCommand}"
+                            Classes.selected="{Binding IsQueueOpen}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
                             <controls:Icon IconName="queue" />
                             <TextBlock Classes="Title" Text="Queue" VerticalAlignment="Center" />
@@ -73,16 +79,33 @@
 
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
-                <controls:SearchBar Grid.Row="0"
-                                    DataContext="{Binding SearchBarVm}"
-                                    HorizontalAlignment="Stretch"
-                                    MaxWidth="480" />
+                <Panel Grid.Row="0"
+                       IsVisible="{Binding !IsQueueOpen}">
+                    <controls:SearchBar DataContext="{Binding SearchBarVm}"
+                                        HorizontalAlignment="Stretch"
+                                        MaxWidth="480" />
+                </Panel>
 
                 <controls:TrackArea Grid.Row="1"
                                     Margin="32 0 0 0"
                                     TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                    IsVisible="{Binding !IsQueueOpen}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"/>
+
+                <Panel Grid.Row="1"
+                       IsVisible="{Binding IsQueueOpen}">
+                    <controls:TrackArea Margin="32 0 0 0"
+                                        TrackVms="{Binding QueueVm.TrackVms}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"/>
+
+                    <TextBlock Classes="Subtitle"
+                               Text="The queue is empty"
+                               IsVisible="{Binding QueueVm.IsEmpty}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Panel>
 
                 <controls:PlaybackControl Grid.Row="2"
                                           DataContext="{Binding PlaybackVm}"

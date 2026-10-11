@@ -43,6 +43,7 @@ public class AudioPlayer : IAudioPlayer
     public event Action? PlaybackPaused;
     public event Action? PlaybackFinished;
     public event Action? PlaybackResumed;
+    public event Action? PlaybackStopped;
     public event Action<float>? VolumeChanged;
     public event Action<bool>? MuteChanged;
 
@@ -100,6 +101,13 @@ public class AudioPlayer : IAudioPlayer
         {
             mediaPlayer.Pause();
         }
+    }
+
+    public void Stop()
+    {
+        NowPlaying = null;
+        mediaPlayer.Stop();
+        PlaybackStopped?.Invoke();
     }
 
     public void SkipForward()
