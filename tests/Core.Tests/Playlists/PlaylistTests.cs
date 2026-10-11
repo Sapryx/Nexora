@@ -111,4 +111,76 @@ public class PlaylistTests
 
         Assert.Throws<ArgumentOutOfRangeException>(() => playlist.GetItem(0));
     }
+
+    [Fact]
+    public void RemoveItem_MiddleItem_RemovesItAndReindexesFollowingItems()
+    {
+        var playlist = new Playlist();
+        var one = Mock.Of<IAudioTrack>();
+        var three = Mock.Of<IAudioTrack>();
+        playlist.AddTracks([one, Mock.Of<IAudioTrack>(), three]);
+        var item = playlist.GetItem(1);
+
+        playlist.RemoveItem(item);
+
+        Assert.Equal([one, three], playlist.Select(it => it.AudioTrack));
+        Assert.Equal([0, 1], playlist.Select(it => it.Index));
+    }
+
+    [Fact]
+    public void RemoveItem_AnyItem_RaisesItemRemovedWithThatItem()
+    {
+        var playlist = new Playlist();
+        playlist.AddTrack(Mock.Of<IAudioTrack>());
+        var item = playlist.GetItem(0);
+        IPlaylistItem? removedItem = null;
+        playlist.ItemRemoved += it => removedItem = it;
+
+        playlist.RemoveItem(item);
+
+        Assert.Same(item, removedItem);
+    }
+
+    [Fact]
+    public void RemoveItem_AlreadyRemovedItem_KeepsOtherItems()
+    {
+        var playlist = new Playlist();
+        playlist.AddTracks([Mock.Of<IAudioTrack>(), Mock.Of<IAudioTrack>()]);
+        var item = playlist.GetItem(0);
+        playlist.RemoveItem(item);
+        int raisedCount = 0;
+        playlist.ItemRemoved += _ => raisedCount++;
+
+        playlist.RemoveItem(item);
+
+        Assert.Equal(1, playlist.TrackCount);
+        Assert.Equal(0, raisedCount);
+    }
+
+    [Fact]
+    public void RemoveItem_ItemOfOtherPlaylist_KeepsItems()
+    {
+        var playlist = new Playlist();
+        playlist.AddTrack(Mock.Of<IAudioTrack>());
+        var otherPlaylist = new Playlist();
+        otherPlaylist.AddTrack(Mock.Of<IAudioTrack>());
+
+        playlist.RemoveItem(otherPlaylist.GetItem(0));
+
+        Assert.Equal(1, playlist.TrackCount);
+        Assert.Equal(1, otherPlaylist.TrackCount);
+    }
+
+    [Fact]
+    public void AddTrack_SameTrackTwice_AddsTwoItems()
+    {
+        var playlist = new Playlist();
+        var track = Mock.Of<IAudioTrack>();
+
+        playlist.AddTrack(track);
+        playlist.AddTrack(track);
+
+        Assert.Equal([track, track], playlist.Select(it => it.AudioTrack));
+        Assert.NotSame(playlist.GetItem(0), playlist.GetItem(1));
+    }
 }

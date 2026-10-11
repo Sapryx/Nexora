@@ -51,6 +51,7 @@ public static class CompositionRoot
         ));
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
+        builder.AddSingleton<PlaybackQueue>();
         builder.AddSingleton<KeyboardLayoutTranslator>();
 
         if(OperatingSystem.IsWindows())
@@ -69,6 +70,7 @@ public static class CompositionRoot
         builder.AddSingleton<MainWindowVm>();
         builder.AddSingleton<SearchBarVm>();
         builder.AddSingleton<PlaybackVm>();
+        builder.AddSingleton<QueueVm>();
     }
 
     private static LibVLC CreateLibVlc(LibVlcLogForwarder logForwarder)

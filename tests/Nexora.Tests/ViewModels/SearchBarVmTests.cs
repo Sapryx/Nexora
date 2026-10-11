@@ -31,6 +31,7 @@ public class SearchBarVmTests
             .Setup(it => it.Create(It.IsAny<IPlaylistItem>()))
             .Returns<IPlaylistItem>(it => new TrackControlVm(
                 it,
+                new PlaybackQueue(Mock.Of<IAudioPlayer>()),
                 Mock.Of<IAudioPlayer>(),
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object));

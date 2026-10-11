@@ -116,7 +116,12 @@
                 <controls:Icon IconName="dots" />
                 <Button.Flyout>
                     <MenuFlyout Placement="BottomEdgeAlignedRight">
-                        <MenuItem Header="Add To Queue" />
+                        <MenuItem Header="Add To Queue"
+                                  Command="{Binding AddToQueueCommand}"
+                                  IsVisible="{Binding !IsInQueue}" />
+                        <MenuItem Header="Remove From Queue"
+                                  Command="{Binding RemoveFromQueueCommand}"
+                                  IsVisible="{Binding IsInQueue}" />
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
