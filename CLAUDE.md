@@ -57,8 +57,8 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - Allman braces, `if(`/`foreach(` with no space before the parenthesis, file-scoped namespaces.
 - Lines are at most 120 characters in every code file (C#, axaml, scripts, workflows): code must never need horizontal scrolling. Wrap in the most readable way: parameters of a long declaration one per line with `)` on the last one; arguments of a long call one per line after `(` with `);` on its own line; a long collection expression as `= [` on the declaration line, one item per line, `];`; a long interpolated log message as several `$"..." +` parts. No trailing whitespace.
 - Member order: properties first, then fields (constants included), then events, constructors, methods. Exception: an Avalonia `StyledProperty` registration stays right before its CLR property.
+- No blank lines between single-line members: auto-properties, constants and fields form one contiguous block, also where properties end and fields begin. A blank line goes only around multi-line members (a property with an attribute such as `[ObservableProperty]`, a field with a multi-line initializer) and before events, constructors and methods.
 - Null checks via `== null` / `!= null`; `is` / `is not` only for type checks.
-- Comments only where they add what the code can't say: why a non-obvious implementation is done this way, which algorithm is used (prefer a descriptive name and a link, e.g. to Wikipedia), the layout of a format (time, log line, date). No comments restating the code, no TODOs; don't add commented-out code (the layout placeholders in `MainWindow.axaml` stay on purpose).
 - Private fields in camelCase without `_`, assigned via `this.field = field`.
 - VM properties: `[ObservableProperty] public partial T Name { get; set; }`, reactions — `partial void OnNameChanged`.
 - Local variables: lowercase built-in types (`bool`, `byte`, `sbyte`, `char`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `nint`, `nuint`, `float`, `double`, `decimal`, `string`) are spelled out explicitly (`int count = 0;`); everything else uses `var`.
@@ -68,6 +68,18 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - No range syntax with two dots: neither ranges (`text[..length]`, `items[1..]`) nor spread in collection expressions (`[.. items]`). Use `Substring`, `Take`/`Skip`, `ToList()`/`Concat()` instead.
 - Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), not `Dispatcher.UIThread` directly, so view models stay testable.
 - Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...` (a short descriptive name is fine when it reads better; prefer `it` over a long one), `NullLogger<T>.Instance` for loggers (`TestLogger<T>` when the test checks what is logged).
+
+## Comments
+
+- Write a comment only when it adds what the code can't say, and keep existing comments that do:
+  - why a non-obvious technical decision is made this way (an optimization, a workaround for a library), not why the system is designed so;
+  - which algorithm is used (prefer a descriptive name and a link, e.g. to Wikipedia);
+  - the layout of a format (time, log line, date);
+  - API documentation.
+- Mark a hack, a temporary solution or a potential performance bottleneck with a `// FIXME` or `// TODO` comment saying what is wrong.
+- Keep comments short and to the point, but understandable.
+- No comments restating the code; don't add commented-out code (the layout placeholders in `MainWindow.axaml` stay on purpose).
+- Every time you add or edit a comment, list all such places in a separate part of your reply: the location in the code, the comment text and why you added it.
 
 ## Logging
 
