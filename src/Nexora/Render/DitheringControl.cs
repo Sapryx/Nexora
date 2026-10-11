@@ -16,7 +16,7 @@ public class DitheringControl : Control
         AvaloniaProperty.Register<DitheringControl, RelativePoint>(nameof(EndPoint), RelativePoint.BottomRight
     );
 
-    public static readonly StyledProperty<GradientStops> GradientStopsProperty = 
+    public static readonly StyledProperty<GradientStops> GradientStopsProperty =
         AvaloniaProperty.Register<DitheringControl, GradientStops>(nameof(GradientStops)
     );
 
@@ -56,9 +56,9 @@ public class DitheringControl : Control
         {
             return;
         }
-        
+
         const int ShaderMaxStops = 8;
-        
+
         // Data is copied here because rendering is asynchronous further down the line,
         // so you can't access any UI thread objects from there.
         var snapshot = GradientStops
@@ -66,7 +66,7 @@ public class DitheringControl : Control
             .Take(ShaderMaxStops)
             .Select(stop => new GradientStopSnapshot(stop.Color, (float)stop.Offset))
             .ToArray();
-        
+
         context.Custom(new DitherGradientEffect(Bounds, StartPoint, EndPoint, snapshot));
     }
 }

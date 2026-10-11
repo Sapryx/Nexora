@@ -12,7 +12,7 @@ public partial class MainWindowVm : ViewModelBase
 
     public MainWindowVm(
         ILogger<MainWindowVm> logger,
-        SearchBarVm searchBarVm, 
+        SearchBarVm searchBarVm,
         PlaybackVm playbackVm)
     {
         this.logger = logger;

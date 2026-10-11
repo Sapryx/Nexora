@@ -1,5 +1,6 @@
 using Core.Logging;
 using Core.Playback;
+using Core.Playlists;
 using DiscordRPC;
 using Microsoft.Extensions.Logging;
 
@@ -7,10 +8,9 @@ namespace Core.Integrations;
 
 public class DiscordRichPresenceService : IRichPresenceService
 {
-    private const string AppId = "1494383204252258484"; // TODO Pass from outside
+    private const string AppId = "1494383204252258484";
     private const int MaxTextLength = 128;
     private const string Ellipsis = "…";
-    private readonly IAudioPlayer audioPlayer;
     private readonly ILogger<DiscordRichPresenceService> logger;
     private readonly DiscordRpcClient client;
     private bool connectionFailureLogged;
@@ -20,7 +20,6 @@ public class DiscordRichPresenceService : IRichPresenceService
         ILogger<DiscordRichPresenceService> logger,
         ILogger<DiscordRpcLogger> rpcLogger)
     {
-        this.audioPlayer = audioPlayer;
         this.logger = logger;
         client = new DiscordRpcClient(AppId)
         {
@@ -90,15 +89,10 @@ public class DiscordRichPresenceService : IRichPresenceService
         }
     }
 
-    private void OnPlaybackStarted()
+    private void OnPlaybackStarted(IPlaylistItem playlistItem)
     {
-        var playlistItem = audioPlayer.NowPlaying;
-
-        if(playlistItem != null)
-        {
-            string title = playlistItem.AudioTrack.Metadata.Title;
-            string artists = playlistItem.AudioTrack.Metadata.Artists;
-            UpdateStatus(title, artists);
-        }
+        string title = playlistItem.AudioTrack.Metadata.Title;
+        string artists = playlistItem.AudioTrack.Metadata.Artists;
+        UpdateStatus(title, artists);
     }
 }

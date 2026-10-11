@@ -36,7 +36,10 @@ public unsafe partial class WindowsKeyboardLayoutProvider : IKeyboardLayoutProvi
             count = GetKeyboardLayoutList(count, layoutHandlesPointer);
         }
 
-        logger.Debug($"Windows returned {count} keyboard layouts: {string.Join(", ", layoutHandles.Take(count).Select(it => $"0x{it:X8}"))}");
+        logger.Debug(
+            $"Windows returned {count} keyboard layouts: " +
+            $"{string.Join(", ", layoutHandles.Take(count).Select(it => $"0x{it:X8}"))}"
+        );
 
         return layoutHandles.Take(count).Select(CreateLayout).ToList();
     }
@@ -59,13 +62,26 @@ public unsafe partial class WindowsKeyboardLayoutProvider : IKeyboardLayoutProvi
         return new KeyboardLayout(GetLayoutName(layoutHandle), characters);
     }
 
-    private static void AddCharacter(Dictionary<KeyboardKey, char> characters, nint layoutHandle, uint virtualKey, int scanCode, bool shifted)
+    private static void AddCharacter(
+        Dictionary<KeyboardKey, char> characters,
+        nint layoutHandle,
+        uint virtualKey,
+        int scanCode,
+        bool shifted)
     {
         byte* keyboardState = stackalloc byte[KeyboardStateLength];
         char* buffer = stackalloc char[CharacterBufferLength];
         keyboardState[ShiftVirtualKey] = shifted ? KeyPressed : (byte)0;
 
-        int length = ToUnicodeEx(virtualKey, (uint)scanCode, keyboardState, buffer, CharacterBufferLength, DoNotChangeKeyboardState, layoutHandle);
+        int length = ToUnicodeEx(
+            virtualKey,
+            (uint)scanCode,
+            keyboardState,
+            buffer,
+            CharacterBufferLength,
+            DoNotChangeKeyboardState,
+            layoutHandle
+        );
 
         if(length == 1 && !char.IsControl(buffer[0]))
         {
@@ -94,5 +110,12 @@ public unsafe partial class WindowsKeyboardLayoutProvider : IKeyboardLayoutProvi
     private static partial uint MapVirtualKeyEx(uint code, uint mapType, nint layoutHandle);
 
     [LibraryImport(User32Library)]
-    private static partial int ToUnicodeEx(uint virtualKey, uint scanCode, byte* keyboardState, char* buffer, int bufferLength, uint flags, nint layoutHandle);
+    private static partial int ToUnicodeEx(
+        uint virtualKey,
+        uint scanCode,
+        byte* keyboardState,
+        char* buffer,
+        int bufferLength,
+        uint flags,
+        nint layoutHandle);
 }

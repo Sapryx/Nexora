@@ -20,7 +20,7 @@
         <Style Selector="controls|TrackArea">
             <Setter Property="Margin" Value="256 0 0 0" />
         </Style>
-        
+
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
@@ -65,7 +65,7 @@
                                     HorizontalAlignment="Stretch"
                                     MaxWidth="480" />
 
-                <controls:TrackArea Grid.Row="1" 
+                <controls:TrackArea Grid.Row="1"
                                     TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"/>

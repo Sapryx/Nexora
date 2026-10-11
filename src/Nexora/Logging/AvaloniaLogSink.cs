@@ -24,7 +24,12 @@ public class AvaloniaLogSink : ILogSink
         Log(level, area, source, messageTemplate, []);
     }
 
-    public void Log(LogEventLevel level, string area, object? source, string messageTemplate, params object?[] propertyValues)
+    public void Log(
+        LogEventLevel level,
+        string area,
+        object? source,
+        string messageTemplate,
+        params object?[] propertyValues)
     {
         if(!IsEnabled(level, area))
         {
@@ -32,7 +37,7 @@ public class AvaloniaLogSink : ILogSink
         }
 
         string message = FormatMessage(messageTemplate, propertyValues);
-        string sourceName = source is null ? "" : $" ({source.GetType().Name})";
+        string sourceName = source == null ? "" : $" ({source.GetType().Name})";
 
         if(level == LogEventLevel.Warning)
         {

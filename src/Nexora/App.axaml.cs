@@ -59,12 +59,20 @@ public partial class App : Application
     {
         var logger = provider.GetRequiredService<ILogger<App>>();
 
-        logger.Info($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture}), .NET {Environment.Version}");
+        logger.Info(
+            $"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture}), " +
+            $".NET {Environment.Version}"
+        );
         logger.Info($"Windowing backend: {GetWindowingBackendName()}");
 
         if(OperatingSystem.IsLinux())
         {
-            logger.Info($"Session type: {GetVariable("XDG_SESSION_TYPE")}, desktop: {GetVariable("XDG_CURRENT_DESKTOP")}, WAYLAND_DISPLAY: {GetVariable("WAYLAND_DISPLAY")}, DISPLAY: {GetVariable("DISPLAY")}");
+            logger.Info(
+                $"Session type: {GetVariable("XDG_SESSION_TYPE")}, " +
+                $"desktop: {GetVariable("XDG_CURRENT_DESKTOP")}, " +
+                $"WAYLAND_DISPLAY: {GetVariable("WAYLAND_DISPLAY")}, " +
+                $"DISPLAY: {GetVariable("DISPLAY")}"
+            );
         }
     }
 

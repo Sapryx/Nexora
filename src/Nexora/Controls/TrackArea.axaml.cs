@@ -27,7 +27,7 @@ public partial class TrackArea : UserControl
     private void OnTrackListTemplateApplied(object? sender, TemplateAppliedEventArgs e)
     {
         var scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
-        if(scrollViewer is not null)
+        if(scrollViewer != null)
         {
             new SmoothScroller(scrollViewer);
         }

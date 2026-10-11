@@ -22,7 +22,10 @@ public class KeyboardLayoutTranslator
                 {
                     var translation = CreateTranslation(source, target);
                     translations.Add(translation);
-                    logger.Debug($"Keyboard layout translation {source.Name} -> {target.Name}: {translation.Count} characters");
+                    logger.Debug(
+                        $"Keyboard layout translation {source.Name} -> {target.Name}: " +
+                        $"{translation.Count} characters"
+                    );
                 }
             }
         }
@@ -82,7 +85,10 @@ public class KeyboardLayoutTranslator
             else
             {
                 logger.Info($"Keyboard layout {layout.Name}: {layout.Characters.Count} characters");
-                logger.Debug($"Keyboard layout {layout.Name} characters: {string.Concat(OrderByKey(layout.Characters).Select(it => it.Value))}");
+                logger.Debug(
+                    $"Keyboard layout {layout.Name} characters: " +
+                    $"{string.Concat(OrderByKey(layout.Characters).Select(it => it.Value))}"
+                );
                 distinctLayouts.Add(layout);
             }
         }
@@ -93,25 +99,28 @@ public class KeyboardLayoutTranslator
     private static bool HaveSameCharacters(KeyboardLayout first, KeyboardLayout second)
     {
         return first.Characters.Count == second.Characters.Count &&
-               first.Characters.All(it => second.Characters.TryGetValue(it.Key, out char character) && character == it.Value);
+               first.Characters.All(
+                   it => second.Characters.TryGetValue(it.Key, out char character) && character == it.Value
+               );
     }
 
     private static Dictionary<char, char> CreateTranslation(KeyboardLayout source, KeyboardLayout target)
     {
         Dictionary<char, char> translation = [];
 
-        foreach(var (key, character) in OrderByKey(source.Characters))
+        foreach(var pair in OrderByKey(source.Characters))
         {
-            if(target.Characters.TryGetValue(key, out char translated) && translated != character)
+            if(target.Characters.TryGetValue(pair.Key, out char translated) && translated != pair.Value)
             {
-                translation.TryAdd(character, translated);
+                translation.TryAdd(pair.Value, translated);
             }
         }
 
         return translation;
     }
 
-    private static IEnumerable<KeyValuePair<KeyboardKey, char>> OrderByKey(IReadOnlyDictionary<KeyboardKey, char> characters)
+    private static IEnumerable<KeyValuePair<KeyboardKey, char>> OrderByKey(
+        IReadOnlyDictionary<KeyboardKey, char> characters)
     {
         return characters.OrderBy(it => it.Key.ScanCode).ThenBy(it => it.Key.Shifted);
     }

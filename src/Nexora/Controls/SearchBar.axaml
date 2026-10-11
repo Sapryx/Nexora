@@ -24,7 +24,7 @@
                      PlaceholderText="Search..."
                      VerticalAlignment="Center"
                      BorderThickness="0"
-                     Background="Transparent" 
+                     Background="Transparent"
                      Padding="0"
                      Margin="0"
 

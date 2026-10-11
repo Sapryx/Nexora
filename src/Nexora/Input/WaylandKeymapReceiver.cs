@@ -9,6 +9,11 @@ namespace Nexora.Input;
 
 public unsafe partial class WaylandKeymapReceiver
 {
+    public bool SeatFound { get; private set; }
+    public bool KeyboardFound { get; private set; }
+    public string? Keymap { get; private set; }
+    public string? KeymapError { get; private set; }
+
     private const string WaylandLibrary = "libwayland-client.so.0";
     private const uint DisplayGetRegistryOpcode = 1;
     private const uint RegistryBindOpcode = 0;
@@ -41,10 +46,6 @@ public unsafe partial class WaylandKeymapReceiver
     private nint registry;
     private nint seat;
     private nint keyboard;
-    public bool SeatFound { get; private set; }
-    public bool KeyboardFound { get; private set; }
-    public string? Keymap { get; private set; }
-    public string? KeymapError { get; private set; }
 
     public void Receive()
     {
@@ -68,7 +69,14 @@ public unsafe partial class WaylandKeymapReceiver
 
             nint* arguments = stackalloc nint[1];
             arguments[0] = 0;
-            registry = ProxyMarshalArrayFlags(display, DisplayGetRegistryOpcode, registryInterface, ProxyGetVersion(display), 0, arguments);
+            registry = ProxyMarshalArrayFlags(
+                display,
+                DisplayGetRegistryOpcode,
+                registryInterface,
+                ProxyGetVersion(display),
+                0,
+                arguments
+            );
             ProxyAddListener(registry, RegistryListener, userData);
 
             for(int i = 0; i < MaxRoundtrips && Keymap == null && KeymapError == null; i++)
@@ -107,7 +115,14 @@ public unsafe partial class WaylandKeymapReceiver
         nint* arguments = stackalloc nint[1];
         arguments[0] = 0;
 
-        keyboard = ProxyMarshalArrayFlags(seat, SeatGetKeyboardOpcode, keyboardInterface, ProxyGetVersion(seat), 0, arguments);
+        keyboard = ProxyMarshalArrayFlags(
+            seat,
+            SeatGetKeyboardOpcode,
+            keyboardInterface,
+            ProxyGetVersion(seat),
+            0,
+            arguments
+        );
         ProxyAddListener(keyboard, KeyboardListener, userData);
         KeyboardFound = true;
     }
@@ -213,7 +228,14 @@ public unsafe partial class WaylandKeymapReceiver
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void OnKeyboardModifiers(nint userData, nint keyboard, uint serial, uint depressed, uint latched, uint locked, uint group)
+    private static void OnKeyboardModifiers(
+        nint userData,
+        nint keyboard,
+        uint serial,
+        uint depressed,
+        uint latched,
+        uint locked,
+        uint group)
     {
     }
 
@@ -232,7 +254,13 @@ public unsafe partial class WaylandKeymapReceiver
     private static partial int DisplayRoundtrip(nint display);
 
     [LibraryImport(WaylandLibrary, EntryPoint = "wl_proxy_marshal_array_flags")]
-    private static partial nint ProxyMarshalArrayFlags(nint proxy, uint opcode, nint @interface, uint version, uint flags, nint* arguments);
+    private static partial nint ProxyMarshalArrayFlags(
+        nint proxy,
+        uint opcode,
+        nint @interface,
+        uint version,
+        uint flags,
+        nint* arguments);
 
     [LibraryImport(WaylandLibrary, EntryPoint = "wl_proxy_add_listener")]
     private static partial int ProxyAddListener(nint proxy, nint* listener, nint userData);

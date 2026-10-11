@@ -30,7 +30,15 @@ public class DiagnosticsLogListenerTests
     [Fact]
     public void TraceEvent_FormatWithArguments_FormatsThem()
     {
-        listener.TraceEvent(null, "Nexora", TraceEventType.Error, 0, "Error parsing path \"{0}\": {1}", "M0 0 X", "Unexpected token");
+        listener.TraceEvent(
+            null,
+            "Nexora",
+            TraceEventType.Error,
+            0,
+            "Error parsing path \"{0}\": {1}",
+            "M0 0 X",
+            "Unexpected token"
+        );
 
         AssertLogged(LogLevel.Warning, "(Diagnostics) Error parsing path \"M0 0 X\": Unexpected token");
     }

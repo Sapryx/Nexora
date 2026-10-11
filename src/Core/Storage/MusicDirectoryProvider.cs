@@ -8,9 +8,9 @@ public class MusicDirectoryProvider : IMusicDirectoryProvider
     private readonly ILogger<MusicDirectoryProvider> logger;
     private readonly string musicDirectory;
 
-    public MusicDirectoryProvider(ILogger<MusicDirectoryProvider> logger) 
+    public MusicDirectoryProvider(ILogger<MusicDirectoryProvider> logger)
         : this(
-            logger, 
+            logger,
             Environment.GetFolderPath(
                 Environment.SpecialFolder.MyMusic,
                 Environment.SpecialFolderOption.DoNotVerify

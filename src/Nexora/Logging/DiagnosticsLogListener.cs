@@ -24,16 +24,27 @@ public class DiagnosticsLogListener : TraceListener
         logger.Debug($"(Diagnostics) {message}");
     }
 
-    public override void TraceEvent(TraceEventCache? eventCache, string source, TraceEventType eventType, int id, string? format, params object?[]? args)
+    public override void TraceEvent(
+        TraceEventCache? eventCache,
+        string source,
+        TraceEventType eventType,
+        int id,
+        string? format,
+        params object?[]? args)
     {
-        string? message = args is null || args.Length == 0
+        string? message = args == null || args.Length == 0
             ? format
             : string.Format(CultureInfo.InvariantCulture, format ?? "", args);
 
         TraceEvent(eventCache, source, eventType, id, message);
     }
 
-    public override void TraceEvent(TraceEventCache? eventCache, string source, TraceEventType eventType, int id, string? message)
+    public override void TraceEvent(
+        TraceEventCache? eventCache,
+        string source,
+        TraceEventType eventType,
+        int id,
+        string? message)
     {
         switch(eventType)
         {

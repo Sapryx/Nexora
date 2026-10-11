@@ -147,8 +147,12 @@ public class FileTrackLoaderTests
     [Fact]
     public void Load_TracksWithSameTitle_ReturnsThemSortedByArtists()
     {
-        metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(new Metadata() { Title = "Song", Artists = "Zed" });
-        metadataLoaderMock.Setup(it => it.Load("/music/two.mp3")).Returns(new Metadata() { Title = "Song", Artists = "Abba" });
+        metadataLoaderMock
+            .Setup(it => it.Load("/music/one.mp3"))
+            .Returns(new Metadata() { Title = "Song", Artists = "Zed" });
+        metadataLoaderMock
+            .Setup(it => it.Load("/music/two.mp3"))
+            .Returns(new Metadata() { Title = "Song", Artists = "Abba" });
         musicDirectoryProviderMock
             .Setup(it => it.GetFiles())
             .Returns(["/music/one.mp3", "/music/two.mp3"]);

@@ -1,18 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Core.Collections;
 
 public class LruCache<TKey, TValue> where TKey : notnull
 {
-    private readonly Lock gate = new Lock();
-    private readonly int capacity;
-    private readonly Dictionary<TKey, LinkedListNode<CacheEntry>> map = [];
-    private readonly LinkedList<CacheEntry> order = [];
-
-    public LruCache(int capacity)
-    {
-        ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
-        this.capacity = capacity;
-    }
-
     public int Count
     {
         get
@@ -24,7 +15,18 @@ public class LruCache<TKey, TValue> where TKey : notnull
         }
     }
 
-    public bool TryGet(TKey key, out TValue value)
+    private readonly Lock gate = new Lock();
+    private readonly int capacity;
+    private readonly Dictionary<TKey, LinkedListNode<CacheEntry>> map = [];
+    private readonly LinkedList<CacheEntry> order = [];
+
+    public LruCache(int capacity)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
+        this.capacity = capacity;
+    }
+
+    public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value)
     {
         lock(gate)
         {
@@ -37,7 +39,7 @@ public class LruCache<TKey, TValue> where TKey : notnull
             }
         }
 
-        value = default!;
+        value = default;
         return false;
     }
 

@@ -11,13 +11,13 @@ public partial class PlaybackVm : ViewModelBase
 {
     [ObservableProperty]
     public partial bool IsPlaying { get; private set; }
-    
+
     [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
 
     [ObservableProperty]
     public partial TrackViewVm? PlayingTrackViewVm { get; set; }
-    
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VolumeIconName))]
     public partial int Volume { get; set; }
@@ -32,7 +32,7 @@ public partial class PlaybackVm : ViewModelBase
     public string VolumeIconName => GetVolumeIconName();
     public bool IsDraggingVolume { get; set; }
     public bool IsDraggingPosition { get; set; }
-    
+
     private readonly IAudioPlayer audioPlayer;
     private int volumeBeforeMute;
     private bool isUpdatingDisplay;
@@ -40,13 +40,13 @@ public partial class PlaybackVm : ViewModelBase
     public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache, IUiDispatcher uiDispatcher)
     {
         this.audioPlayer = audioPlayer;
-        
+
         SetVolumeDisplay(audioPlayer.Volume);
 
-        audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
+        audioPlayer.PlaybackStarted += playlistItem => uiDispatcher.Post(() =>
         {
             var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, uiDispatcher);
-            trackViewVm.Update(audioPlayer.NowPlaying!);
+            trackViewVm.Update(playlistItem);
             PlayingTrackViewVm = trackViewVm;
         });
 
@@ -54,7 +54,7 @@ public partial class PlaybackVm : ViewModelBase
         {
             IsPlaying = false;
         });
-        
+
         audioPlayer.PlaybackResumed += () => uiDispatcher.Post(() =>
         {
             IsPlaying = true;
@@ -64,7 +64,7 @@ public partial class PlaybackVm : ViewModelBase
         {
             audioPlayer.PlayNextTrack();
         });
-        
+
         audioPlayer.PlaybackPositionChanged += value => uiDispatcher.Post(() =>
         {
             if(!IsDraggingPosition)
@@ -131,7 +131,7 @@ public partial class PlaybackVm : ViewModelBase
     {
         var nowPlaying = audioPlayer.NowPlaying;
 
-        if(nowPlaying is null)
+        if(nowPlaying == null)
         {
             SeekPreviewTime = null;
             return;
@@ -140,7 +140,7 @@ public partial class PlaybackVm : ViewModelBase
         var time = nowPlaying.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
         SeekPreviewTime = $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
     }
-    
+
     partial void OnVolumeChanged(int value)
     {
         if(isUpdatingDisplay)

@@ -19,9 +19,22 @@ public static class LoggingInitializer
     private const string ColoredLogLevelLegendCategory = "Nexora.Logging.ColoredLogLevelLegend";
     private const string CurrentLevelMarker = "<--";
     private const string CurrentLevelMarkerColor = "\e[38;2;0;255;0m";
-    private static readonly LogLevel[] LegendLevels = [LogLevel.Trace, LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
+    private static readonly LogLevel[] LegendLevels = [
+        LogLevel.Trace,
+        LogLevel.Debug,
+        LogLevel.Information,
+        LogLevel.Warning,
+        LogLevel.Error,
+        LogLevel.Critical
+    ];
     private const string ResetColor = "\e[0m";
-    private static readonly string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify), "Nexora/logs");
+    private static readonly string LogsDirectory = Path.Combine(
+        Environment.GetFolderPath(
+            Environment.SpecialFolder.ApplicationData,
+            Environment.SpecialFolderOption.DoNotVerify
+        ),
+        "Nexora/logs"
+    );
 
     public static ILoggerFactory Initialize(string[] args)
     {
@@ -51,12 +64,19 @@ public static class LoggingInitializer
 
         if(isRequestedLevelUnknown)
         {
-            logger.Warn($"Unknown log level '{requestedLevel}' in {LogLevelArgument.Name}, expected one of: {LogLevelArgument.KnownNames}");
+            logger.Warn(
+                $"Unknown log level '{requestedLevel}' in {LogLevelArgument.Name}, " +
+                $"expected one of: {LogLevelArgument.KnownNames}"
+            );
         }
 
         AvaloniaLogger.Sink = new AvaloniaLogSink(loggerFactory.CreateLogger<AvaloniaLogSink>());
         Trace.Listeners.Add(new DiagnosticsLogListener(loggerFactory.CreateLogger<DiagnosticsLogListener>()));
-        SessionLogFiles.DeleteOld(sessionLogPath, KeptSessionLogCount, loggerFactory.CreateLogger(typeof(SessionLogFiles)));
+        SessionLogFiles.DeleteOld(
+            sessionLogPath,
+            KeptSessionLogCount,
+            loggerFactory.CreateLogger(typeof(SessionLogFiles))
+        );
 
         return loggerFactory;
     }
@@ -74,7 +94,8 @@ public static class LoggingInitializer
             bool isCurrent = level == minimumLevel;
 
             LogAtLevel(fileLogger, level, isCurrent ? CurrentLevelMarker : "");
-            LogAtLevel(consoleLogger, level, isCurrent ? ResetColor + CurrentLevelMarkerColor + CurrentLevelMarker : "");
+            string coloredMarker = isCurrent ? ResetColor + CurrentLevelMarkerColor + CurrentLevelMarker : "";
+            LogAtLevel(consoleLogger, level, coloredMarker);
         }
     }
 
@@ -106,10 +127,14 @@ public static class LoggingInitializer
         options.UsePlainTextFormatter(formatter =>
         {
             formatter.SetPrefixFormatter($"{0}{1:HH:mm:ss.fff} [{2}] ",
-                (in template, in info) => template.Format(GetLevelColor(info.LogLevel), info.Timestamp, GetLevelName(info.LogLevel))
+                (in template, in info) => template.Format(
+                    GetLevelColor(info.LogLevel),
+                    info.Timestamp,
+                    GetLevelName(info.LogLevel)
+                )
             );
             formatter.SetSuffixFormatter($"{0}",
-                (in template, in info) => template.Format(info.Exception is null ? ResetColor : "")
+                (in template, in info) => template.Format(info.Exception == null ? ResetColor : "")
             );
             formatter.SetExceptionFormatter((writer, exception) =>
                 writer.Write(Encoding.UTF8.GetBytes($"{Environment.NewLine}{exception}{ResetColor}"))
