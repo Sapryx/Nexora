@@ -11,4 +11,6 @@
     <SolidColorBrush x:Key="SubtitleBrush" Color="{StaticResource SubtitleColor}" />
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+
+    <SolidColorBrush x:Key="ToolTipBorderBrush" Color="{StaticResource BorderColor}" />
 </ResourceDictionary>
