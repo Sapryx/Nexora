@@ -7,7 +7,13 @@ public class TrackSearchQuery
 {
     private const int CharactersPerAllowedMismatch = 5;
     private const int MaxStackBufferLength = 512;
-    private readonly (string Text, string[] Words)[] variants;
+    private static readonly MatchKind[] BoundedKinds = [
+        MatchKind.Exact,
+        MatchKind.WholeWords,
+        MatchKind.FieldPrefix,
+        MatchKind.WordPrefix
+    ];
+    private readonly QueryVariant[] variants;
 
     public TrackSearchQuery(string rawQuery, KeyboardLayoutTranslator layoutTranslator)
     {
@@ -15,27 +21,115 @@ public class TrackSearchQuery
             .Prepend(rawQuery)
             .Select(Normalize)
             .Distinct()
-            .Select(it => (it, it.Split(' ')))
+            .Select(it => new QueryVariant(it))
             .ToArray();
     }
 
-    public bool Matches(IAudioTrack audioTrack)
+    public TrackMatch? Match(IAudioTrack audioTrack)
     {
         string title = Normalize(audioTrack.Metadata.Title);
         string artists = Normalize(audioTrack.Metadata.Artists);
+        TrackMatch? best = null;
 
-        return variants.Any(it => Matches(it.Text, it.Words, title, artists));
-    }
-
-    private static bool Matches(string text, string[] words, string title, string artists)
-    {
-        if(ContainsApproximately(title, text) || ContainsApproximately(artists, text))
+        for(int i = 0; i < variants.Length; i++)
         {
-            return true;
+            best = Best(best, Match(variants[i], i, title, artists));
         }
 
-        return words.Length > 1 && words.All(word => ContainsApproximately(title, word) || ContainsApproximately(artists, word));
+        return best;
     }
+
+    private static TrackMatch? Match(QueryVariant variant, int layoutIndex, string title, string artists)
+    {
+        if(variant.Text == "")
+        {
+            return new TrackMatch(0, MatchKind.Exact, MatchField.Title, layoutIndex);
+        }
+
+        var titleMatch = MatchWhole(variant.Text, title, MatchField.Title, layoutIndex);
+        var artistsMatch = MatchWhole(variant.Text, artists, MatchField.Artists, layoutIndex);
+        var wordsMatch = MatchAllWords(variant.Words, title, artists, layoutIndex);
+
+        return Best(Best(titleMatch, artistsMatch), wordsMatch);
+    }
+
+    private static TrackMatch? MatchWhole(string text, string value, MatchField field, int layoutIndex)
+    {
+        int typos = FindTypos(value, text, MatchBoundary.None, MatchBoundary.None);
+
+        if(typos > MaxTypos(text))
+        {
+            return null;
+        }
+
+        var kind = BoundedKinds.FirstOrDefault(
+            it => FindTypos(value, text, GetStart(it), GetEnd(it)) == typos,
+            MatchKind.Substring
+        );
+
+        return new TrackMatch(typos, kind, field, layoutIndex);
+    }
+
+    private static TrackMatch? MatchAllWords(string[] words, string title, string artists, int layoutIndex)
+    {
+        if(words.Length < 2)
+        {
+            return null;
+        }
+
+        int typos = 0;
+        var worstKind = MatchKind.Exact;
+
+        foreach(string word in words)
+        {
+            var titleMatch = MatchWhole(word, title, MatchField.Title, layoutIndex);
+            var artistsMatch = MatchWhole(word, artists, MatchField.Artists, layoutIndex);
+            var wordMatch = Best(titleMatch, artistsMatch);
+
+            if(wordMatch == null)
+            {
+                return null;
+            }
+
+            typos += wordMatch.Typos;
+
+            if(wordMatch.Kind > worstKind)
+            {
+                worstKind = wordMatch.Kind;
+            }
+        }
+
+        return new TrackMatch(typos, worstKind, MatchField.TitleAndArtists, layoutIndex);
+    }
+
+    private static TrackMatch? Best(TrackMatch? first, TrackMatch? second)
+    {
+        if(first == null)
+        {
+            return second;
+        }
+
+        return second != null && second.CompareTo(first) < 0 ? second : first;
+    }
+
+    private static int MaxTypos(string pattern)
+    {
+        return pattern.Length / CharactersPerAllowedMismatch;
+    }
+
+    private static MatchBoundary GetStart(MatchKind kind) => kind switch
+    {
+        MatchKind.Exact or MatchKind.FieldPrefix => MatchBoundary.Field,
+        MatchKind.WholeWords or MatchKind.WordPrefix => MatchBoundary.Word,
+        _ => MatchBoundary.None
+    };
+
+    private static MatchBoundary GetEnd(MatchKind kind) => kind switch
+    {
+        MatchKind.Exact => MatchBoundary.Field,
+        MatchKind.WholeWords => MatchBoundary.Word,
+        _ => MatchBoundary.None
+    };
 
     private static string Normalize(string value)
     {
@@ -57,9 +151,8 @@ public class TrackSearchQuery
         return builder.ToString().TrimEnd();
     }
 
-    private static bool ContainsApproximately(string value, string pattern)
+    private static int FindTypos(string value, string pattern, MatchBoundary start, MatchBoundary end)
     {
-        int maxMismatches = pattern.Length / CharactersPerAllowedMismatch;
         int rows = pattern.Length + 1;
         var buffer = rows * 3 <= MaxStackBufferLength ? stackalloc int[rows * 3] : new int[rows * 3];
         var beforePrevious = buffer.Slice(0, rows);
@@ -71,14 +164,11 @@ public class TrackSearchQuery
             previous[i] = i;
         }
 
-        if(previous[pattern.Length] <= maxMismatches)
-        {
-            return true;
-        }
+        int best = IsEnd(value, 0, end) ? previous[pattern.Length] : int.MaxValue;
 
-        for(int j = 1; j <= value.Length; j++)
+        for(int j = 1; j <= value.Length && best > 0; j++)
         {
-            current[0] = 0;
+            current[0] = IsStart(value, j, start) ? 0 : previous[0] + 1;
 
             for(int i = 1; i < rows; i++)
             {
@@ -93,9 +183,9 @@ public class TrackSearchQuery
                 current[i] = distance;
             }
 
-            if(current[pattern.Length] <= maxMismatches)
+            if(IsEnd(value, j, end))
             {
-                return true;
+                best = Math.Min(best, current[pattern.Length]);
             }
 
             var recycled = beforePrevious;
@@ -104,6 +194,20 @@ public class TrackSearchQuery
             current = recycled;
         }
 
-        return false;
+        return best;
     }
+
+    private static bool IsStart(string value, int position, MatchBoundary boundary) => boundary switch
+    {
+        MatchBoundary.Field => position == 0,
+        MatchBoundary.Word => position == 0 || value[position - 1] == ' ',
+        _ => true
+    };
+
+    private static bool IsEnd(string value, int position, MatchBoundary boundary) => boundary switch
+    {
+        MatchBoundary.Field => position == value.Length,
+        MatchBoundary.Word => position == value.Length || value[position] == ' ',
+        _ => true
+    };
 }
