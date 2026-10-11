@@ -14,6 +14,7 @@ public partial class SearchBarVm : ViewModelBase
 {
     private readonly ITrackControlVmFactory trackControlVmFactory;
     private readonly KeyboardLayoutTranslator layoutTranslator;
+    private readonly List<TrackMatch> displayedMatches = [];
     private TrackSearchQuery searchQuery;
 
     [ObservableProperty]
@@ -35,11 +36,7 @@ public partial class SearchBarVm : ViewModelBase
         playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
-
-            if(searchQuery.Matches(playlistItem.AudioTrack))
-            {
-                DisplayedAudioTrackVms.Add(trackVm);
-            }
+            DisplayIfMatches(playlistItem.AudioTrack, trackVm);
         });
     }
     
@@ -61,13 +58,47 @@ public partial class SearchBarVm : ViewModelBase
     {
         searchQuery = new TrackSearchQuery(value, layoutTranslator);
         DisplayedAudioTrackVms.Clear();
+        displayedMatches.Clear();
 
         foreach(var (audioTrack, audioTrackVm) in AudioTrackVms)
         {
-            if(searchQuery.Matches(audioTrack))
+            DisplayIfMatches(audioTrack, audioTrackVm);
+        }
+    }
+
+    private void DisplayIfMatches(IAudioTrack audioTrack, TrackControlVm audioTrackVm)
+    {
+        var match = searchQuery.Match(audioTrack);
+
+        if(match == null)
+        {
+            return;
+        }
+
+        int index = FindInsertIndex(match);
+        displayedMatches.Insert(index, match);
+        DisplayedAudioTrackVms.Insert(index, audioTrackVm);
+    }
+
+    private int FindInsertIndex(TrackMatch match)
+    {
+        int low = 0;
+        int high = displayedMatches.Count;
+
+        while(low < high)
+        {
+            int middle = (low + high) / 2;
+
+            if(displayedMatches[middle].CompareTo(match) <= 0)
             {
-                DisplayedAudioTrackVms.Add(audioTrackVm);
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
             }
         }
+
+        return low;
     }
 }

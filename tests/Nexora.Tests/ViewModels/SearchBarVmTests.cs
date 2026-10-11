@@ -98,6 +98,46 @@ public class SearchBarVmTests
         Assert.Equal(["Psycho"], DisplayedTitles());
     }
 
+    [Fact]
+    public void SearchQuery_ExactArtistAndTypoInTitle_DisplaysExactArtistFirst()
+    {
+        AddTrack("PROXIMA (feat. Kazari Tayu & Enna Alouette)", "Unknown");
+        AddTrack("Night Drive", "AZALI");
+        AddTrack("Neon", "AZALI");
+
+        vm.SearchQuery = "AZALI";
+
+        Assert.Equal(["Night Drive", "Neon", "PROXIMA (feat. Kazari Tayu & Enna Alouette)"], DisplayedTitles());
+    }
+
+    [Fact]
+    public void ItemAdded_BetterMatchAddedLater_InsertsItBeforeWorseMatches()
+    {
+        vm.SearchQuery = "AZALI";
+
+        AddTrack("PROXIMA (feat. Kazari Tayu & Enna Alouette)", "Unknown");
+        AddTrack("Night Drive", "AZALI");
+        AddTrack("Kazalis", "Unknown");
+        AddTrack("Neon", "AZALI");
+
+        Assert.Equal(
+            ["Night Drive", "Neon", "Kazalis", "PROXIMA (feat. Kazari Tayu & Enna Alouette)"],
+            DisplayedTitles()
+        );
+    }
+
+    [Fact]
+    public void SearchQuery_LastWordIsTitleStart_DisplaysTitlesStartingWithItFirst()
+    {
+        AddTrack("Bloodlust", "Geoxor");
+        AddTrack("DEAD", "Geoxor");
+        AddTrack("Dreams", "Geoxor");
+
+        vm.SearchQuery = "geoxor d";
+
+        Assert.Equal(["DEAD", "Dreams", "Bloodlust"], DisplayedTitles());
+    }
+
     private void AddTrack(string title, string artists)
     {
         var track = Mock.Of<IAudioTrack>(it =>

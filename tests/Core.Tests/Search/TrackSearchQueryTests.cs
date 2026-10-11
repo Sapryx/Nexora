@@ -15,117 +15,117 @@ public class TrackSearchQueryTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Matches_EmptyQuery_ReturnsTrue(string rawQuery)
+    public void Match_EmptyQuery_ReturnsMatch(string rawQuery)
     {
-        Assert.True(Query(rawQuery).Matches(enterSandman));
+        Assert.NotNull(Query(rawQuery).Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TitleContainsQuery_ReturnsTrue()
+    public void Match_TitleContainsQuery_ReturnsMatch()
     {
-        Assert.True(Query("sand").Matches(enterSandman));
+        Assert.NotNull(Query("sand").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_ArtistsContainQuery_ReturnsTrue()
+    public void Match_ArtistsContainQuery_ReturnsMatch()
     {
-        Assert.True(Query("tall").Matches(enterSandman));
+        Assert.NotNull(Query("tall").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_DifferentCaseAndSurroundingSpaces_ReturnsTrue()
+    public void Match_DifferentCaseAndSurroundingSpaces_ReturnsMatch()
     {
-        Assert.True(Query("  ENTER ").Matches(enterSandman));
+        Assert.NotNull(Query("  ENTER ").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TypoInFourCharacterQuery_ReturnsFalse()
+    public void Match_TypoInFourCharacterQuery_ReturnsNull()
     {
-        Assert.False(Query("tell").Matches(enterSandman));
+        Assert.Null(Query("tell").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TypoInFiveCharacterQuery_ReturnsTrue()
+    public void Match_TypoInFiveCharacterQuery_ReturnsMatch()
     {
-        Assert.True(Query("avrel").Matches(complicated));
+        Assert.NotNull(Query("avrel").Match(complicated));
     }
 
     [Fact]
-    public void Matches_OneTypoInNineCharacterQuery_ReturnsTrue()
+    public void Match_OneTypoInNineCharacterQuery_ReturnsMatch()
     {
-        Assert.True(Query("metallika").Matches(enterSandman));
+        Assert.NotNull(Query("metallika").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TwoTyposInNineCharacterQuery_ReturnsFalse()
+    public void Match_TwoTyposInNineCharacterQuery_ReturnsNull()
     {
-        Assert.False(Query("mxtallika").Matches(enterSandman));
+        Assert.Null(Query("mxtallika").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TwoTyposInTenCharacterQuery_ReturnsTrue()
+    public void Match_TwoTyposInTenCharacterQuery_ReturnsMatch()
     {
-        Assert.True(Query("avrel lavu").Matches(complicated));
+        Assert.NotNull(Query("avrel lavu").Match(complicated));
     }
 
     [Fact]
-    public void Matches_MissingLetter_ReturnsTrue()
+    public void Match_MissingLetter_ReturnsMatch()
     {
-        Assert.True(Query("metalica").Matches(enterSandman));
+        Assert.NotNull(Query("metalica").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_ExtraLetter_ReturnsTrue()
+    public void Match_ExtraLetter_ReturnsMatch()
     {
-        Assert.True(Query("sandmman").Matches(enterSandman));
+        Assert.NotNull(Query("sandmman").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TransposedAdjacentLetters_ReturnsTrue()
+    public void Match_TransposedAdjacentLetters_ReturnsMatch()
     {
-        Assert.True(Query("metlalica").Matches(enterSandman));
+        Assert.NotNull(Query("metlalica").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_MissingLetterInFourCharacterQuery_ReturnsFalse()
+    public void Match_MissingLetterInFourCharacterQuery_ReturnsNull()
     {
-        Assert.False(Query("sadm").Matches(enterSandman));
+        Assert.Null(Query("sadm").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_MissingAndExtraLetterInNineCharacterQuery_ReturnsFalse()
+    public void Match_MissingAndExtraLetterInNineCharacterQuery_ReturnsNull()
     {
-        Assert.False(Query("mettalica").Matches(enterSandman));
+        Assert.Null(Query("mettalica").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_WordsFromTitleAndArtists_ReturnsTrue()
+    public void Match_WordsFromTitleAndArtists_ReturnsMatch()
     {
-        Assert.True(Query("metallica sandman").Matches(enterSandman));
+        Assert.NotNull(Query("metallica sandman").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_WordsInReversedOrder_ReturnsTrue()
+    public void Match_WordsInReversedOrder_ReturnsMatch()
     {
-        Assert.True(Query("sandman enter").Matches(enterSandman));
+        Assert.NotNull(Query("sandman enter").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TypoInOneOfWords_ReturnsTrue()
+    public void Match_TypoInOneOfWords_ReturnsMatch()
     {
-        Assert.True(Query("sandman metalica").Matches(enterSandman));
+        Assert.NotNull(Query("sandman metalica").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_TypoInShortWordOfPhrase_ReturnsTrue()
+    public void Match_TypoInShortWordOfPhrase_ReturnsMatch()
     {
-        Assert.True(Query("entr sandman").Matches(enterSandman));
+        Assert.NotNull(Query("entr sandman").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_OneOfWordsNotFound_ReturnsFalse()
+    public void Match_OneOfWordsNotFound_ReturnsNull()
     {
-        Assert.False(Query("metallica complicated").Matches(enterSandman));
+        Assert.Null(Query("metallica complicated").Match(enterSandman));
     }
 
     [Theory]
@@ -133,9 +133,9 @@ public class TrackSearchQueryTests
     [InlineData("Beyoncé", "Halo", "Beyonce")]
     [InlineData("motorhead", "Ace of Spades", "Motörhead")]
     [InlineData("елка", "Ёлка", "Unknown")]
-    public void Matches_DiacriticsDiffer_ReturnsTrue(string rawQuery, string title, string artists)
+    public void Match_DiacriticsDiffer_ReturnsMatch(string rawQuery, string title, string artists)
     {
-        Assert.True(Query(rawQuery).Matches(CreateTrack(title, artists)));
+        Assert.NotNull(Query(rawQuery).Match(CreateTrack(title, artists)));
     }
 
     [Theory]
@@ -143,63 +143,178 @@ public class TrackSearchQueryTests
     [InlineData("acdc", "Thunderstruck", "AC/DC")]
     [InlineData("guns n roses", "Paradise City", "Guns N' Roses")]
     [InlineData("ACDC: thunderstruck!", "Thunderstruck", "AC/DC")]
-    public void Matches_PunctuationDiffers_ReturnsTrue(string rawQuery, string title, string artists)
+    public void Match_PunctuationDiffers_ReturnsMatch(string rawQuery, string title, string artists)
     {
-        Assert.True(Query(rawQuery).Matches(CreateTrack(title, artists)));
+        Assert.NotNull(Query(rawQuery).Match(CreateTrack(title, artists)));
     }
 
     [Fact]
-    public void Matches_SpacesAroundRemovedPunctuation_ReturnsTrue()
+    public void Match_SpacesAroundRemovedPunctuation_ReturnsMatch()
     {
-        Assert.True(Query("rock and roll").Matches(CreateTrack("Rock - and - Roll", "Unknown")));
+        Assert.NotNull(Query("rock and roll").Match(CreateTrack("Rock - and - Roll", "Unknown")));
     }
 
     [Fact]
-    public void Matches_QueryLongerThanFields_ReturnsFalse()
+    public void Match_QueryLongerThanFields_ReturnsNull()
     {
-        Assert.False(Query("enter sandman by metallica").Matches(enterSandman));
+        Assert.Null(Query("enter sandman by metallica").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_NoFieldContainsQuery_ReturnsFalse()
+    public void Match_NoFieldContainsQuery_ReturnsNull()
     {
-        Assert.False(Query("avril").Matches(enterSandman));
+        Assert.Null(Query("avril").Match(enterSandman));
     }
 
     [Theory]
     [InlineData("ьуефддшсф")]
     [InlineData("ЬУЕФДДШСФ")]
     [InlineData("утеук ыфтвьфт")]
-    public void Matches_LatinQueryTypedInCyrillicLayout_ReturnsTrue(string rawQuery)
+    public void Match_LatinQueryTypedInCyrillicLayout_ReturnsMatch(string rawQuery)
     {
-        Assert.True(new TrackSearchQuery(rawQuery, englishRussianTranslator).Matches(enterSandman));
+        Assert.NotNull(new TrackSearchQuery(rawQuery, englishRussianTranslator).Match(enterSandman));
     }
 
     [Theory]
     [InlineData("rbyj")]
     [InlineData("rereirf rbyj")]
     [InlineData("Rereirf")]
-    public void Matches_CyrillicQueryTypedInLatinLayout_ReturnsTrue(string rawQuery)
+    public void Match_CyrillicQueryTypedInLatinLayout_ReturnsMatch(string rawQuery)
     {
-        Assert.True(new TrackSearchQuery(rawQuery, englishRussianTranslator).Matches(kukushka));
+        Assert.NotNull(new TrackSearchQuery(rawQuery, englishRussianTranslator).Match(kukushka));
     }
 
     [Fact]
-    public void Matches_TypoInQueryTypedInWrongLayout_ReturnsTrue()
+    public void Match_TypoInQueryTypedInWrongLayout_ReturnsMatch()
     {
-        Assert.True(new TrackSearchQuery("ьуефдшсф", englishRussianTranslator).Matches(enterSandman));
+        Assert.NotNull(new TrackSearchQuery("ьуефдшсф", englishRussianTranslator).Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_WrongLayoutWithoutLayoutTranslation_ReturnsFalse()
+    public void Match_WrongLayoutWithoutLayoutTranslation_ReturnsNull()
     {
-        Assert.False(Query("ьуефддшсф").Matches(enterSandman));
+        Assert.Null(Query("ьуефддшсф").Match(enterSandman));
     }
 
     [Fact]
-    public void Matches_QueryInCorrectLayoutWithLayoutTranslation_ReturnsTrue()
+    public void Match_QueryInCorrectLayoutWithLayoutTranslation_ReturnsMatch()
     {
-        Assert.True(new TrackSearchQuery("metallica", englishRussianTranslator).Matches(enterSandman));
+        Assert.NotNull(new TrackSearchQuery("metallica", englishRussianTranslator).Match(enterSandman));
+    }
+
+    [Theory]
+    [InlineData("azali", "Night Drive", "AZALI", MatchKind.Exact)]
+    [InlineData("azali", "Night Drive", "AZALI, Enna Alouette", MatchKind.WholeWords)]
+    [InlineData("azali", "Night Drive", "Azalia", MatchKind.FieldPrefix)]
+    [InlineData("azali", "Night Drive", "The Azalias", MatchKind.WordPrefix)]
+    [InlineData("azali", "Night Drive", "Kazalis", MatchKind.Substring)]
+    [InlineData("drive azali", "Night Drive", "AZALI", MatchKind.WholeWords)]
+    [InlineData("geoxor d", "Dreams", "Geoxor", MatchKind.FieldPrefix)]
+    [InlineData("geoxor d", "Bloodlust", "Geoxor", MatchKind.Substring)]
+    public void Match_QueryPosition_ReturnsKind(string rawQuery, string title, string artists, MatchKind expectedKind)
+    {
+        Assert.Equal(expectedKind, Query(rawQuery).Match(CreateTrack(title, artists))?.Kind);
+    }
+
+    [Fact]
+    public void Match_TypoInsideWordAndExactArtist_RanksExactArtistFirst()
+    {
+        var exactArtist = Query("azali").Match(CreateTrack("Night Drive", "AZALI"));
+        var typoInsideWord = Query("azali").Match(
+            CreateTrack("PROXIMA (feat. Kazari Tayu & Enna Alouette)", "Unknown")
+        );
+
+        Assert.NotNull(exactArtist);
+        Assert.NotNull(typoInsideWord);
+        Assert.Equal(1, typoInsideWord.Typos);
+        Assert.True(exactArtist.CompareTo(typoInsideWord) < 0);
+    }
+
+    [Fact]
+    public void Match_TypoInExactField_RanksBelowSubstringWithoutTypos()
+    {
+        var typoInExactField = Query("azali").Match(CreateTrack("Night Drive", "Azari"));
+        var substring = Query("azali").Match(CreateTrack("Night Drive", "Kazalis"));
+
+        Assert.NotNull(typoInExactField);
+        Assert.NotNull(substring);
+        Assert.True(substring.CompareTo(typoInExactField) < 0);
+    }
+
+    [Fact]
+    public void Match_TypoFollowedByExactWordStart_ReturnsSubstringKind()
+    {
+        Assert.Equal(MatchKind.Substring, Query("azali").Match(CreateTrack("Kazari", "Unknown"))?.Kind);
+    }
+
+    [Fact]
+    public void Match_QueryInTitleAndArtists_ReturnsTitleField()
+    {
+        Assert.Equal(MatchField.Title, Query("muse").Match(CreateTrack("Muse", "Muse"))?.Field);
+    }
+
+    [Fact]
+    public void Match_SameKindInTitleAndArtists_RanksTitleFirst()
+    {
+        var inTitle = Query("muse").Match(CreateTrack("Muse", "Unknown"));
+        var inArtists = Query("muse").Match(CreateTrack("Unknown", "Muse"));
+
+        Assert.NotNull(inTitle);
+        Assert.NotNull(inArtists);
+        Assert.True(inTitle.CompareTo(inArtists) < 0);
+    }
+
+    [Fact]
+    public void Match_SameKindInWholeTitleAndAcrossFields_RanksWholeTitleFirst()
+    {
+        var wholeTitle = Query("enter sandman").Match(CreateTrack("Enter Sandman", "Unknown"));
+        var wordsAcrossFields = Query("enter sandman").Match(CreateTrack("Sandman", "Enter"));
+
+        Assert.NotNull(wholeTitle);
+        Assert.NotNull(wordsAcrossFields);
+        Assert.Equal(MatchKind.Exact, wordsAcrossFields.Kind);
+        Assert.True(wholeTitle.CompareTo(wordsAcrossFields) < 0);
+    }
+
+    [Fact]
+    public void Match_ArtistAndTitleWordsAcrossFields_RanksAboveTitlePrefix()
+    {
+        var artistAndTitle = Query("geoxor dreams").Match(CreateTrack("Dreams", "Geoxor"));
+        var titlePrefix = Query("geoxor dreams").Match(CreateTrack("Geoxor Dreams Remix", "Unknown"));
+
+        Assert.NotNull(artistAndTitle);
+        Assert.NotNull(titlePrefix);
+        Assert.True(artistAndTitle.CompareTo(titlePrefix) < 0);
+    }
+
+    [Fact]
+    public void Match_WordWithTyposAcrossFields_SumsTyposOfWords()
+    {
+        Assert.Equal(2, Query("metalica sandmen").Match(enterSandman)?.Typos);
+    }
+
+    [Fact]
+    public void Match_QueryInTypedLayout_RanksAboveTranslatedLayout()
+    {
+        var query = new TrackSearchQuery("rbyj", englishRussianTranslator);
+        var typedLayout = query.Match(CreateTrack("rbyj", "Unknown"));
+        var translatedLayout = query.Match(CreateTrack("кино", "Unknown"));
+
+        Assert.NotNull(typedLayout);
+        Assert.NotNull(translatedLayout);
+        Assert.Equal(0, typedLayout.LayoutIndex);
+        Assert.True(typedLayout.CompareTo(translatedLayout) < 0);
+    }
+
+    [Fact]
+    public void Match_EmptyQuery_ReturnsEqualMatches()
+    {
+        var first = Query("").Match(enterSandman);
+        var second = Query("").Match(complicated);
+
+        Assert.NotNull(first);
+        Assert.NotNull(second);
+        Assert.Equal(0, first.CompareTo(second));
     }
 
     private TrackSearchQuery Query(string rawQuery)
