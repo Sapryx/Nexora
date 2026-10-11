@@ -19,7 +19,14 @@ namespace Nexora;
 
 public static class CompositionRoot
 {
-    private static readonly string VolumeFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify), "Nexora", "volume.txt");
+    private static readonly string VolumeFilePath = Path.Combine(
+        Environment.GetFolderPath(
+            Environment.SpecialFolder.ApplicationData,
+            Environment.SpecialFolderOption.DoNotVerify
+        ),
+        "Nexora",
+        "volume.txt"
+    );
 
     public static void Configure(ServiceCollection builder)
     {
@@ -28,14 +35,20 @@ public static class CompositionRoot
         builder.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
         builder.AddSingleton<ITrackControlVmFactory, TrackControlVmFactory>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
-        builder.AddSingleton<IDegreeOfParallelismProvider<FileTrackLoader>, FileTrackLoaderDegreeOfParallelismProvider>();
+        builder.AddSingleton<
+            IDegreeOfParallelismProvider<FileTrackLoader>,
+            FileTrackLoaderDegreeOfParallelismProvider
+        >();
         builder.AddSingleton<ISupportedAudioFormatsProvider, SupportedAudioFormatsProvider>();
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<IAudioPlayer, AudioPlayer>();
-        builder.AddSingleton<IVolumeStorage>(provider => new FileVolumeStorage(VolumeFilePath, provider.GetRequiredService<ILogger<FileVolumeStorage>>()));
+        builder.AddSingleton<IVolumeStorage>(provider => new FileVolumeStorage(
+            VolumeFilePath,
+            provider.GetRequiredService<ILogger<FileVolumeStorage>>()
+        ));
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
         builder.AddSingleton<KeyboardLayoutTranslator>();

@@ -13,10 +13,10 @@ public readonly record struct GradientStopSnapshot(Color Color, float Offset);
 
 public class DitherGradientEffect : ICustomDrawOperation
 {
+    public Rect Bounds { get; }
+
     private const int MaxStops = 8;
     private static readonly SKRuntimeEffect? Effect;
-
-    public Rect Bounds { get; }
     private readonly RelativePoint startPoint;
     private readonly RelativePoint endPoint;
     private readonly GradientStopSnapshot[] stops;
@@ -35,7 +35,12 @@ public class DitherGradientEffect : ICustomDrawOperation
         }
     }
 
-    public DitherGradientEffect(Rect bounds, RelativePoint startPoint, RelativePoint endPoint, GradientStopSnapshot[] stops)
+    public DitherGradientEffect(
+        Rect bounds,
+        RelativePoint startPoint,
+        RelativePoint endPoint,
+        GradientStopSnapshot[] stops)
+
     {
         Bounds = bounds;
         this.startPoint = startPoint;
@@ -56,7 +61,7 @@ public class DitherGradientEffect : ICustomDrawOperation
 
     public void Render(ImmediateDrawingContext context)
     {
-        if(Effect is null || stops.Length < 2)
+        if(Effect == null || stops.Length < 2)
         {
             return;
         }
@@ -96,7 +101,7 @@ public class DitherGradientEffect : ICustomDrawOperation
 
         using var shader = builder.Build();
         using var paint = new SKPaint();
-        
+
         paint.Shader = shader;
         canvas.DrawRect(new SKRect(0, 0, (float)size.Width, (float)size.Height), paint);
     }

@@ -14,10 +14,6 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     [ObservableProperty]
     public partial string Artists { get; set; } = "";
 
-    private string audioPath = "";
-    private readonly ICoverCache coverCache;
-    private readonly IUiDispatcher uiDispatcher;
-
     public Bitmap? Cover
     {
         get
@@ -32,6 +28,10 @@ public abstract partial class CoveredTrackVm : ViewModelBase
             return cached;
         }
     }
+
+    private readonly ICoverCache coverCache;
+    private readonly IUiDispatcher uiDispatcher;
+    private string audioPath = "";
 
     protected CoveredTrackVm(ICoverCache coverCache, IUiDispatcher uiDispatcher)
     {

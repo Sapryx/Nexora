@@ -6,7 +6,10 @@ namespace Core.Tests.Search;
 
 public class KeyboardLayoutTranslatorTests
 {
-    private readonly KeyboardLayoutTranslator translator = TestKeyboardLayouts.CreateTranslator(TestKeyboardLayouts.English, TestKeyboardLayouts.Russian);
+    private readonly KeyboardLayoutTranslator translator = TestKeyboardLayouts.CreateTranslator(
+        TestKeyboardLayouts.English,
+        TestKeyboardLayouts.Russian
+    );
 
     [Theory]
     [InlineData("ghbdtn", "привет")]
@@ -48,7 +51,10 @@ public class KeyboardLayoutTranslatorTests
         var layoutProviderMock = new Mock<IKeyboardLayoutProvider>();
         layoutProviderMock.Setup(it => it.GetLayouts()).Throws(new DllNotFoundException());
 
-        var failedTranslator = new KeyboardLayoutTranslator(layoutProviderMock.Object, NullLogger<KeyboardLayoutTranslator>.Instance);
+        var failedTranslator = new KeyboardLayoutTranslator(
+            layoutProviderMock.Object,
+            NullLogger<KeyboardLayoutTranslator>.Instance
+        );
 
         Assert.Empty(failedTranslator.Translate("ghbdtn"));
     }

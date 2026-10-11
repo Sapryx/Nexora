@@ -10,33 +10,33 @@ public partial class PlaybackControl : UserControl
     public PlaybackControl()
     {
         InitializeComponent();
-        
+
         VolumeSlider.AddHandler(
             PointerPressedEvent,
             VolumeSlider_OnPointerPressed,
             RoutingStrategies.Tunnel);
-        
+
         VolumeSlider.AddHandler(
             PointerReleasedEvent,
             VolumeSlider_OnPointerReleased,
             RoutingStrategies.Tunnel);
-        
+
         VolumeSlider.AddHandler(
             PointerCaptureLostEvent,
             VolumeSlider_OnPointerReleased,
             RoutingStrategies.Bubble);
-        
-        
+
+
         PlaybackPositionSlider.AddHandler(
             PointerPressedEvent,
             PlaybackPositionSlider_OnPointerPressed,
             RoutingStrategies.Tunnel);
-        
+
         PlaybackPositionSlider.AddHandler(
             PointerReleasedEvent,
             PlaybackPositionSlider_OnPointerReleased,
             RoutingStrategies.Tunnel);
-        
+
         PlaybackPositionSlider.AddHandler(
             PointerCaptureLostEvent,
             PlaybackPositionSlider_OnPointerReleased,
@@ -89,6 +89,6 @@ public partial class PlaybackControl : UserControl
 
         vm.PreviewSeek(pointerX / width);
         ToolTip.SetHorizontalOffset(PlaybackPositionSlider, pointerX - width / 2);
-        ToolTip.SetIsOpen(PlaybackPositionSlider, vm.SeekPreviewTime is not null);
+        ToolTip.SetIsOpen(PlaybackPositionSlider, vm.SeekPreviewTime != null);
     }
 }

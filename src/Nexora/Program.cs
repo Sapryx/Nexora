@@ -7,7 +7,8 @@ namespace Nexora;
 
 sealed class Program
 {
-    public static bool IsWaylandSession => OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
+    public static bool IsWaylandSession =>
+        OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
     private const string InstanceMutexName = "Nexora.SingleInstance";
 
     [STAThread]

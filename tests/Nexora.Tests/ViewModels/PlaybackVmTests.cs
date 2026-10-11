@@ -275,6 +275,21 @@ public class PlaybackVmTests
     }
 
     [Fact]
+    public void PlaybackStarted_Raised_ShowsStartedTrack()
+    {
+        var metadata = new Metadata() { Title = "Song", Artists = "Artist" };
+        var playlistItem = Mock.Of<IPlaylistItem>(
+            it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == ""
+        );
+
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+
+        Assert.NotNull(vm.PlayingTrackViewVm);
+        Assert.Equal("Song", vm.PlayingTrackViewVm.Title);
+        Assert.Equal("Artist", vm.PlayingTrackViewVm.Artists);
+    }
+
+    [Fact]
     public void PreviewSeek_TrackPlaying_ShowsTimeAtPosition()
     {
         SetupNowPlaying(TimeSpan.FromSeconds(200));

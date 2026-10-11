@@ -38,7 +38,7 @@ public class AudioPlayer : IAudioPlayer
     private readonly IVolumeStorage volumeStorage;
     private int volume;
 
-    public event Action? PlaybackStarted;
+    public event Action<IPlaylistItem>? PlaybackStarted;
     public event Action<float>? PlaybackPositionChanged;
     public event Action? PlaybackPaused;
     public event Action? PlaybackFinished;
@@ -56,7 +56,7 @@ public class AudioPlayer : IAudioPlayer
         mediaPlayer.Volume = volume;
 
         mediaPlayer.PositionChanged += (_, args) => PlaybackPositionChanged?.Invoke(args.Position);
-        mediaPlayer.Playing += (_, _) => PlaybackStarted?.Invoke();
+        mediaPlayer.Playing += (_, _) => OnPlaying();
         mediaPlayer.Playing += (_, _) => PlaybackResumed?.Invoke();
         mediaPlayer.EndReached += (_, _) => PlaybackFinished?.Invoke();
         mediaPlayer.Paused += (_, _) => PlaybackPaused?.Invoke();
@@ -110,6 +110,16 @@ public class AudioPlayer : IAudioPlayer
     public void SkipBack()
     {
         Skip(-5);
+    }
+
+    private void OnPlaying()
+    {
+        var playlistItem = NowPlaying;
+
+        if(playlistItem != null)
+        {
+            PlaybackStarted?.Invoke(playlistItem);
+        }
     }
 
     private void OnVolumeChanged(float newVolume)

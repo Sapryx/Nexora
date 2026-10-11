@@ -11,6 +11,8 @@ namespace Nexora.Controls;
 
 public sealed class SmoothScroller
 {
+    private double MaxOffset => Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
+
     private const double WheelStep = 100;
     private const double TimeConstantSeconds = 0.08;
     private const double StopDistance = 0.5;
@@ -20,8 +22,6 @@ public sealed class SmoothScroller
     private double expectedOffset;
     private TimeSpan? lastFrameTime;
     private bool isAnimating;
-    
-    private double MaxOffset => Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
 
     public SmoothScroller(ScrollViewer scrollViewer)
     {
@@ -47,7 +47,7 @@ public sealed class SmoothScroller
     private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var track = FindPressedTrack(e.Source as Visual);
-        if(track?.Thumb is null || !e.GetCurrentPoint(track).Properties.IsLeftButtonPressed)
+        if(track?.Thumb == null || !e.GetCurrentPoint(track).Properties.IsLeftButtonPressed)
         {
             return;
         }
@@ -69,7 +69,7 @@ public sealed class SmoothScroller
     private static Track? FindPressedTrack(Visual? source)
     {
         var track = source?.FindAncestorOfType<Track>(true);
-        if(track is null || track.Orientation != Orientation.Vertical)
+        if(track == null || track.Orientation != Orientation.Vertical)
         {
             return null;
         }
@@ -80,13 +80,13 @@ public sealed class SmoothScroller
 
     private static bool IsWithin(Visual? source, Visual? button)
     {
-        return source is not null && button is not null && (source == button || button.IsVisualAncestorOf(source));
+        return source != null && button != null && (source == button || button.IsVisualAncestorOf(source));
     }
 
     private bool ScrollTo(double offset)
     {
         var topLevel = TopLevel.GetTopLevel(scrollViewer);
-        if(topLevel is null)
+        if(topLevel == null)
         {
             return false;
         }
@@ -106,12 +106,12 @@ public sealed class SmoothScroller
 
     private void OnFrame(TimeSpan time)
     {
-        double elapsed = lastFrameTime is null ? FallbackFrameSeconds : (time - lastFrameTime.Value).TotalSeconds;
+        double elapsed = lastFrameTime == null ? FallbackFrameSeconds : (time - lastFrameTime.Value).TotalSeconds;
         lastFrameTime = time;
 
         double current = scrollViewer.Offset.Y;
         var topLevel = TopLevel.GetTopLevel(scrollViewer);
-        if(topLevel is null || Math.Abs(current - expectedOffset) > StopDistance)
+        if(topLevel == null || Math.Abs(current - expectedOffset) > StopDistance)
         {
             isAnimating = false;
             return;

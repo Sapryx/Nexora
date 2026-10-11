@@ -12,16 +12,16 @@ namespace Nexora.ViewModels;
 
 public partial class SearchBarVm : ViewModelBase
 {
-    private readonly ITrackControlVmFactory trackControlVmFactory;
-    private readonly KeyboardLayoutTranslator layoutTranslator;
-    private readonly List<TrackMatch> displayedMatches = [];
-    private TrackSearchQuery searchQuery;
-
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
 
     public Dictionary<IAudioTrack, TrackControlVm> AudioTrackVms { get; } = [];
     public ObservableCollection<TrackControlVm> DisplayedAudioTrackVms { get; } = [];
+
+    private readonly ITrackControlVmFactory trackControlVmFactory;
+    private readonly KeyboardLayoutTranslator layoutTranslator;
+    private readonly List<TrackMatch> displayedMatches = [];
+    private TrackSearchQuery searchQuery;
 
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
@@ -39,7 +39,7 @@ public partial class SearchBarVm : ViewModelBase
             DisplayIfMatches(playlistItem.AudioTrack, trackVm);
         });
     }
-    
+
     private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
         var audioTrackVm = trackControlVmFactory.Create(playlistItem);
@@ -60,9 +60,9 @@ public partial class SearchBarVm : ViewModelBase
         DisplayedAudioTrackVms.Clear();
         displayedMatches.Clear();
 
-        foreach(var (audioTrack, audioTrackVm) in AudioTrackVms)
+        foreach(var pair in AudioTrackVms)
         {
-            DisplayIfMatches(audioTrack, audioTrackVm);
+            DisplayIfMatches(pair.Key, pair.Value);
         }
     }
 

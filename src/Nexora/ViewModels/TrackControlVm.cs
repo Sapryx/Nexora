@@ -14,7 +14,7 @@ public partial class TrackControlVm : CoveredTrackVm
 
     [ObservableProperty]
     public partial bool IsActiveAndPlaying { get; set; }
-    
+
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
@@ -38,9 +38,9 @@ public partial class TrackControlVm : CoveredTrackVm
         SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
         Duration = $"{(int)duration.TotalMinutes:00}:{duration.Seconds:00}";
 
-        audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
+        audioPlayer.PlaybackStarted += nowPlaying => uiDispatcher.Post(() =>
         {
-            IsActive = audioPlayer.NowPlaying == playlistItem;
+            IsActive = nowPlaying == playlistItem;
             IsActiveAndPlaying = IsActive;
         });
 

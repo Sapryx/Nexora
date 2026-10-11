@@ -55,15 +55,19 @@ If the `rider` MCP server is available (Rider must be running with this project)
 ## Code style
 
 - Allman braces, `if(`/`foreach(` with no space before the parenthesis, file-scoped namespaces.
+- Lines are at most 120 characters in every code file (C#, axaml, scripts, workflows): code must never need horizontal scrolling. Wrap in the most readable way: parameters of a long declaration one per line with `)` on the last one; arguments of a long call one per line after `(` with `);` on its own line; a long collection expression as `= [` on the declaration line, one item per line, `];`; a long interpolated log message as several `$"..." +` parts. No trailing whitespace.
+- Member order: properties first, then fields (constants included), then events, constructors, methods. Exception: an Avalonia `StyledProperty` registration stays right before its CLR property.
+- Null checks via `== null` / `!= null`; `is` / `is not` only for type checks.
+- Comments only where they add what the code can't say: why a non-obvious implementation is done this way, which algorithm is used (prefer a descriptive name and a link, e.g. to Wikipedia), the layout of a format (time, log line, date). No comments restating the code, no TODOs; don't add commented-out code (the layout placeholders in `MainWindow.axaml` stay on purpose).
 - Private fields in camelCase without `_`, assigned via `this.field = field`.
 - VM properties: `[ObservableProperty] public partial T Name { get; set; }`, reactions — `partial void OnNameChanged`.
 - Local variables: lowercase built-in types (`bool`, `byte`, `sbyte`, `char`, `short`, `ushort`, `int`, `uint`, `long`, `ulong`, `nint`, `nuint`, `float`, `double`, `decimal`, `string`) are spelled out explicitly (`int count = 0;`); everything else uses `var`.
 - No local functions. Lambdas are fine.
 - No target-typed `new()`: always spell out the type (`new Playlist()`). Parentheses are required even with an object initializer: `new Metadata() { Title = title }`.
-- No tuples (`(int, string)`, `(a, b) = ...`, tuple literals in asserts): declare a small class with named properties instead.
+- No tuples (`(int, string)`, `(a, b) = ...`, `foreach(var (key, value) in dictionary)`, tuple literals in asserts): declare a small class with named properties instead, or use `pair.Key`/`pair.Value`.
 - No range syntax with two dots: neither ranges (`text[..length]`, `items[1..]`) nor spread in collection expressions (`[.. items]`). Use `Substring`, `Take`/`Skip`, `ToList()`/`Concat()` instead.
 - Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), not `Dispatcher.UIThread` directly, so view models stay testable.
-- Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...`, `NullLogger<T>.Instance` for loggers (`TestLogger<T>` when the test checks what is logged).
+- Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...` (a short descriptive name is fine when it reads better; prefer `it` over a long one), `NullLogger<T>.Instance` for loggers (`TestLogger<T>` when the test checks what is logged).
 
 ## Logging
 
@@ -92,7 +96,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 
 Nullable reference types are enabled in all projects; Release uses `TreatWarningsAsErrors`, so any nullability warning fails the build (in the test projects — in every configuration).
 - Annotate types precisely: `T?` only where `null` is a valid value, non-nullable otherwise.
-- Handle `null` explicitly (checks, `?.`, `??`, `is not null`) instead of suppressing warnings.
+- Handle `null` explicitly (checks, `?.`, `??`, `!= null`) instead of suppressing warnings.
 - Use the `!` operator only when non-null is guaranteed by logic the compiler can't see; never to silence a warning. No `#nullable disable` / `#pragma warning disable`.
 
 ## AOT

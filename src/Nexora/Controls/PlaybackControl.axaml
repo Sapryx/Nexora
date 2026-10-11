@@ -68,14 +68,14 @@
                             Spacing="16"
                             Margin="0 0 16 0"
                             HorizontalAlignment="Right">
-                    
+
                     <Button Command="{Binding ToggleMute}"
                             CornerRadius="100"
                             Padding="8"
                             Background="Transparent">
                         <controls:Icon IconName="{Binding VolumeIconName}" />
                     </Button>
-                    
+
                     <Slider x:Name="VolumeSlider"
                             Value="{Binding Volume, Mode=TwoWay}"
                             Minimum="0"

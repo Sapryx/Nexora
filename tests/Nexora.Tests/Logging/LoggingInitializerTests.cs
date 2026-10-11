@@ -80,7 +80,16 @@ public class LoggingInitializerTests : IDisposable
         }
 
         string[] messages = File.ReadAllLines(logPath).Select(it => it.Substring(it.IndexOf('[')).TrimEnd()).ToArray();
-        Assert.Equal(["[Info ] Minimum log level:", "[Trace]", "[Debug]", "[Info ]", "[Warn ] <--", "[Error]", "[Crit ]"], messages);
+        string[] expected = [
+            "[Info ] Minimum log level:",
+            "[Trace]",
+            "[Debug]",
+            "[Info ]",
+            "[Warn ] <--",
+            "[Error]",
+            "[Crit ]"
+        ];
+        Assert.Equal(expected, messages);
     }
 
     [Theory]
@@ -92,7 +101,11 @@ public class LoggingInitializerTests : IDisposable
     {
         string output = LogColored(logger => logger.Log(level, "(LibVLC) main: Hello"));
 
-        Assert.Matches($@"^{Regex.Escape(color)}\d{{2}}:\d{{2}}:\d{{2}}\.\d{{3}} \[[\w ]{{5}}\] \(LibVLC\) main: Hello{Regex.Escape(ResetColor)}\r?\n$", output);
+        Assert.Matches(
+            $@"^{Regex.Escape(color)}\d{{2}}:\d{{2}}:\d{{2}}\.\d{{3}} \[[\w ]{{5}}\] " +
+            $@"\(LibVLC\) main: Hello{Regex.Escape(ResetColor)}\r?\n$",
+            output
+        );
     }
 
     [Fact]
@@ -128,7 +141,9 @@ public class LoggingInitializerTests : IDisposable
     {
         var stream = new MemoryStream();
 
-        using(var loggerFactory = LoggerFactory.Create(it => it.SetMinimumLevel(LogLevel.Trace).AddZLoggerStream(stream, LoggingInitializer.UseColoredFormatter)))
+        using(var loggerFactory = LoggerFactory.Create(it => it
+            .SetMinimumLevel(LogLevel.Trace)
+            .AddZLoggerStream(stream, LoggingInitializer.UseColoredFormatter)))
         {
             log(loggerFactory.CreateLogger("Test"));
         }

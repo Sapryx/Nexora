@@ -39,7 +39,12 @@ public class SearchBarVmTests
             Mock.Of<IKeyboardLayoutProvider>(it => it.GetLayouts() == Array.Empty<KeyboardLayout>()),
             NullLogger<KeyboardLayoutTranslator>.Instance);
 
-        vm = new SearchBarVm(playlistRegistry, trackControlVmFactoryMock.Object, layoutTranslator, uiDispatcherMock.Object);
+        vm = new SearchBarVm(
+            playlistRegistry,
+            trackControlVmFactoryMock.Object,
+            layoutTranslator,
+            uiDispatcherMock.Object
+        );
     }
 
     [Fact]
@@ -149,6 +154,6 @@ public class SearchBarVmTests
 
     private List<string> DisplayedTitles()
     {
-        return [.. vm.DisplayedAudioTrackVms.Select(it => it.Title)];
+        return vm.DisplayedAudioTrackVms.Select(it => it.Title).ToList();
     }
 }
