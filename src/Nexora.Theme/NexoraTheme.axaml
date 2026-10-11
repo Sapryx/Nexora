@@ -14,6 +14,34 @@
         <Setter Property="Transitions" Value="{x:Null}" />
     </Style>
 
+    <!-- The popup is sized to the presenter, so the margin leaves room in it for the shadow. -->
+    <Style Selector="MenuFlyoutPresenter">
+        <Setter Property="Margin" Value="12 8 12 16" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <!-- On open the flyout focuses its first focusable element, and a focused item is shown as selected. -->
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="RenderTransformOrigin" Value="50%, 0%" />
+        <Style.Animations>
+            <Animation Duration="0:0:0.12" Easing="CubicEaseOut">
+                <KeyFrame Cue="0%">
+                    <Setter Property="ScaleTransform.ScaleY" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="ScaleTransform.ScaleY" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector="MenuFlyoutPresenter /template/ Border#LayoutRoot">
+        <Setter Property="BoxShadow" Value="0 4 12 0 #80000000" />
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="Margin" Value="4 0" />
+        <Setter Property="CornerRadius" Value="4" />
+    </Style>
+
     <Styles.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
