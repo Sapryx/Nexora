@@ -13,7 +13,7 @@ namespace Nexora.Media;
 public class CoverCache : ICoverCache
 {
     private const int Capacity = 256;
-    private const int DecodeWidth = 128;
+    private const int DecodeWidth = 256;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
     private readonly LruCache<string, Bitmap?> cache = new LruCache<string, Bitmap?>(Capacity);
