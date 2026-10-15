@@ -29,6 +29,16 @@
             <Setter Property="Background" Value="rgba(255, 255, 255, 10%)" />
         </Style>
 
+        <Style Selector="Border#viewToggle Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="CornerRadius" Value="100" />
+            <Setter Property="Padding" Value="8 4" />
+        </Style>
+
+        <Style Selector="Border#viewToggle Button.selected">
+            <Setter Property="Background" Value="rgba(255, 255, 255, 15%)" />
+        </Style>
+
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
@@ -83,15 +93,48 @@
                        IsVisible="{Binding !IsQueueOpen}">
                     <controls:SearchBar DataContext="{Binding SearchBarVm}"
                                         HorizontalAlignment="Stretch"
-                                        MaxWidth="480" />
+                                        MaxWidth="480"
+                                        Margin="136 0" />
+
+                    <Border x:Name="viewToggle"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0 0 32 0"
+                            Padding="4"
+                            CornerRadius="100"
+                            Background="rgba(255, 255, 255, 10%)"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderBrush}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Button Command="{Binding ShowLibraryListCommand}"
+                                    Classes.selected="{Binding !IsLibraryGridView}"
+                                    ToolTip.Tip="List">
+                                <controls:Icon IconName="list" />
+                            </Button>
+
+                            <Button Command="{Binding ShowLibraryGridCommand}"
+                                    Classes.selected="{Binding IsLibraryGridView}"
+                                    ToolTip.Tip="Grid">
+                                <controls:Icon IconName="grid" />
+                            </Button>
+                        </StackPanel>
+                    </Border>
                 </Panel>
 
-                <controls:TrackArea Grid.Row="1"
-                                    Margin="32 0 0 0"
-                                    TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
-                                    IsVisible="{Binding !IsQueueOpen}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"/>
+                <Panel Grid.Row="1"
+                       IsVisible="{Binding !IsQueueOpen}">
+                    <controls:TrackArea Margin="32 0 0 0"
+                                        TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                        IsVisible="{Binding !IsLibraryGridView}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"/>
+
+                    <controls:TrackGrid Margin="32 0 0 0"
+                                        TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                        IsVisible="{Binding IsLibraryGridView}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"/>
+                </Panel>
 
                 <Panel Grid.Row="1"
                        IsVisible="{Binding IsQueueOpen}">

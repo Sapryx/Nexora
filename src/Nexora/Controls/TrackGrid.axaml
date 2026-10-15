@@ -1,0 +1,44 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Nexora.ViewModels"
+             xmlns:controls="clr-namespace:Nexora.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Nexora.Controls.TrackGrid"
+             x:DataType="controls:TrackGrid"
+             x:Name="Root">
+    <ScrollViewer x:Name="RowScrollViewer"
+                  Margin="0 16 0 0"
+                  AllowAutoHide="False"
+                  HorizontalScrollBarVisibility="Disabled">
+        <ItemsControl ItemsSource="{Binding #Root.Rows}"
+                      Margin="0 0 32 0">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="controls:TrackGridRow">
+                    <ItemsControl ItemsSource="{Binding TrackVms}"
+                                  Margin="0 0 0 8">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="viewModels:TrackControlVm">
+                                <controls:TrackTile />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Rows="1"
+                                             Columns="{Binding $parent[controls:TrackGrid].ColumnCount}" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>
