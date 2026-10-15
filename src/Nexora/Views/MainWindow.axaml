@@ -59,11 +59,11 @@
                     Padding="16"
                     Background="rgba(0, 0, 0, 25%)">
                 <StackPanel Spacing="4">
-                    <Button Command="{Binding OpenHomeCommand}"
+                    <Button Command="{Binding OpenLibraryCommand}"
                             Classes.selected="{Binding !IsQueueOpen}">
                         <StackPanel Orientation="Horizontal" Spacing="12">
-                            <controls:Icon IconName="home" />
-                            <TextBlock Classes="Title" Text="Home" VerticalAlignment="Center" />
+                            <controls:Icon IconName="library" />
+                            <TextBlock Classes="Title" Text="Library" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
 
