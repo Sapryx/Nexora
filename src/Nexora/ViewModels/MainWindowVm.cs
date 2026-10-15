@@ -34,7 +34,7 @@ public partial class MainWindowVm : ViewModelBase
     }
 
     [RelayCommand]
-    public void OpenHome()
+    public void OpenLibrary()
     {
         IsQueueOpen = false;
     }
