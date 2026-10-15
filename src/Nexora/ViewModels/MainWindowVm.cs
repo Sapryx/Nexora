@@ -10,6 +10,9 @@ public partial class MainWindowVm : ViewModelBase
     [ObservableProperty]
     public partial bool IsQueueOpen { get; private set; }
 
+    [ObservableProperty]
+    public partial bool IsLibraryGridView { get; private set; }
+
     public SearchBarVm SearchBarVm { get; }
     public PlaybackVm PlaybackVm { get; }
     public QueueVm QueueVm { get; }
@@ -43,5 +46,17 @@ public partial class MainWindowVm : ViewModelBase
     public void OpenQueue()
     {
         IsQueueOpen = true;
+    }
+
+    [RelayCommand]
+    public void ShowLibraryList()
+    {
+        IsLibraryGridView = false;
+    }
+
+    [RelayCommand]
+    public void ShowLibraryGrid()
+    {
+        IsLibraryGridView = true;
     }
 }
