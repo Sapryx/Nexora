@@ -50,6 +50,17 @@ public partial class MainWindow : Window
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
+        if(DataContext is MainWindowVm mainWindowVm && e.Key == Key.S && e.KeyModifiers == KeyModifiers.Control)
+        {
+            if(e.RoutedEvent == KeyDownEvent)
+            {
+                mainWindowVm.SaveMetadataCommand.Execute(null);
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         if(e.Source is TextBox)
         {
             return;

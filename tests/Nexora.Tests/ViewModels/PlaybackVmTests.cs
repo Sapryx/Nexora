@@ -1,5 +1,7 @@
 using Core.Playback;
 using Core.Playlists;
+using Core.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
@@ -12,6 +14,12 @@ public class PlaybackVmTests
     private const int InitialVolume = 50;
     private readonly Mock<IAudioPlayer> audioPlayerMock;
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
+    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
+        NullLogger<TrackMetadataEditor>.Instance,
+        Mock.Of<IMetadataSaver>(),
+        Mock.Of<IPendingMetadataStorage>(),
+        Mock.Of<IAudioPlayer>()
+    );
     private readonly PlaybackVm vm;
 
     public PlaybackVmTests()
@@ -29,6 +37,7 @@ public class PlaybackVmTests
 
         vm = new PlaybackVm(
             audioPlayerMock.Object,
+            metadataEditor,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object
         );
@@ -287,6 +296,19 @@ public class PlaybackVmTests
         Assert.NotNull(vm.PlayingTrackViewVm);
         Assert.Equal("Song", vm.PlayingTrackViewVm.Title);
         Assert.Equal("Artist", vm.PlayingTrackViewVm.Artists);
+    }
+
+    [Fact]
+    public async Task MetadataChanged_PlayingTrackEdited_ShowsNewTitle()
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it =>
+            it.AudioTrack.Metadata == new Metadata() { Title = "Song" } && it.AudioTrack.AudioPath == "");
+        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+
+        await metadataEditor.EditAsync(playlistItem.AudioTrack, "Edited", "");
+
+        Assert.Equal("Edited", vm.PlayingTrackViewVm?.Title);
     }
 
     [Fact]

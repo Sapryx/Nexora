@@ -44,6 +44,7 @@ Cover changes with unit tests. Run the app and verify the change in it (integrat
 - Only one instance runs at a time (named mutex in `Program.Main`): a second launch exits immediately without logging.
 - Music is loaded from `Environment.SpecialFolder.MyMusic` (`MusicDirectoryProvider`).
 - Volume is owned by `AudioPlayer`, not read back from LibVLC: before playback LibVLC reports 0 on Linux (no PulseAudio stream yet) and the per-app mixer level on Windows, and it sends `VolumeChanged` -1 when the audio output is destroyed (ignored). The last volume is saved to `Nexora/volume.txt` next to the logs and restored on start (50 on first launch); delete the file to reset it.
+- Unsaved metadata edits are kept as one JSON file per track in `Nexora/pending-metadata/` next to the logs (named after the SHA-256 of the audio path) and deleted once written to the tags.
 - Avalonia DevTools (F12) are available in Debug.
 
 ## Rider MCP

@@ -45,11 +45,12 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
 
-        <Style Selector="Button#MenuButton">
+        <Style Selector="controls|TrackEditMenu#EditMenu">
             <Setter Property="Opacity" Value="0" />
         </Style>
 
-        <Style Selector="Border#MainTrackBorder:pointerover Button#MenuButton, Button#MenuButton:flyout-open">
+        <Style Selector="Border#MainTrackBorder:pointerover controls|TrackEditMenu#EditMenu,
+                         controls|TrackEditMenu#EditMenu:open">
             <Setter Property="Opacity" Value="1" />
         </Style>
     </UserControl.Styles>
@@ -59,6 +60,17 @@
             HorizontalAlignment="Center"
             Padding="8"
             CornerRadius="12">
+        <Border.ContextFlyout>
+            <MenuFlyout>
+                <MenuItem Header="Add To Queue"
+                          Command="{Binding AddToQueueCommand}"
+                          IsVisible="{Binding !IsInQueue}" />
+                <MenuItem Header="Remove From Queue"
+                          Command="{Binding RemoveFromQueueCommand}"
+                          IsVisible="{Binding IsInQueue}" />
+            </MenuFlyout>
+        </Border.ContextFlyout>
+
         <StackPanel Width="160"
                     Spacing="8">
             <Panel>
@@ -90,32 +102,31 @@
                     </Panel>
                 </Button>
 
-                <Button x:Name="MenuButton"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="4"
-                        CornerRadius="100"
-                        Padding="4"
-                        Background="rgba(0, 0, 0, 50%)">
-                    <controls:Icon IconName="dots" />
-                    <Button.Flyout>
-                        <MenuFlyout Placement="BottomEdgeAlignedRight">
-                            <MenuItem Header="Add To Queue"
-                                      Command="{Binding AddToQueueCommand}"
-                                      IsVisible="{Binding !IsInQueue}" />
-                            <MenuItem Header="Remove From Queue"
-                                      Command="{Binding RemoveFromQueueCommand}"
-                                      IsVisible="{Binding IsInQueue}" />
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
+                <controls:TrackEditMenu x:Name="EditMenu"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Top"
+                                        Margin="4"
+                                        Background="rgba(0, 0, 0, 50%)"
+                                        CornerRadius="100" />
             </Panel>
 
             <StackPanel Spacing="2">
-                <TextBlock Classes="Title"
-                           Text="{Binding Title}"
-                           TextAlignment="Center"
-                           TextTrimming="CharacterEllipsis" />
+                <Grid ColumnDefinitions="*, Auto"
+                      ColumnSpacing="6"
+                      HorizontalAlignment="Center">
+                    <TextBlock Grid.Column="0"
+                               Classes="Title"
+                               Text="{Binding Title}"
+                               TextTrimming="CharacterEllipsis" />
+
+                    <Ellipse Grid.Column="1"
+                             Width="8"
+                             Height="8"
+                             Fill="{StaticResource TitleBrush}"
+                             VerticalAlignment="Center"
+                             IsVisible="{Binding HasUnsavedChanges}"
+                             ToolTip.Tip="Unsaved changes" />
+                </Grid>
 
                 <TextBlock Classes="Subtitle"
                            Text="{Binding Artists}"

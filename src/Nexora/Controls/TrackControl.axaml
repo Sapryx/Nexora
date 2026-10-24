@@ -51,6 +51,17 @@
             Tag="{Binding IsActive}"
             Padding="8"
             CornerRadius="12">
+        <Border.ContextFlyout>
+            <MenuFlyout>
+                <MenuItem Header="Add To Queue"
+                          Command="{Binding AddToQueueCommand}"
+                          IsVisible="{Binding !IsInQueue}" />
+                <MenuItem Header="Remove From Queue"
+                          Command="{Binding RemoveFromQueueCommand}"
+                          IsVisible="{Binding IsInQueue}" />
+            </MenuFlyout>
+        </Border.ContextFlyout>
+
         <Grid ColumnDefinitions="Auto, *, Auto, Auto"
               RowDefinitions="Auto Auto"
               ColumnSpacing="8"
@@ -87,11 +98,21 @@
                 </Panel>
             </Button>
 
-            <TextBlock Grid.Column="1"
-                       Grid.Row="0"
-                       Classes="Title"
-                       Text="{Binding Title}"
-                       VerticalAlignment="Bottom"/>
+            <StackPanel Grid.Column="1"
+                        Grid.Row="0"
+                        Orientation="Horizontal"
+                        Spacing="6"
+                        VerticalAlignment="Bottom">
+                <TextBlock Classes="Title"
+                           Text="{Binding Title}" />
+
+                <Ellipse Width="8"
+                         Height="8"
+                         Fill="{StaticResource TitleBrush}"
+                         VerticalAlignment="Center"
+                         IsVisible="{Binding HasUnsavedChanges}"
+                         ToolTip.Tip="Unsaved changes" />
+            </StackPanel>
 
             <TextBlock Grid.Column="1"
                        Grid.Row="1"
@@ -106,25 +127,10 @@
                        Classes="Subtitle"
                        VerticalAlignment="Center" />
 
-            <Button Grid.Column="3"
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    VerticalAlignment="Center"
-                    CornerRadius="100"
-                    Padding="4"
-                    Background="Transparent">
-                <controls:Icon IconName="dots" />
-                <Button.Flyout>
-                    <MenuFlyout Placement="BottomEdgeAlignedRight">
-                        <MenuItem Header="Add To Queue"
-                                  Command="{Binding AddToQueueCommand}"
-                                  IsVisible="{Binding !IsInQueue}" />
-                        <MenuItem Header="Remove From Queue"
-                                  Command="{Binding RemoveFromQueueCommand}"
-                                  IsVisible="{Binding IsInQueue}" />
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
+            <controls:TrackEditMenu Grid.Column="3"
+                                    Grid.Row="0"
+                                    Grid.RowSpan="2"
+                                    VerticalAlignment="Center" />
         </Grid>
     </Border>
 </UserControl>

@@ -1,10 +1,12 @@
 using Core.Playback;
 using Core.Playlists;
+using Core.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
-using Nexora.ViewModels;
 using Nexora.ViewModels.Factories;
+using Nexora.ViewModels;
 
 namespace Nexora.Tests.ViewModels;
 
@@ -23,6 +25,12 @@ public class QueueVmTests
         var trackControlVmFactory = new TrackControlVmFactory(
             playbackQueue,
             Mock.Of<IAudioPlayer>(),
+            new TrackMetadataEditor(
+                NullLogger<TrackMetadataEditor>.Instance,
+                Mock.Of<IMetadataSaver>(),
+                Mock.Of<IPendingMetadataStorage>(),
+                Mock.Of<IAudioPlayer>()
+            ),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
 

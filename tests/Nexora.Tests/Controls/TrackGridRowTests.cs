@@ -1,5 +1,7 @@
 using Core.Playback;
 using Core.Playlists;
+using Core.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Controls;
 using Nexora.Media;
@@ -89,6 +91,12 @@ public class TrackGridRowTests
             Mock.Of<IPlaylistItem>(it => it.AudioTrack == audioTrack),
             new PlaybackQueue(Mock.Of<IAudioPlayer>()),
             Mock.Of<IAudioPlayer>(),
+            new TrackMetadataEditor(
+                NullLogger<TrackMetadataEditor>.Instance,
+                Mock.Of<IMetadataSaver>(),
+                Mock.Of<IPendingMetadataStorage>(),
+                Mock.Of<IAudioPlayer>()
+            ),
             Mock.Of<ICoverCache>(),
             Mock.Of<IUiDispatcher>());
     }
