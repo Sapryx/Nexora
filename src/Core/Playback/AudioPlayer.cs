@@ -1,3 +1,4 @@
+using System.Globalization;
 using Core.Playlists;
 using Core.Storage;
 using LibVLCSharp.Shared;
@@ -36,7 +37,10 @@ public class AudioPlayer : IAudioPlayer
     private readonly LibVLC vlc;
     private readonly MediaPlayer mediaPlayer;
     private readonly IVolumeStorage volumeStorage;
+    private readonly Lock fileLock = new Lock();
     private int volume;
+    private bool isFileReleased;
+    private bool isPauseRequested;
 
     public event Action<IPlaylistItem>? PlaybackStarted;
     public event Action<float>? PlaybackPositionChanged;
@@ -68,11 +72,12 @@ public class AudioPlayer : IAudioPlayer
 
     public void PlayTrack(IPlaylistItem playlistItem)
     {
-        NowPlaying = playlistItem;
-
-        using var media = new Media(vlc, playlistItem.AudioTrack.AudioPath, FromType.FromPath);
-        mediaPlayer.Media = media;
-        mediaPlayer.Play();
+        lock(fileLock)
+        {
+            NowPlaying = playlistItem;
+            isFileReleased = false;
+            Open(playlistItem, 0, false);
+        }
     }
 
     public void PlayNextTrack()
@@ -97,17 +102,87 @@ public class AudioPlayer : IAudioPlayer
 
     public void TogglePause()
     {
-        if(NowPlaying != null)
+        if(NowPlaying == null)
         {
-            mediaPlayer.Pause();
+            return;
+        }
+
+        bool isPaused;
+
+        lock(fileLock)
+        {
+            isPauseRequested = !isPauseRequested;
+            isPaused = isPauseRequested;
+
+            // MediaPlayer.Pause() toggles the state LibVLC reports, which lags behind a quick second toggle.
+            if(!isFileReleased)
+            {
+                mediaPlayer.SetPause(isPaused);
+                return;
+            }
+        }
+
+        if(!isPaused)
+        {
+            PlaybackResumed?.Invoke();
+        }
+        else
+        {
+            PlaybackPaused?.Invoke();
         }
     }
 
     public void Stop()
     {
-        NowPlaying = null;
-        mediaPlayer.Stop();
+        lock(fileLock)
+        {
+            NowPlaying = null;
+            isFileReleased = false;
+            mediaPlayer.Stop();
+        }
+
         PlaybackStopped?.Invoke();
+    }
+
+    public async Task ReleaseFileAsync(Func<Task> action)
+    {
+        IPlaylistItem? releasedItem = null;
+        long time = 0;
+
+        lock(fileLock)
+        {
+            var state = mediaPlayer.State;
+            bool holdsFile = state == VLCState.Playing || state == VLCState.Paused ||
+                state == VLCState.Opening || state == VLCState.Buffering;
+
+            if(NowPlaying != null && holdsFile && !isFileReleased)
+            {
+                releasedItem = NowPlaying;
+                time = Math.Max(0, mediaPlayer.Time);
+                isFileReleased = true;
+                mediaPlayer.Stop();
+            }
+        }
+
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        finally
+        {
+            if(releasedItem != null)
+            {
+                lock(fileLock)
+                {
+                    // Playing another track or stopping meanwhile already replaced the released one.
+                    if(isFileReleased && NowPlaying == releasedItem)
+                    {
+                        isFileReleased = false;
+                        Open(releasedItem, time, isPauseRequested);
+                    }
+                }
+            }
+        }
     }
 
     public void SkipForward()
@@ -118,6 +193,26 @@ public class AudioPlayer : IAudioPlayer
     public void SkipBack()
     {
         Skip(-5);
+    }
+
+    private void Open(IPlaylistItem playlistItem, long startTimeMs, bool startPaused)
+    {
+        using var media = new Media(vlc, playlistItem.AudioTrack.AudioPath, FromType.FromPath);
+
+        if(startTimeMs > 0)
+        {
+            double seconds = startTimeMs / 1000.0;
+            media.AddOption($":start-time={seconds.ToString(CultureInfo.InvariantCulture)}");
+        }
+
+        if(startPaused)
+        {
+            media.AddOption(":start-paused");
+        }
+
+        isPauseRequested = startPaused;
+        mediaPlayer.Media = media;
+        mediaPlayer.Play();
     }
 
     private void OnPlaying()
