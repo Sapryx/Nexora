@@ -6,16 +6,12 @@ Cross-platform desktop audio player on .NET 10 + Avalonia (MVVM, CommunityToolki
 
 All text in the project must be in English: code, comments, log messages, exception messages, UI strings, docs, text/config files, commit messages.
 
-## Structure
+## Project rules
 
-- `src/Core` — domain logic and its implementations, no UI: `Playback` (`IAudioTrack`, `IAudioPlayer`, `AudioPlayer` on LibVLC), `Playlists` (`Playlist`, `PlaylistRegistry` with `GlobalPlaylist` (the library), `PlaybackQueue`: a `Playlist` registered on its own, filled from the track context menu; removing the playing item from it plays the next one or stops playback), `Storage` (`FileTrackLoader`, `TagLib*Loader` for metadata and covers, music directory/format/parallelism providers, `FileVolumeStorage` for the volume kept between launches), `Search` (`TrackSearchQuery`: substring search ignoring case, diacritics and punctuation over title/artists tolerating typos by optimal string alignment Damerau-Levenshtein distance; matches the whole query within one field or every word within any field; also tries the query retyped in other keyboard layouts via `KeyboardLayoutTranslator`, built at startup from `IKeyboardLayoutProvider`; `Match` returns a `TrackMatch` ranked by typos, then `MatchKind` (exact field, whole words, field prefix, word prefix, substring; for words across fields — the worst kind among the words), then field (title first), then layout (typed first); `SearchBarVm` keeps results sorted, ties stay in library order), `Collections/LruCache`, `Integrations` (`DiscordRichPresenceService`), `Logging`. Must not depend on Avalonia or other UI libraries.
-- `src/Nexora.Theme` — styles and resources (`*.axaml`), no logic.
-- `src/Nexora` — the application: `ViewModels/` (`*Vm`, factories in `Factories/`), `Controls/` and `Views/` (axaml + code-behind), `Media/CoverCache`, `Threading/` (`IUiDispatcher`), `Input/` (keyboard layout providers: Windows API, Wayland compositor keymap via libwayland-client + libxkbcommon, unsupported fallback; chosen in `CompositionRoot`), `Render/` (SkSL dithering shader), `Logging/`.
-- DI registrations: `src/Nexora/CompositionRoot.cs`. Register new services there.
-- `tests/Core.Tests` — xUnit + Moq, covers Core.
-- `tests/Nexora.Tests` — xUnit + Moq, covers view models (no Avalonia platform needed: `IUiDispatcher` is mocked to run actions inline).
-- `tests/Tests.Shared` — class library with test helpers shared by both test projects (`Logging/TestLogger`, `Logging/LogEntry`). Put a helper here instead of copying it into each test project.
-- Shared build properties: `Directory.Build.props`. Package versions are managed centrally in `Directory.Packages.props` — `PackageReference` items in `.csproj` have no `Version`.
+- `src/Core` must not depend on Avalonia or other UI libraries.
+- Register new services in `src/Nexora/CompositionRoot.cs`.
+- Put test helpers shared by both test projects in `tests/Tests.Shared` instead of copying them.
+- Package versions live in `Directory.Packages.props`: `PackageReference` items in `.csproj` have no `Version`.
 
 ## Commands
 
