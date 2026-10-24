@@ -14,6 +14,7 @@ sealed class Program
     [STAThread]
     public static void Main(string[] args)
     {
+#if !DEBUG
         var mutexOptions = new NamedWaitHandleOptions() { CurrentUserOnly = true, CurrentSessionOnly = false };
         using var instanceMutex = new Mutex(true, InstanceMutexName, mutexOptions, out bool isFirstInstance);
 
@@ -21,6 +22,7 @@ sealed class Program
         {
             return;
         }
+#endif
 
         using var loggerFactory = LoggingInitializer.Initialize(args);
         var crashLogger = new CrashLogger(loggerFactory);
