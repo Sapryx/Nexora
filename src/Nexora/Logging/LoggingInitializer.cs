@@ -38,7 +38,11 @@ public static class LoggingInitializer
 
     public static ILoggerFactory Initialize(string[] args)
     {
+        string? sessionLogPath = null;
+#if !DEBUG
         Directory.CreateDirectory(LogsDirectory);
+        sessionLogPath = SessionLogFiles.GetPath(LogsDirectory, DateTime.Now);
+#endif
 
         string? requestedLevel = LogLevelArgument.FindValue(args);
         var minimumLevel = DefaultMinimumLevel;
@@ -56,7 +60,6 @@ public static class LoggingInitializer
             }
         }
 
-        string sessionLogPath = SessionLogFiles.GetPath(LogsDirectory, DateTime.Now);
         var loggerFactory = CreateLoggerFactory(sessionLogPath, minimumLevel);
         var logger = loggerFactory.CreateLogger(typeof(LoggingInitializer));
 
@@ -72,11 +75,14 @@ public static class LoggingInitializer
 
         AvaloniaLogger.Sink = new AvaloniaLogSink(loggerFactory.CreateLogger<AvaloniaLogSink>());
         Trace.Listeners.Add(new DiagnosticsLogListener(loggerFactory.CreateLogger<DiagnosticsLogListener>()));
-        SessionLogFiles.DeleteOld(
-            sessionLogPath,
-            KeptSessionLogCount,
-            loggerFactory.CreateLogger(typeof(SessionLogFiles))
-        );
+        if(sessionLogPath != null)
+        {
+            SessionLogFiles.DeleteOld(
+                sessionLogPath,
+                KeptSessionLogCount,
+                loggerFactory.CreateLogger(typeof(SessionLogFiles))
+            );
+        }
 
         return loggerFactory;
     }
@@ -99,7 +105,7 @@ public static class LoggingInitializer
         }
     }
 
-    public static ILoggerFactory CreateLoggerFactory(string sessionLogPath, LogLevel minimumLevel)
+    public static ILoggerFactory CreateLoggerFactory(string? sessionLogPath, LogLevel minimumLevel)
     {
         return LoggerFactory.Create(logging =>
         {
@@ -109,7 +115,11 @@ public static class LoggingInitializer
             logging.AddFilter(ColoredLogLevelLegendCategory, LogLevel.Trace);
             logging.AddFilter<ZLoggerConsoleLoggerProvider>(LogLevelLegendCategory, LogLevel.None);
             logging.AddFilter<ZLoggerFileLoggerProvider>(ColoredLogLevelLegendCategory, LogLevel.None);
-            logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
+
+            if(sessionLogPath != null)
+            {
+                logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
+            }
 
             if(!OperatingSystem.IsWindows() || WindowsConsole.TryAttachStandardOutput())
             {
