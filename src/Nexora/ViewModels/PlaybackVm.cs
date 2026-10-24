@@ -2,6 +2,7 @@ using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
+using Core.Storage;
 using Nexora.Media;
 using Nexora.Threading;
 
@@ -36,7 +37,11 @@ public partial class PlaybackVm : ViewModelBase
     private int volumeBeforeMute;
     private bool isUpdatingDisplay;
 
-    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache, IUiDispatcher uiDispatcher)
+    public PlaybackVm(
+        IAudioPlayer audioPlayer,
+        TrackMetadataEditor metadataEditor,
+        ICoverCache coverCache,
+        IUiDispatcher uiDispatcher)
     {
         this.audioPlayer = audioPlayer;
 
@@ -96,6 +101,16 @@ public partial class PlaybackVm : ViewModelBase
         audioPlayer.MuteChanged += isMuted => uiDispatcher.Post(() =>
         {
             ApplyMuteState(isMuted);
+        });
+
+        metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
+        {
+            var nowPlaying = audioPlayer.NowPlaying;
+
+            if(nowPlaying != null && nowPlaying.AudioTrack.AudioPath == audioPath)
+            {
+                PlayingTrackViewVm?.Update(nowPlaying);
+            }
         });
     }
 

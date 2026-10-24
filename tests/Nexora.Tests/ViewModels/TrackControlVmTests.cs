@@ -1,5 +1,7 @@
 using Core.Playback;
 using Core.Playlists;
+using Core.Storage;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
@@ -12,6 +14,12 @@ public class TrackControlVmTests
     private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
     private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
+    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
+        NullLogger<TrackMetadataEditor>.Instance,
+        Mock.Of<IMetadataSaver>(),
+        Mock.Of<IPendingMetadataStorage>(),
+        Mock.Of<IAudioPlayer>()
+    );
     private readonly PlaybackQueue playbackQueue;
 
     public TrackControlVmTests()
@@ -155,6 +163,94 @@ public class TrackControlVmTests
         return Mock.Of<IAudioTrack>(it => it.Metadata == new Metadata() && it.AudioPath == "");
     }
 
+    [Fact]
+    public void BeginEdit_TrackShown_CopiesTitleAndArtistsToEditedFields()
+    {
+        var vm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
+
+        vm.BeginEdit();
+
+        Assert.Equal("Psycho", vm.EditedTitle);
+        Assert.Equal("Muse", vm.EditedArtists);
+    }
+
+    [Fact]
+    public async Task ApplyEditAsync_FieldsEdited_ShowsNewTitleAndArtists()
+    {
+        var vm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
+        vm.BeginEdit();
+        vm.EditedTitle = "Uprising";
+        vm.EditedArtists = "Muse, Queen";
+
+        await vm.ApplyEditAsync();
+
+        Assert.Equal("Uprising", vm.Title);
+        Assert.Equal("Muse, Queen", vm.Artists);
+    }
+
+    [Fact]
+    public async Task MetadataChanged_SameTrackInOtherVm_ShowsNewTitle()
+    {
+        var playlistItem = CreatePlaylistItem("Psycho", "Muse");
+        var editedVm = CreateVm(playlistItem);
+        var otherVm = CreateVm(playlistItem);
+        editedVm.BeginEdit();
+        editedVm.EditedTitle = "Uprising";
+
+        await editedVm.ApplyEditAsync();
+
+        Assert.Equal("Uprising", otherVm.Title);
+    }
+
+    [Fact]
+    public async Task MetadataChanged_OtherTrack_KeepsTitle()
+    {
+        var editedVm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
+        var otherVm = CreateVm(CreatePlaylistItem("Madness", "Muse"));
+        editedVm.BeginEdit();
+        editedVm.EditedTitle = "Uprising";
+
+        await editedVm.ApplyEditAsync();
+
+        Assert.Equal("Madness", otherVm.Title);
+    }
+
+    [Fact]
+    public async Task ApplyEditAsync_TrackPlaying_ShowsUnsavedChangesUntilSaved()
+    {
+        var playlistItem = CreatePlaylistItem("Psycho", "Muse");
+        var playingAudioPlayerMock = new Mock<IAudioPlayer>();
+        playingAudioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playlistItem);
+        playingAudioPlayerMock
+            .Setup(it => it.ReleaseFileAsync(It.IsAny<Func<Task>>()))
+            .Returns<Func<Task>>(action => action());
+        var editor = new TrackMetadataEditor(
+            NullLogger<TrackMetadataEditor>.Instance,
+            Mock.Of<IMetadataSaver>(),
+            Mock.Of<IPendingMetadataStorage>(),
+            playingAudioPlayerMock.Object
+        );
+        var vm = CreateVm(playlistItem, editor);
+        vm.BeginEdit();
+        vm.EditedTitle = "Uprising";
+
+        await vm.ApplyEditAsync();
+        bool hadUnsavedChanges = vm.HasUnsavedChanges;
+        await editor.SaveAllAsync();
+
+        Assert.True(hadUnsavedChanges);
+        Assert.False(vm.HasUnsavedChanges);
+        Assert.Equal("Uprising", vm.Title);
+    }
+
+    private static IPlaylistItem CreatePlaylistItem(string title, string artists)
+    {
+        var metadata = new Metadata() { Title = title, Artists = artists };
+        return Mock.Of<IPlaylistItem>(
+            it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == $"{title}.mp3"
+        );
+    }
+
     private static IPlaylistItem CreatePlaylistItem(TimeSpan duration)
     {
         var metadata = new Metadata() { Duration = duration };
@@ -165,10 +261,16 @@ public class TrackControlVmTests
 
     private TrackControlVm CreateVm(IPlaylistItem playlistItem)
     {
+        return CreateVm(playlistItem, metadataEditor);
+    }
+
+    private TrackControlVm CreateVm(IPlaylistItem playlistItem, TrackMetadataEditor editor)
+    {
         return new TrackControlVm(
             playlistItem,
             playbackQueue,
             audioPlayerMock.Object,
+            editor,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
     }

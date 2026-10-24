@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
+using Core.Storage;
 using Nexora.Media;
 using Nexora.Threading;
 
@@ -18,30 +20,41 @@ public partial class TrackControlVm : CoveredTrackVm
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
+    [ObservableProperty]
+    public partial bool HasUnsavedChanges { get; set; }
+
+    [ObservableProperty]
+    public partial string EditedTitle { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string EditedArtists { get; set; } = "";
+
     public bool IsInQueue { get; }
     private readonly IPlaylistItem playlistItem;
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
+    private readonly TrackMetadataEditor metadataEditor;
 
     public TrackControlVm(
         IPlaylistItem playlistItem,
         PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
+        TrackMetadataEditor metadataEditor,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
     {
         this.playlistItem = playlistItem;
         this.audioPlayer = audioPlayer;
         this.playbackQueue = playbackQueue;
+        this.metadataEditor = metadataEditor;
 
         IsInQueue = playlistItem.Playlist == playbackQueue;
 
         IsActive = audioPlayer.NowPlaying == playlistItem;
         IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
 
-        var metadata = playlistItem.AudioTrack.Metadata;
-        var duration = metadata.Duration;
-        SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
+        var duration = playlistItem.AudioTrack.Metadata.Duration;
+        UpdateTrackInfo();
         Duration = $"{(int)duration.TotalMinutes:00}:{duration.Seconds:00}";
 
         audioPlayer.PlaybackStarted += nowPlaying => uiDispatcher.Post(() =>
@@ -59,6 +72,14 @@ public partial class TrackControlVm : CoveredTrackVm
         {
             IsActive = false;
             IsActiveAndPlaying = false;
+        });
+
+        metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
+        {
+            if(audioPath == playlistItem.AudioTrack.AudioPath)
+            {
+                UpdateTrackInfo();
+            }
         });
     }
 
@@ -85,5 +106,23 @@ public partial class TrackControlVm : CoveredTrackVm
     public void RemoveFromQueue()
     {
         playbackQueue.RemoveItem(playlistItem);
+    }
+
+    public void BeginEdit()
+    {
+        EditedTitle = Title;
+        EditedArtists = Artists;
+    }
+
+    public Task ApplyEditAsync()
+    {
+        return metadataEditor.EditAsync(playlistItem.AudioTrack, EditedTitle, EditedArtists);
+    }
+
+    private void UpdateTrackInfo()
+    {
+        var metadata = playlistItem.AudioTrack.Metadata;
+        SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
+        HasUnsavedChanges = metadataEditor.HasUnsavedChanges(playlistItem.AudioTrack.AudioPath);
     }
 }

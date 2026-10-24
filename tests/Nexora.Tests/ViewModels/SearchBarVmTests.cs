@@ -1,12 +1,13 @@
 using Core.Playback;
 using Core.Playlists;
 using Core.Search;
+using Core.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
-using Nexora.ViewModels;
 using Nexora.ViewModels.Factories;
+using Nexora.ViewModels;
 
 namespace Nexora.Tests.ViewModels;
 
@@ -33,6 +34,12 @@ public class SearchBarVmTests
                 it,
                 new PlaybackQueue(Mock.Of<IAudioPlayer>()),
                 Mock.Of<IAudioPlayer>(),
+                new TrackMetadataEditor(
+                    NullLogger<TrackMetadataEditor>.Instance,
+                    Mock.Of<IMetadataSaver>(),
+                    Mock.Of<IPendingMetadataStorage>(),
+                    Mock.Of<IAudioPlayer>()
+                ),
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object));
 
