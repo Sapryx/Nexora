@@ -45,12 +45,11 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
 
-        <Style Selector="controls|TrackEditMenu#EditMenu">
+        <Style Selector="Button#EditButton">
             <Setter Property="Opacity" Value="0" />
         </Style>
 
-        <Style Selector="Border#MainTrackBorder:pointerover controls|TrackEditMenu#EditMenu,
-                         controls|TrackEditMenu#EditMenu:open">
+        <Style Selector="Border#MainTrackBorder:pointerover Button#EditButton">
             <Setter Property="Opacity" Value="1" />
         </Style>
     </UserControl.Styles>
@@ -102,12 +101,17 @@
                     </Panel>
                 </Button>
 
-                <controls:TrackEditMenu x:Name="EditMenu"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Margin="4"
-                                        Background="rgba(0, 0, 0, 50%)"
-                                        CornerRadius="100" />
+                <Button x:Name="EditButton"
+                        Command="{Binding EditCommand}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="4"
+                        Padding="4"
+                        Background="rgba(0, 0, 0, 50%)"
+                        CornerRadius="100"
+                        ToolTip.Tip="Edit">
+                    <controls:Icon IconName="dots" />
+                </Button>
             </Panel>
 
             <StackPanel Spacing="2">

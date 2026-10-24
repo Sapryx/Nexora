@@ -97,6 +97,7 @@ public class TrackGridRowTests
                 Mock.Of<IPendingMetadataStorage>(),
                 Mock.Of<IAudioPlayer>()
             ),
+            new TrackEditorVm(),
             Mock.Of<ICoverCache>(),
             Mock.Of<IUiDispatcher>());
     }

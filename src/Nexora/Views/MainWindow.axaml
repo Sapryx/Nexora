@@ -17,16 +17,19 @@
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
-        <Style Selector="Border#sidebar Button">
+        <Style Selector="Border#sectionSwitcher Button">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="12 8" />
+            <Setter Property="Padding" Value="10" />
         </Style>
 
-        <Style Selector="Border#sidebar Button.selected">
-            <Setter Property="Background" Value="rgba(255, 255, 255, 10%)" />
+        <Style Selector="Border#sectionSwitcher Button.selected">
+            <Setter Property="Background" Value="rgba(255, 255, 255, 15%)" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         </Style>
 
         <Style Selector="Border#viewToggle Button">
@@ -65,32 +68,52 @@
 
             <Border x:Name="sidebar"
                     DockPanel.Dock="Left"
-                    Width="240"
-                    Padding="16"
+                    Width="300"
+                    Padding="16 16 0 16"
                     Background="rgba(0, 0, 0, 25%)">
-                <StackPanel Spacing="4">
-                    <Button Command="{Binding OpenLibraryCommand}"
-                            Classes.selected="{Binding !IsQueueOpen}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <controls:Icon IconName="library" />
-                            <TextBlock Classes="Title" Text="Library" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
+                <DockPanel>
+                    <Border x:Name="sectionSwitcher"
+                            DockPanel.Dock="Top"
+                            Margin="0 0 16 0"
+                            Padding="4"
+                            CornerRadius="12"
+                            Background="rgba(255, 255, 255, 6%)"
+                            BorderThickness="1"
+                            BorderBrush="{StaticResource BorderBrush}">
+                        <UniformGrid Rows="1" ColumnSpacing="4">
+                            <Button Classes="selected"
+                                    ToolTip.Tip="Library">
+                                <controls:Icon IconName="library" />
+                            </Button>
+                        </UniformGrid>
+                    </Border>
 
-                    <Button Command="{Binding OpenQueueCommand}"
-                            Classes.selected="{Binding IsQueueOpen}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
-                            <controls:Icon IconName="queue" />
-                            <TextBlock Classes="Title" Text="Queue" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
+                    <TextBlock DockPanel.Dock="Top"
+                               Classes="Title"
+                               FontWeight="SemiBold"
+                               Text="Queue"
+                               Margin="8 16 0 0" />
+
+                    <Panel>
+                        <controls:TrackArea TrackVms="{Binding QueueVm.TrackVms}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch" />
+
+                        <TextBlock Classes="Subtitle"
+                                   Text="The queue is empty"
+                                   IsVisible="{Binding QueueVm.IsEmpty}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Panel>
+                </DockPanel>
             </Border>
+
+            <controls:TrackEditor DockPanel.Dock="Right"
+                                  DataContext="{Binding TrackEditorVm}" />
 
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
-                <Panel Grid.Row="0"
-                       IsVisible="{Binding !IsQueueOpen}">
+                <Panel Grid.Row="0">
                     <controls:SearchBar DataContext="{Binding SearchBarVm}"
                                         HorizontalAlignment="Stretch"
                                         MaxWidth="480"
@@ -121,8 +144,7 @@
                     </Border>
                 </Panel>
 
-                <Panel Grid.Row="1"
-                       IsVisible="{Binding !IsQueueOpen}">
+                <Panel Grid.Row="1">
                     <controls:TrackArea Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                         IsVisible="{Binding !IsLibraryGridView}"
@@ -134,20 +156,6 @@
                                         IsVisible="{Binding IsLibraryGridView}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"/>
-                </Panel>
-
-                <Panel Grid.Row="1"
-                       IsVisible="{Binding IsQueueOpen}">
-                    <controls:TrackArea Margin="32 0 0 0"
-                                        TrackVms="{Binding QueueVm.TrackVms}"
-                                        HorizontalAlignment="Stretch"
-                                        VerticalAlignment="Stretch"/>
-
-                    <TextBlock Classes="Subtitle"
-                               Text="The queue is empty"
-                               IsVisible="{Binding QueueVm.IsEmpty}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
                 </Panel>
 
                 <controls:PlaybackControl Grid.Row="2"
