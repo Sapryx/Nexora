@@ -34,12 +34,14 @@ public partial class TrackControlVm : CoveredTrackVm
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
     private readonly TrackMetadataEditor metadataEditor;
+    private readonly TrackEditorVm trackEditorVm;
 
     public TrackControlVm(
         IPlaylistItem playlistItem,
         PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
         TrackMetadataEditor metadataEditor,
+        TrackEditorVm trackEditorVm,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
     {
@@ -47,6 +49,7 @@ public partial class TrackControlVm : CoveredTrackVm
         this.audioPlayer = audioPlayer;
         this.playbackQueue = playbackQueue;
         this.metadataEditor = metadataEditor;
+        this.trackEditorVm = trackEditorVm;
 
         IsInQueue = playlistItem.Playlist == playbackQueue;
 
@@ -106,6 +109,12 @@ public partial class TrackControlVm : CoveredTrackVm
     public void RemoveFromQueue()
     {
         playbackQueue.RemoveItem(playlistItem);
+    }
+
+    [RelayCommand]
+    public void Edit()
+    {
+        trackEditorVm.Open(this);
     }
 
     public void BeginEdit()

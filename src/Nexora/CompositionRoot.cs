@@ -78,6 +78,7 @@ public static class CompositionRoot
         builder.AddSingleton<SearchBarVm>();
         builder.AddSingleton<PlaybackVm>();
         builder.AddSingleton<QueueVm>();
+        builder.AddSingleton<TrackEditorVm>();
     }
 
     private static LibVLC CreateLibVlc(LibVlcLogForwarder logForwarder)

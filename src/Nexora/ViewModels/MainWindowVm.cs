@@ -10,14 +10,12 @@ namespace Nexora.ViewModels;
 public partial class MainWindowVm : ViewModelBase
 {
     [ObservableProperty]
-    public partial bool IsQueueOpen { get; private set; }
-
-    [ObservableProperty]
     public partial bool IsLibraryGridView { get; private set; }
 
     public SearchBarVm SearchBarVm { get; }
     public PlaybackVm PlaybackVm { get; }
     public QueueVm QueueVm { get; }
+    public TrackEditorVm TrackEditorVm { get; }
     private readonly ILogger logger;
     private readonly TrackMetadataEditor metadataEditor;
 
@@ -26,6 +24,7 @@ public partial class MainWindowVm : ViewModelBase
         SearchBarVm searchBarVm,
         PlaybackVm playbackVm,
         QueueVm queueVm,
+        TrackEditorVm trackEditorVm,
         TrackMetadataEditor metadataEditor)
     {
         this.logger = logger;
@@ -34,6 +33,7 @@ public partial class MainWindowVm : ViewModelBase
         SearchBarVm = searchBarVm;
         PlaybackVm = playbackVm;
         QueueVm = queueVm;
+        TrackEditorVm = trackEditorVm;
     }
 
     public void Initialize()
@@ -42,21 +42,10 @@ public partial class MainWindowVm : ViewModelBase
     }
 
     [RelayCommand]
-    public void OpenLibrary()
+    public async Task SaveMetadata()
     {
-        IsQueueOpen = false;
-    }
-
-    [RelayCommand]
-    public void OpenQueue()
-    {
-        IsQueueOpen = true;
-    }
-
-    [RelayCommand]
-    public Task SaveMetadata()
-    {
-        return metadataEditor.SaveAllAsync();
+        await TrackEditorVm.ApplyAsync();
+        await metadataEditor.SaveAllAsync();
     }
 
     [RelayCommand]

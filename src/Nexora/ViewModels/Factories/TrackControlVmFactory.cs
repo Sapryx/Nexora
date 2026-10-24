@@ -11,6 +11,7 @@ public class TrackControlVmFactory : ITrackControlVmFactory
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
     private readonly TrackMetadataEditor metadataEditor;
+    private readonly TrackEditorVm trackEditorVm;
     private readonly ICoverCache coverCache;
     private readonly IUiDispatcher uiDispatcher;
 
@@ -18,12 +19,14 @@ public class TrackControlVmFactory : ITrackControlVmFactory
         PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
         TrackMetadataEditor metadataEditor,
+        TrackEditorVm trackEditorVm,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher)
     {
         this.playbackQueue = playbackQueue;
         this.audioPlayer = audioPlayer;
         this.metadataEditor = metadataEditor;
+        this.trackEditorVm = trackEditorVm;
         this.coverCache = coverCache;
         this.uiDispatcher = uiDispatcher;
     }
@@ -35,6 +38,7 @@ public class TrackControlVmFactory : ITrackControlVmFactory
             playbackQueue,
             audioPlayer,
             metadataEditor,
+            trackEditorVm,
             coverCache,
             uiDispatcher
         );

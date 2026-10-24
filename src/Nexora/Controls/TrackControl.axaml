@@ -98,26 +98,31 @@
                 </Panel>
             </Button>
 
-            <StackPanel Grid.Column="1"
-                        Grid.Row="0"
-                        Orientation="Horizontal"
-                        Spacing="6"
-                        VerticalAlignment="Bottom">
-                <TextBlock Classes="Title"
-                           Text="{Binding Title}" />
+            <Grid Grid.Column="1"
+                  Grid.Row="0"
+                  ColumnDefinitions="*, Auto"
+                  ColumnSpacing="6"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Bottom">
+                <TextBlock Grid.Column="0"
+                           Classes="Title"
+                           Text="{Binding Title}"
+                           TextTrimming="CharacterEllipsis" />
 
-                <Ellipse Width="8"
+                <Ellipse Grid.Column="1"
+                         Width="8"
                          Height="8"
                          Fill="{StaticResource TitleBrush}"
                          VerticalAlignment="Center"
                          IsVisible="{Binding HasUnsavedChanges}"
                          ToolTip.Tip="Unsaved changes" />
-            </StackPanel>
+            </Grid>
 
             <TextBlock Grid.Column="1"
                        Grid.Row="1"
                        Classes="Subtitle"
                        Text="{Binding Artists}"
+                       TextTrimming="CharacterEllipsis"
                        VerticalAlignment="Top"/>
 
             <TextBlock Grid.Column="2"
@@ -127,10 +132,17 @@
                        Classes="Subtitle"
                        VerticalAlignment="Center" />
 
-            <controls:TrackEditMenu Grid.Column="3"
-                                    Grid.Row="0"
-                                    Grid.RowSpan="2"
-                                    VerticalAlignment="Center" />
+            <Button Grid.Column="3"
+                    Grid.Row="0"
+                    Grid.RowSpan="2"
+                    Command="{Binding EditCommand}"
+                    CornerRadius="100"
+                    Padding="4"
+                    Background="Transparent"
+                    VerticalAlignment="Center"
+                    ToolTip.Tip="Edit">
+                <controls:Icon IconName="dots" />
+            </Button>
         </Grid>
     </Border>
 </UserControl>

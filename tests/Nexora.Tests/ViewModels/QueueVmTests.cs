@@ -31,6 +31,7 @@ public class QueueVmTests
                 Mock.Of<IPendingMetadataStorage>(),
                 Mock.Of<IAudioPlayer>()
             ),
+            new TrackEditorVm(),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
 
