@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:resources="clr-namespace:Nexora.Theme.Resources"
         x:Class="Nexora.Theme.NexoraTheme">
 
     <FluentTheme />
@@ -49,7 +50,7 @@
                 <ResourceInclude Source="avares://Nexora.Theme/Controls/TextBox.axaml" />
 
                 <ResourceInclude Source="avares://Nexora.Theme/Resources/Colors.axaml"/>
-                <ResourceInclude Source="avares://Nexora.Theme/Resources/Animations.axaml"/>
+                <resources:AnimationResources />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

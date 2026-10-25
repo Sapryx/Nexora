@@ -28,6 +28,11 @@ public static class CompositionRoot
         "Nexora"
     );
     private static readonly string VolumeFilePath = Path.Combine(AppDataDirectory, "volume.txt");
+#if DEBUG
+    public static readonly string? AnimationsFilePath = null;
+#else
+    public static readonly string? AnimationsFilePath = Path.Combine(AppDataDirectory, "animations.json");
+#endif
 
     public static void Configure(ServiceCollection builder)
     {
