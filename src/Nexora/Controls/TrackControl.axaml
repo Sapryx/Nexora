@@ -35,6 +35,10 @@
             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         </Style>
 
+        <Style Selector="Border#MainTrackBorder.InQueue[Tag=True]">
+            <Setter Property="Background" Value="{StaticResource TrackHoverBrush}" />
+        </Style>
+
         <Style Selector="Panel#IconPanel">
             <Setter Property="IsVisible" Value="{Binding IsActive}" />
         </Style>
@@ -64,78 +68,89 @@
 
     <Border x:Name="MainTrackBorder"
             Tag="{Binding IsActive}"
+            Classes.InQueue="{Binding IsInQueue}"
             ContextFlyout="{StaticResource TrackMenu}"
-            Padding="8"
+            ClipToBounds="True"
             CornerRadius="12">
-        <Grid ColumnDefinitions="Auto, *, Auto, Auto"
-              RowDefinitions="Auto Auto"
-              ColumnSpacing="8"
-              RowSpacing="4">
+        <Panel>
+            <Border Background="{DynamicResource PrimaryBrush}"
+                    RenderTransformOrigin="0%,50%">
+                <Border.RenderTransform>
+                    <ScaleTransform ScaleX="{Binding Progress}" />
+                </Border.RenderTransform>
+            </Border>
 
-            <Button Grid.Column="0"
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    x:Name="TogglePlayButton"
-                    HorizontalContentAlignment="Center"
-                    VerticalContentAlignment="Center"
-                    Command="{Binding PressPlayButton}"
-                    Padding="0"
-                    CornerRadius="4"
-                    BorderThickness="0">
-                <Panel>
-                    <Border
+            <Grid Margin="8"
+                  ColumnDefinitions="Auto, *, Auto, Auto"
+                  RowDefinitions="Auto Auto"
+                  ColumnSpacing="8"
+                  RowSpacing="4">
+
+                <Button Grid.Column="0"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        x:Name="TogglePlayButton"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Command="{Binding PressPlayButton}"
+                        Padding="0"
                         CornerRadius="4"
-                        ClipToBounds="True">
-                        <Image Source="{Binding Cover}"
-                               RenderOptions.BitmapInterpolationMode="HighQuality"
-                               Width="64"
-                               Height="64" />
-                    </Border>
+                        BorderThickness="0">
+                    <Panel>
+                        <Border
+                            CornerRadius="4"
+                            ClipToBounds="True">
+                            <Image Source="{Binding Cover}"
+                                   RenderOptions.BitmapInterpolationMode="HighQuality"
+                                   Width="64"
+                                   Height="64" />
+                        </Border>
 
-                    <Border x:Name="HoverEffect" CornerRadius="4" />
+                        <Border x:Name="HoverEffect" CornerRadius="4" />
 
-                    <Panel x:Name="IconPanel">
-                        <controls:Icon IsVisible="{Binding IsActiveAndPlaying}"
-                                       IconName="pause" />
+                        <Panel x:Name="IconPanel">
+                            <controls:Icon IsVisible="{Binding IsActiveAndPlaying}"
+                                           IconName="pause" />
 
-                        <controls:Icon IsVisible="{Binding !IsActiveAndPlaying}"
-                                       IconName="play" />
+                            <controls:Icon IsVisible="{Binding !IsActiveAndPlaying}"
+                                           IconName="play" />
+                        </Panel>
                     </Panel>
-                </Panel>
-            </Button>
+                </Button>
 
-            <TextBlock Grid.Column="1"
-                       Grid.Row="0"
-                       Classes="Title"
-                       Text="{Binding Title}"
-                       TextTrimming="CharacterEllipsis"
-                       VerticalAlignment="Bottom" />
+                <TextBlock Grid.Column="1"
+                           Grid.Row="0"
+                           Classes="Title"
+                           Text="{Binding Title}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Bottom" />
 
-            <TextBlock Grid.Column="1"
-                       Grid.Row="1"
-                       Classes="Subtitle"
-                       Text="{Binding Artists}"
-                       TextTrimming="CharacterEllipsis"
-                       VerticalAlignment="Top"/>
+                <TextBlock Grid.Column="1"
+                           Grid.Row="1"
+                           Classes="Subtitle"
+                           Text="{Binding Artists}"
+                           TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Top"/>
 
-            <TextBlock Grid.Column="2"
-                       Grid.Row="0"
-                       Grid.RowSpan="2"
-                       Text="{Binding Duration}"
-                       Classes="Subtitle"
-                       VerticalAlignment="Center" />
+                <TextBlock Grid.Column="2"
+                           Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Text="{Binding Duration}"
+                           Classes="Subtitle"
+                           VerticalAlignment="Center" />
 
-            <Button Grid.Column="3"
-                    Grid.Row="0"
-                    Grid.RowSpan="2"
-                    Flyout="{StaticResource TrackMenu}"
-                    CornerRadius="100"
-                    Padding="4"
-                    Background="Transparent"
-                    VerticalAlignment="Center"
-                    ToolTip.Tip="More">
-                <controls:Icon IconName="dots" />
-            </Button>
-        </Grid>
+                <Button Grid.Column="3"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Flyout="{StaticResource TrackMenu}"
+                        CornerRadius="100"
+                        Padding="4"
+                        Background="Transparent"
+                        VerticalAlignment="Center"
+                        ToolTip.Tip="More">
+                    <controls:Icon IconName="dots" />
+                </Button>
+            </Grid>
+        </Panel>
     </Border>
 </UserControl>
