@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nexora.Input;
 using Nexora.Media;
+using Nexora.Render;
 using Nexora.Threading;
 using Nexora.ViewModels;
 using Nexora.ViewModels.Factories;
@@ -56,6 +57,7 @@ public static class CompositionRoot
             VolumeFilePath,
             provider.GetRequiredService<ILogger<FileVolumeStorage>>()
         ));
+        builder.AddSingleton<RenderScaleProvider>();
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
         builder.AddSingleton<ArtistRegistry>();

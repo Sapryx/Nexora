@@ -3,6 +3,7 @@ using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Nexora.Media;
+using Nexora.Render;
 using Tests.Shared.Logging;
 
 namespace Nexora.Tests.Media;
@@ -16,7 +17,7 @@ public class CoverCacheTests
 
     public CoverCacheTests()
     {
-        coverCache = new CoverCache(logger, coverLoaderMock.Object);
+        coverCache = new CoverCache(logger, coverLoaderMock.Object, new RenderScaleProvider());
     }
 
     [Fact]

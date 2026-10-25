@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nexora.Animations;
+using Nexora.Render;
 using Nexora.Theme.Resources;
 using Nexora.ViewModels;
 using Nexora.Views;
@@ -131,10 +132,12 @@ public partial class App : Application
         var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
 
-        desktop.MainWindow = new MainWindow()
+        var mainWindow = new MainWindow()
         {
             DataContext = mainWindowVm
         };
+        provider.GetRequiredService<RenderScaleProvider>().Track(mainWindow);
+        desktop.MainWindow = mainWindow;
 
         var logger = provider.GetRequiredService<ILogger<App>>();
 

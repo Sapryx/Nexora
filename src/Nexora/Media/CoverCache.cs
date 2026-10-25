@@ -5,6 +5,7 @@ using Core.Collections;
 using Core.Logging;
 using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
+using Nexora.Render;
 
 namespace Nexora.Media;
 
@@ -15,13 +16,19 @@ public class CoverCache : ICoverCache
     private const int LargeMaxSide = 1024;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
+    private readonly RenderScaleProvider renderScaleProvider;
     private readonly LruCache<string, Bitmap?> cache = new LruCache<string, Bitmap?>(Capacity);
     private readonly ConcurrentDictionary<string, Task<Bitmap?>> inFlight = [];
 
-    public CoverCache(ILogger<CoverCache> logger, ITrackCoverLoader coverLoader)
+    public CoverCache(
+        ILogger<CoverCache> logger,
+        ITrackCoverLoader coverLoader,
+        RenderScaleProvider renderScaleProvider
+    )
     {
         this.logger = logger;
         this.coverLoader = coverLoader;
+        this.renderScaleProvider = renderScaleProvider;
     }
 
     public Bitmap? Get(string audioPath)
@@ -73,6 +80,11 @@ public class CoverCache : ICoverCache
         );
     }
 
+    private int ScaleToScreen(int size)
+    {
+        return (int)Math.Ceiling(size * renderScaleProvider.RenderScaling);
+    }
+
     private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)
     {
         try
@@ -94,15 +106,15 @@ public class CoverCache : ICoverCache
         }
     }
 
-    private static Bitmap DecodePreview(Stream stream)
+    private Bitmap DecodePreview(Stream stream)
     {
-        return Bitmap.DecodeToWidth(stream, PreviewWidth, BitmapInterpolationMode.HighQuality);
+        return Bitmap.DecodeToWidth(stream, ScaleToScreen(PreviewWidth), BitmapInterpolationMode.HighQuality);
     }
 
-    private static Bitmap DecodeLarge(Stream stream)
+    private Bitmap DecodeLarge(Stream stream)
     {
         var bitmap = new Bitmap(stream);
-        var size = FitToMaxSide(bitmap.PixelSize, LargeMaxSide);
+        var size = FitToMaxSide(bitmap.PixelSize, ScaleToScreen(LargeMaxSide));
 
         if(size == bitmap.PixelSize)
         {
