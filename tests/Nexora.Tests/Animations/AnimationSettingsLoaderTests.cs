@@ -14,7 +14,7 @@ public class AnimationSettingsLoaderTests : IDisposable
     public AnimationSettingsLoaderTests()
     {
         filePath = Path.Combine(directory, "animations.json");
-        loader = new AnimationSettingsLoader(ReadDefaults(), filePath, logger);
+        loader = new AnimationSettingsLoader(AnimationTestSettings.Json, filePath, logger);
     }
 
     public void Dispose()
@@ -26,11 +26,24 @@ public class AnimationSettingsLoaderTests : IDisposable
     }
 
     [Fact]
-    public void LoadDefaults_AssetFile_ReturnsAllGroups()
+    public void LoadDefaults_AssetFile_ParsesWithoutWarnings()
+    {
+        var assetLoader = new AnimationSettingsLoader(AnimationTestSettings.ReadAsset(), null, logger);
+        var factoryLogger = new TestLogger<AnimationResourceFactory>();
+        var defaults = assetLoader.LoadDefaults();
+
+        new AnimationResourceFactory(factoryLogger).Create(defaults, defaults);
+
+        Assert.Empty(factoryLogger.Entries);
+    }
+
+    [Fact]
+    public void LoadDefaults_Json_ReturnsAllGroups()
     {
         var settings = loader.LoadDefaults();
 
         Assert.Equal(150, settings.Popup.OpenDuration);
+        Assert.Equal(0.6, settings.Popup.BackdropOpacity);
         Assert.Equal(120, settings.ContextMenu.OpenDuration);
         Assert.Equal(200, settings.SegmentedControl.SlideDuration);
         Assert.Equal("#23FFFFFF", settings.Track.HoverColor);
@@ -58,7 +71,7 @@ public class AnimationSettingsLoaderTests : IDisposable
     [Fact]
     public void Load_NoFilePath_ReturnsDefaults()
     {
-        var withoutOverrides = new AnimationSettingsLoader(ReadDefaults(), null, logger);
+        var withoutOverrides = new AnimationSettingsLoader(AnimationTestSettings.Json, null, logger);
 
         Assert.Equal(150, withoutOverrides.Load().Popup.OpenDuration);
     }
@@ -109,11 +122,6 @@ public class AnimationSettingsLoaderTests : IDisposable
 
         Assert.Equal(150, settings.Popup.OpenDuration);
         Assert.Contains(logger.Entries, it => it.Level == LogLevel.Warning && it.Message.Contains(filePath));
-    }
-
-    public static string ReadDefaults()
-    {
-        return File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "Assets", "animations.json"));
     }
 
     private void WriteFile(string text)

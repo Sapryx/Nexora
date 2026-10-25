@@ -65,6 +65,7 @@ public class AnimationResourceFactory
             ["PopupOpenDuration"] = TimeSpan.FromMilliseconds(settings.Popup.OpenDuration),
             ["PopupCloseDuration"] = TimeSpan.FromMilliseconds(settings.Popup.CloseDuration),
             ["PopupClosedTransform"] = CreateScale(settings.Popup.InitialScale),
+            ["PopupBackdropBrush"] = new ImmutableSolidColorBrush(Colors.Black, settings.Popup.BackdropOpacity),
             ["FlyoutOpenDuration"] = TimeSpan.FromMilliseconds(settings.ContextMenu.OpenDuration),
             ["SegmentSlideDuration"] = TimeSpan.FromMilliseconds(settings.SegmentedControl.SlideDuration),
             ["DefaultEaseIn"] = CreateEasing("default.ease_in", settings.Default.EaseIn, defaults.Default.EaseIn),

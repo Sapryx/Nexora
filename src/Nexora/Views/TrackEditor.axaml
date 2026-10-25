@@ -70,7 +70,7 @@
     <Panel x:Name="Backdrop"
            Tag="{Binding TrackVm, Converter={x:Static ObjectConverters.IsNotNull}}"
            IsVisible="False"
-           Background="rgba(0, 0, 0, 60%)">
+           Background="{StaticResource PopupBackdropBrush}">
         <Border x:Name="Dialog"
                 Width="640"
                 Margin="32"

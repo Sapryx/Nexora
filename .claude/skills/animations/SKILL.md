@@ -28,6 +28,7 @@ All animation durations, easings and target values come from one JSON file and r
 | `popup.open_duration` | `PopupOpenDuration` | `TimeSpan` | `TrackEditor.axaml` (open transitions) |
 | `popup.close_duration` | `PopupCloseDuration` | `TimeSpan` | `TrackEditor.axaml` (close transitions), `TrackEditor.axaml.cs` (hides the backdrop after it) |
 | `popup.initial_scale` | `PopupClosedTransform` | `TransformOperations` | `TrackEditor.axaml`, `Border#Dialog` closed state |
+| `popup.backdrop_opacity` | `PopupBackdropBrush` | `ImmutableSolidColorBrush` (black with that opacity) | `TrackEditor.axaml`, `Panel#Backdrop` background while open |
 | `context_menu.open_duration` | `FlyoutOpenDuration` | `TimeSpan` | `NexoraTheme.axaml`, `MenuFlyoutPresenter` animation |
 | `segmented_control.slide_duration` | `SegmentSlideDuration` | `TimeSpan` | `SegmentedControl.axaml` indicator |
 | `track.hover_duration` | `HoverDuration` | `TimeSpan` | `TrackControl.axaml`, `TrackTile.axaml` background |
@@ -46,7 +47,7 @@ Easing names are Avalonia class names: `LinearEasing`, `{Sine,Quadratic,Cubic,Qu
 3. **Factory.** Map it in `AnimationResourceFactory.Create` to a PascalCase resource key, converting it to the type the XAML property expects. Reuse `TimeSpan.FromMilliseconds`, `CreateScale`, `CreateBrush` and `CreateEasing`. For a string value that can fail to parse, pass the JSON key and the default from `defaults`, log a `Warn` and fall back.
 4. **XAML.** Reference it with `{StaticResource Key}` in the transition (`Duration`, `Easing`) or the setter that holds the target value. Use `DefaultEaseOut` for things that appear and `DefaultEaseIn` for things that leave. Add a new easing setting only when the user asks for a different curve.
 5. **Code-behind** that must wait for an animation (as `TrackEditor` waits before hiding the backdrop) reads the duration with `this.FindResource("Key") is TimeSpan duration` instead of hard-coding it.
-6. **Tests** in `tests/Nexora.Tests/Animations/`: extend `LoadDefaults_AssetFile_ReturnsAllGroups` and `Create_Defaults_ReturnsDefaultResources` with the new key (tests read the asset copied to their output by a linked `None` item in `Nexora.Tests.csproj`, because `AssetLoader` needs the Avalonia platform); add an `Invalid...LogsWarningAndUsesDefault` case for a new parsed string type.
+6. **Tests** in `tests/Nexora.Tests/Animations/`: add the new key to the fixed test JSON in `AnimationTestSettings.Json` and assert it in `LoadDefaults_Json_ReturnsAllGroups` and `Create_Defaults_ReturnsDefaultResources`. Tests never assert the tuned values of the real asset, so tuning `animations.json` does not break them; `LoadDefaults_AssetFile_ParsesWithoutWarnings` only checks that the asset (copied to the test output by a linked `None` item in `Nexora.Tests.csproj`, because `AssetLoader` needs the Avalonia platform) parses completely. Add an `Invalid...LogsWarningAndUsesDefault` case for a new parsed string type.
 7. Build, then tell the user what to check in the app: animations can't be covered by unit tests.
 
 ## Patterns
