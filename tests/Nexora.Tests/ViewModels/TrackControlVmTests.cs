@@ -225,7 +225,12 @@ public class TrackControlVmTests
             playbackQueue,
             audioPlayerMock.Object,
             editor,
-            new TrackEditorVm(new ArtistRegistry(editor), audioPlayerMock.Object, uiDispatcherMock.Object),
+            new TrackEditorVm(
+                new ArtistRegistry(editor),
+                audioPlayerMock.Object,
+                Mock.Of<ICoverCache>(),
+                uiDispatcherMock.Object
+            ),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
     }

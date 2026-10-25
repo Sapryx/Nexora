@@ -32,7 +32,12 @@ public class QueueVmTests
             playbackQueue,
             Mock.Of<IAudioPlayer>(),
             metadataEditor,
-            new TrackEditorVm(new ArtistRegistry(metadataEditor), Mock.Of<IAudioPlayer>(), uiDispatcherMock.Object),
+            new TrackEditorVm(
+                new ArtistRegistry(metadataEditor),
+                Mock.Of<IAudioPlayer>(),
+                Mock.Of<ICoverCache>(),
+                uiDispatcherMock.Object
+            ),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
 

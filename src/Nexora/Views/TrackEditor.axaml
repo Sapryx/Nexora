@@ -16,7 +16,7 @@
             </Setter>
         </Style>
 
-        <Style Selector="Panel#Backdrop[Tag=True]">
+        <Style Selector="Panel#Backdrop.Opening">
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="Opacity"
@@ -24,6 +24,9 @@
                                       Easing="{StaticResource DefaultEaseOut}" />
                 </Transitions>
             </Setter>
+        </Style>
+
+        <Style Selector="Panel#Backdrop.Open">
             <Setter Property="Opacity" Value="1" />
         </Style>
 
@@ -38,7 +41,7 @@
             </Setter>
         </Style>
 
-        <Style Selector="Panel#Backdrop[Tag=True] Border#Dialog">
+        <Style Selector="Panel#Backdrop.Opening Border#Dialog">
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform"
@@ -46,6 +49,9 @@
                                                    Easing="{StaticResource DefaultEaseOut}" />
                 </Transitions>
             </Setter>
+        </Style>
+
+        <Style Selector="Panel#Backdrop.Open Border#Dialog">
             <Setter Property="RenderTransform" Value="scale(1)" />
         </Style>
 
@@ -65,10 +71,51 @@
         <Style Selector="ListBox#SuggestionList ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         </Style>
+
+        <Style Selector="Border.ChangeMarker">
+            <Setter Property="Width" Value="3" />
+            <Setter Property="Margin" Value="-9 2 0 2" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="CornerRadius" Value="1.5" />
+            <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+        </Style>
     </UserControl.Styles>
 
+    <UserControl.Resources>
+        <DataTemplate x:Key="ArtistChipTemplate" x:DataType="x:String">
+            <Border Height="26"
+                    Padding="10 0 4 0"
+                    CornerRadius="13"
+                    Cursor="SizeAll"
+                    Background="#3A3A3A">
+                <Border.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuItem Header="Copy" Click="OnCopyArtistClick" />
+                    </MenuFlyout>
+                </Border.ContextFlyout>
+
+                <StackPanel Orientation="Horizontal"
+                            Spacing="2">
+                    <TextBlock Text="{Binding}"
+                               FontSize="13"
+                               VerticalAlignment="Center" />
+
+                    <Button Click="OnRemoveArtistClick"
+                            Width="20"
+                            Height="20"
+                            Padding="5"
+                            CornerRadius="10"
+                            Background="Transparent"
+                            ToolTip.Tip="Remove">
+                        <controls:Icon IconName="cross" />
+                    </Button>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
     <Panel x:Name="Backdrop"
-           Tag="{Binding TrackVm, Converter={x:Static ObjectConverters.IsNotNull}}"
+           Tag="{Binding IsOpen}"
            IsVisible="False"
            Background="{StaticResource PopupBackdropBrush}">
         <Border x:Name="Dialog"
@@ -83,22 +130,9 @@
                 BorderBrush="{StaticResource BorderBrush}"
                 BoxShadow="0 16 48 0 #99000000">
             <StackPanel Spacing="20">
-                <Grid ColumnDefinitions="* Auto">
-                    <TextBlock Grid.Column="0"
-                               Classes="Title"
-                               FontWeight="SemiBold"
-                               Text="Track info"
-                               VerticalAlignment="Center" />
-
-                    <Button Grid.Column="1"
-                            Command="{Binding CancelCommand}"
-                            CornerRadius="100"
-                            Padding="4"
-                            Background="Transparent"
-                            ToolTip.Tip="Close">
-                        <controls:Icon IconName="cross" />
-                    </Button>
-                </Grid>
+                <TextBlock Classes="Title"
+                           FontWeight="SemiBold"
+                           Text="Track info" />
 
                 <Grid ColumnDefinitions="Auto *"
                       ColumnSpacing="24">
@@ -106,9 +140,10 @@
                             CornerRadius="12"
                             ClipToBounds="True"
                             VerticalAlignment="Top">
-                        <Image Source="{Binding TrackVm.Cover}"
-                               Width="240"
-                               Height="240"
+                        <Image Source="{Binding Cover}"
+                               RenderOptions.BitmapInterpolationMode="HighQuality"
+                               Width="256"
+                               Height="256"
                                Stretch="UniformToFill" />
                     </Border>
 
@@ -116,67 +151,40 @@
                                 Spacing="16"
                                 IsEnabled="{Binding IsEditable}">
                         <StackPanel Spacing="6">
-                            <TextBlock Classes="Subtitle" Text="Title" />
+                            <Panel>
+                                <Border Classes="ChangeMarker" IsVisible="{Binding IsTitleChanged}" />
+                                <TextBlock Classes="Subtitle" Text="Title" />
+                            </Panel>
                             <TextBox x:Name="TitleBox"
                                      Classes="Field"
                                      Text="{Binding EditedTitle}" />
                         </StackPanel>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Classes="Subtitle" Text="Artists" />
+                            <Panel>
+                                <Border Classes="ChangeMarker" IsVisible="{Binding AreArtistsChanged}" />
+                                <TextBlock Classes="Subtitle" Text="Artists" />
+                            </Panel>
                             <Border x:Name="ArtistsBox"
                                     Padding="4"
                                     CornerRadius="8"
                                     Background="rgba(0, 0, 0, 25%)"
                                     BorderThickness="1"
                                     BorderBrush="{StaticResource BorderBrush}">
-                                <StackPanel Spacing="4">
-                                    <ItemsControl ItemsSource="{Binding EditedArtists}"
-                                                  IsVisible="{Binding !!EditedArtists.Count}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel ItemSpacing="4"
-                                                           LineSpacing="4" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate x:DataType="x:String">
-                                                <Border Height="26"
-                                                        Padding="10 0 4 0"
-                                                        CornerRadius="13"
-                                                        Background="#3A3A3A">
-                                                    <StackPanel Orientation="Horizontal"
-                                                                Spacing="2">
-                                                        <TextBlock Text="{Binding}"
-                                                                   FontSize="13"
-                                                                   VerticalAlignment="Center" />
-
-                                                        <Button Click="OnRemoveArtistClick"
-                                                                Width="20"
-                                                                Height="20"
-                                                                Padding="5"
-                                                                CornerRadius="10"
-                                                                Background="Transparent"
-                                                                ToolTip.Tip="Remove">
-                                                            <controls:Icon IconName="cross" />
-                                                        </Button>
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-
+                                <WrapPanel x:Name="ArtistsPanel"
+                                           ItemSpacing="4"
+                                           LineSpacing="4">
                                     <TextBox x:Name="ArtistInput"
                                              Text="{Binding ArtistQuery}"
                                              PlaceholderText="Add artist"
                                              FontSize="13"
+                                             MinWidth="120"
                                              MinHeight="26"
                                              Padding="6 0"
                                              VerticalContentAlignment="Center"
                                              BorderThickness="0"
                                              Background="Transparent" />
-                                </StackPanel>
+                                </WrapPanel>
                             </Border>
 
                             <Popup IsOpen="{Binding HasSuggestions}"
@@ -237,7 +245,7 @@
                             Padding="20 8"
                             CornerRadius="8"
                             FontWeight="SemiBold"
-                            Background="{StaticResource PrimaryBrush}" />
+                            Classes="Primary" />
                 </StackPanel>
             </StackPanel>
         </Border>

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using Core.Collections;
 using Core.Logging;
@@ -10,7 +11,8 @@ namespace Nexora.Media;
 public class CoverCache : ICoverCache
 {
     private const int Capacity = 256;
-    private const int DecodeWidth = 256;
+    private const int PreviewWidth = 256;
+    private const int LargeMaxSide = 1024;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
     private readonly LruCache<string, Bitmap?> cache = new LruCache<string, Bitmap?>(Capacity);
@@ -35,7 +37,7 @@ public class CoverCache : ICoverCache
             return cached;
         }
 
-        var decodeTask = inFlight.GetOrAdd(audioPath, path => Task.Run(() => LoadCover(path)));
+        var decodeTask = inFlight.GetOrAdd(audioPath, path => Task.Run(() => LoadCover(path, DecodePreview)));
 
         try
         {
@@ -49,11 +51,41 @@ public class CoverCache : ICoverCache
         }
     }
 
-    private Bitmap? LoadCover(string audioPath)
+    public Task<Bitmap?> LoadLargeAsync(string audioPath)
+    {
+        return Task.Run(() => LoadCover(audioPath, DecodeLarge));
+    }
+
+    public static PixelSize FitToMaxSide(PixelSize size, int maxSide)
+    {
+        int largestSide = Math.Max(size.Width, size.Height);
+
+        if(largestSide <= maxSide)
+        {
+            return size;
+        }
+
+        double scale = (double)maxSide / largestSide;
+
+        return new PixelSize(
+            Math.Max(1, (int)Math.Round(size.Width * scale)),
+            Math.Max(1, (int)Math.Round(size.Height * scale))
+        );
+    }
+
+    private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)
     {
         try
         {
-            return Decode(coverLoader.LoadCover(audioPath));
+            var coverRaw = coverLoader.LoadCover(audioPath);
+
+            if(coverRaw == null)
+            {
+                return null;
+            }
+
+            using var stream = new MemoryStream(coverRaw);
+            return decode(stream);
         }
         catch(Exception ex)
         {
@@ -62,14 +94,24 @@ public class CoverCache : ICoverCache
         }
     }
 
-    private static Bitmap? Decode(byte[]? coverRaw)
+    private static Bitmap DecodePreview(Stream stream)
     {
-        if(coverRaw == null)
+        return Bitmap.DecodeToWidth(stream, PreviewWidth, BitmapInterpolationMode.HighQuality);
+    }
+
+    private static Bitmap DecodeLarge(Stream stream)
+    {
+        var bitmap = new Bitmap(stream);
+        var size = FitToMaxSide(bitmap.PixelSize, LargeMaxSide);
+
+        if(size == bitmap.PixelSize)
         {
-            return null;
+            return bitmap;
         }
 
-        using var stream = new MemoryStream(coverRaw);
-        return Bitmap.DecodeToWidth(stream, DecodeWidth, BitmapInterpolationMode.HighQuality);
+        using(bitmap)
+        {
+            return bitmap.CreateScaledBitmap(size, BitmapInterpolationMode.HighQuality);
+        }
     }
 }

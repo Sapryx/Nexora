@@ -22,7 +22,7 @@ public partial class MainWindow : Window
         }
     };
 
-    private bool IsTrackEditorOpen => DataContext is MainWindowVm vm && vm.TrackEditorVm.TrackVm != null;
+    private bool IsTrackEditorOpen => DataContext is MainWindowVm vm && vm.TrackEditorVm.IsOpen;
 
     public MainWindow()
     {
