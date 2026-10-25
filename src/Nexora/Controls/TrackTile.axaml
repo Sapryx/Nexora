@@ -116,22 +116,10 @@
             </Panel>
 
             <StackPanel Spacing="2">
-                <Grid ColumnDefinitions="*, Auto"
-                      ColumnSpacing="6"
-                      HorizontalAlignment="Center">
-                    <TextBlock Grid.Column="0"
-                               Classes="Title"
-                               Text="{Binding Title}"
-                               TextTrimming="CharacterEllipsis" />
-
-                    <Ellipse Grid.Column="1"
-                             Width="8"
-                             Height="8"
-                             Fill="{StaticResource TitleBrush}"
-                             VerticalAlignment="Center"
-                             IsVisible="{Binding HasUnsavedChanges}"
-                             ToolTip.Tip="Unsaved changes" />
-                </Grid>
+                <TextBlock Classes="Title"
+                           Text="{Binding Title}"
+                           TextAlignment="Center"
+                           TextTrimming="CharacterEllipsis" />
 
                 <TextBlock Classes="Subtitle"
                            Text="{Binding Artists}"

@@ -13,12 +13,9 @@ namespace Nexora.Tests.ViewModels;
 public class TrackEditorVmTests
 {
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
-    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
-        NullLogger<TrackMetadataEditor>.Instance,
-        Mock.Of<IMetadataSaver>(),
-        Mock.Of<IPendingMetadataStorage>(),
-        Mock.Of<IAudioPlayer>()
-    );
+    private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
+    private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
+    private readonly TrackMetadataEditor metadataEditor;
     private readonly ArtistRegistry artistRegistry;
     private readonly TrackEditorVm vm;
 
@@ -28,8 +25,13 @@ public class TrackEditorVmTests
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
 
+        metadataEditor = new TrackMetadataEditor(
+            NullLogger<TrackMetadataEditor>.Instance,
+            metadataSaverMock.Object,
+            audioPlayerMock.Object
+        );
         artistRegistry = new ArtistRegistry(metadataEditor);
-        vm = new TrackEditorVm(artistRegistry);
+        vm = new TrackEditorVm(artistRegistry, audioPlayerMock.Object, uiDispatcherMock.Object);
     }
 
     [Fact]
@@ -70,6 +72,56 @@ public class TrackEditorVmTests
 
         Assert.Equal("Muse, Queen", trackVm.Artists);
         Assert.False(vm.HasSuggestions);
+    }
+
+    [Fact]
+    public async Task Save_WriteFails_KeepsTrackOpenAndUnchanged()
+    {
+        metadataSaverMock
+            .Setup(it => it.Save(It.IsAny<MetadataChange>()))
+            .Throws(new IOException("File is locked"));
+        var trackVm = CreateTrackVm("Psycho", "Muse");
+        vm.Open(trackVm);
+        vm.EditedTitle = "Uprising";
+
+        await vm.Save();
+
+        Assert.Same(trackVm, vm.TrackVm);
+        Assert.Equal("Psycho", trackVm.Title);
+    }
+
+    [Fact]
+    public void Open_TrackPlaying_DisablesEditingAndSave()
+    {
+        SetupPlaying("Psycho.mp3");
+
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        Assert.False(vm.IsEditable);
+        Assert.False(vm.SaveCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void Open_OtherTrackPlaying_AllowsEditing()
+    {
+        SetupPlaying("Madness.mp3");
+
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        Assert.True(vm.IsEditable);
+        Assert.True(vm.SaveCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public void PlaybackPaused_OpenTrackWasPlaying_AllowsEditing()
+    {
+        SetupPlaying("Psycho.mp3");
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        audioPlayerMock.SetupGet(it => it.IsPlaying).Returns(false);
+
+        audioPlayerMock.Raise(it => it.PlaybackPaused += null);
+
+        Assert.True(vm.IsEditable);
     }
 
     [Fact]
@@ -173,6 +225,13 @@ public class TrackEditorVmTests
         vm.RemoveLastArtist();
 
         Assert.Equal(["Queen", "David Bowie"], vm.EditedArtists);
+    }
+
+    private void SetupPlaying(string audioPath)
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it => it.AudioTrack.AudioPath == audioPath);
+        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playlistItem);
+        audioPlayerMock.SetupGet(it => it.IsPlaying).Returns(true);
     }
 
     private void AddLibraryTrack(string title, string artist)

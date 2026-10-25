@@ -117,30 +117,14 @@ public partial class App : Application
         };
 
         var logger = provider.GetRequiredService<ILogger<App>>();
-        var metadataEditor = provider.GetRequiredService<TrackMetadataEditor>();
-
-        var recovery = Task.Run(() =>
-        {
-            try
-            {
-                metadataEditor.RecoverPendingChanges();
-            }
-            catch(Exception ex)
-            {
-                logger.Error(ex, $"Failed to recover pending metadata changes");
-            }
-        });
 
         foreach(var loader in audioTrackLoaders)
         {
-            Task.Run(async () =>
+            Task.Run(() =>
             {
-                await recovery;
-
                 try
                 {
                     var loadedTracks = loader.Load();
-                    metadataEditor.ApplyPendingChanges(loadedTracks);
                     artistRegistry.AddTracks(loadedTracks);
                     playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
                 }

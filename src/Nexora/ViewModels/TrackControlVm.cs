@@ -21,11 +21,9 @@ public partial class TrackControlVm : CoveredTrackVm
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
-    [ObservableProperty]
-    public partial bool HasUnsavedChanges { get; set; }
-
     public bool IsInQueue { get; }
     public IReadOnlyList<string> ArtistNames => playlistItem.AudioTrack.Metadata.Artists;
+    public string AudioPath => playlistItem.AudioTrack.AudioPath;
     private readonly IPlaylistItem playlistItem;
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
@@ -113,7 +111,7 @@ public partial class TrackControlVm : CoveredTrackVm
         trackEditorVm.Open(this);
     }
 
-    public Task ApplyEditAsync(string title, IEnumerable<string> artists)
+    public Task<bool> ApplyEditAsync(string title, IEnumerable<string> artists)
     {
         return metadataEditor.EditAsync(playlistItem.AudioTrack, title, artists);
     }
@@ -122,6 +120,5 @@ public partial class TrackControlVm : CoveredTrackVm
     {
         var metadata = playlistItem.AudioTrack.Metadata;
         SetTrackInfo(metadata.Title, metadata.JoinedArtists, playlistItem.AudioTrack.AudioPath);
-        HasUnsavedChanges = metadataEditor.HasUnsavedChanges(playlistItem.AudioTrack.AudioPath);
     }
 }

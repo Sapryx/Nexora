@@ -28,7 +28,6 @@ public static class CompositionRoot
         "Nexora"
     );
     private static readonly string VolumeFilePath = Path.Combine(AppDataDirectory, "volume.txt");
-    private static readonly string PendingMetadataDirectory = Path.Combine(AppDataDirectory, "pending-metadata");
 
     public static void Configure(ServiceCollection builder)
     {
@@ -45,10 +44,6 @@ public static class CompositionRoot
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<IMetadataSaver, TagLibMetadataSaver>();
-        builder.AddSingleton<IPendingMetadataStorage>(provider => new FilePendingMetadataStorage(
-            PendingMetadataDirectory,
-            provider.GetRequiredService<ILogger<FilePendingMetadataStorage>>()
-        ));
         builder.AddSingleton<TrackMetadataEditor>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();

@@ -18,7 +18,6 @@ public class TrackControlVmTests
     private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
         NullLogger<TrackMetadataEditor>.Instance,
         Mock.Of<IMetadataSaver>(),
-        Mock.Of<IPendingMetadataStorage>(),
         Mock.Of<IAudioPlayer>()
     );
     private readonly PlaybackQueue playbackQueue;
@@ -198,32 +197,6 @@ public class TrackControlVmTests
         Assert.Equal("Madness", otherVm.Title);
     }
 
-    [Fact]
-    public async Task ApplyEditAsync_TrackPlaying_ShowsUnsavedChangesUntilSaved()
-    {
-        var playlistItem = CreatePlaylistItem("Psycho", "Muse");
-        var playingAudioPlayerMock = new Mock<IAudioPlayer>();
-        playingAudioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playlistItem);
-        playingAudioPlayerMock
-            .Setup(it => it.ReleaseFileAsync(It.IsAny<Func<Task>>()))
-            .Returns<Func<Task>>(action => action());
-        var editor = new TrackMetadataEditor(
-            NullLogger<TrackMetadataEditor>.Instance,
-            Mock.Of<IMetadataSaver>(),
-            Mock.Of<IPendingMetadataStorage>(),
-            playingAudioPlayerMock.Object
-        );
-        var vm = CreateVm(playlistItem, editor);
-
-        await vm.ApplyEditAsync("Uprising", ["Muse"]);
-        bool hadUnsavedChanges = vm.HasUnsavedChanges;
-        await editor.SaveAllAsync();
-
-        Assert.True(hadUnsavedChanges);
-        Assert.False(vm.HasUnsavedChanges);
-        Assert.Equal("Uprising", vm.Title);
-    }
-
     private static IPlaylistItem CreatePlaylistItem(string title, string artists)
     {
         var metadata = new Metadata() { Title = title, Artists = [artists] };
@@ -252,7 +225,7 @@ public class TrackControlVmTests
             playbackQueue,
             audioPlayerMock.Object,
             editor,
-            new TrackEditorVm(new ArtistRegistry(editor)),
+            new TrackEditorVm(new ArtistRegistry(editor), audioPlayerMock.Object, uiDispatcherMock.Object),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
     }

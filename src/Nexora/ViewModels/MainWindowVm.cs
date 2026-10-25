@@ -1,8 +1,5 @@
-﻿using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Logging;
-using Core.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Nexora.ViewModels;
@@ -20,18 +17,15 @@ public partial class MainWindowVm : ViewModelBase
     public TrackEditorVm TrackEditorVm { get; }
     private const int LibraryGridViewIndex = 1;
     private readonly ILogger logger;
-    private readonly TrackMetadataEditor metadataEditor;
 
     public MainWindowVm(
         ILogger<MainWindowVm> logger,
         SearchBarVm searchBarVm,
         PlaybackVm playbackVm,
         QueueVm queueVm,
-        TrackEditorVm trackEditorVm,
-        TrackMetadataEditor metadataEditor)
+        TrackEditorVm trackEditorVm)
     {
         this.logger = logger;
-        this.metadataEditor = metadataEditor;
 
         SearchBarVm = searchBarVm;
         PlaybackVm = playbackVm;
@@ -42,12 +36,5 @@ public partial class MainWindowVm : ViewModelBase
     public void Initialize()
     {
         logger.Info($"Application initialized");
-    }
-
-    [RelayCommand]
-    public async Task SaveMetadata()
-    {
-        await TrackEditorVm.Save();
-        await metadataEditor.SaveAllAsync();
     }
 }
