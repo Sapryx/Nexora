@@ -175,6 +175,8 @@ public partial class TrackEditor : UserControl
             if(IsOpen)
             {
                 Backdrop.IsVisible = true;
+                TitleBox.ClearSelection();
+                TitleBox.CaretIndex = TitleBox.Text?.Length ?? 0;
             }
             else
             {
