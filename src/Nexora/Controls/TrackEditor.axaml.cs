@@ -18,6 +18,16 @@ public partial class TrackEditor : UserControl
         InitializeComponent();
         ArtistInput.AddHandler(KeyDownEvent, OnArtistInputKeyDown, RoutingStrategies.Tunnel);
         Backdrop.PropertyChanged += OnBackdropPropertyChanged;
+        Backdrop.PointerPressed += OnBackdropPointerPressed;
+    }
+
+    private void OnBackdropPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if(e.Source == Backdrop && DataContext is TrackEditorVm vm)
+        {
+            vm.Cancel();
+            e.Handled = true;
+        }
     }
 
     private void OnBackdropPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
