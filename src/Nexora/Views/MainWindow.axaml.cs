@@ -33,6 +33,23 @@ public partial class MainWindow : Window
         AddHandler(PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
     }
 
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if(e.Handled || e.Source is TextBox)
+        {
+            return;
+        }
+
+        bool isScrolled = LibraryGrid.IsVisible ? LibraryGrid.ScrollByKey(e.Key) : LibraryList.ScrollByKey(e.Key);
+
+        if(isScrolled)
+        {
+            e.Handled = true;
+        }
+    }
+
     private void OnPreviewPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if(FocusManager?.GetFocusedElement() is not TextBox textBox)

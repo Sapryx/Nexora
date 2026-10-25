@@ -57,4 +57,40 @@ public class SmoothScrollerTests
     {
         Assert.Equal(1, SmoothScroller.GetPageItemCount(50, 100));
     }
+
+    [Fact]
+    public void GetRepeatAcceleration_LongList_CoversAllItemsInGivenTime()
+    {
+        Assert.Equal(20, SmoothScroller.GetRepeatAcceleration(120, 10, 3));
+    }
+
+    [Fact]
+    public void GetRepeatAcceleration_ShortList_ReturnsZero()
+    {
+        Assert.Equal(0, SmoothScroller.GetRepeatAcceleration(10, 10, 3));
+    }
+
+    [Fact]
+    public void GetRepeatItemCount_RepeatStarted_ScrollsOneItem()
+    {
+        Assert.Equal(1, SmoothScroller.GetRepeatItemCount(0, 10, 20));
+    }
+
+    [Fact]
+    public void GetRepeatItemCount_SecondsHeld_AddsUniformlyAcceleratedDistance()
+    {
+        Assert.Equal(31, SmoothScroller.GetRepeatItemCount(2, 10, 5));
+    }
+
+    [Fact]
+    public void GetItemIndex_PartiallyScrolledItem_ReturnsItemAtTop()
+    {
+        Assert.Equal(1, SmoothScroller.GetItemIndex(150, 100));
+    }
+
+    [Fact]
+    public void GetItemIndex_AlmostAlignedOffset_ReturnsNextItem()
+    {
+        Assert.Equal(2, SmoothScroller.GetItemIndex(199.8, 100));
+    }
 }
