@@ -1,0 +1,64 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Nexora.Controls">
+    <Style Selector="controls|SegmentedControl">
+        <Setter Property="SelectionMode" Value="AlwaysSelected" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Background" Value="rgba(255, 255, 255, 6%)" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="ItemsPanel">
+            <ItemsPanelTemplate>
+                <UniformGrid Rows="1" />
+            </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border CornerRadius="{TemplateBinding CornerRadius}"
+                        Background="{TemplateBinding Background}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        BorderBrush="{TemplateBinding BorderBrush}">
+                    <Panel>
+                        <Border x:Name="PART_Indicator"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Top"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                Background="rgba(255, 255, 255, 15%)"
+                                BorderThickness="1"
+                                BorderBrush="{DynamicResource BorderBrush}">
+                            <Border.Transitions>
+                                <Transitions>
+                                    <TransformOperationsTransition Property="RenderTransform"
+                                                                   Duration="0:0:0.2"
+                                                                   Easing="CubicEaseOut" />
+                                </Transitions>
+                            </Border.Transitions>
+                        </Border>
+
+                        <ItemsPresenter ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    </Panel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+
+    <Style Selector="controls|SegmentedControl ListBoxItem">
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="8 4" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Background="{TemplateBinding Background}"
+                                  Padding="{TemplateBinding Padding}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

@@ -5,5 +5,6 @@
              RequestedThemeVariant="Default">
     <Application.Styles>
         <theme:NexoraTheme />
+        <StyleInclude Source="/Controls/SegmentedControl.axaml" />
     </Application.Styles>
 </Application>

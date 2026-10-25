@@ -17,31 +17,6 @@
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
-        <Style Selector="Border#sectionSwitcher Button">
-            <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Center" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="CornerRadius" Value="8" />
-            <Setter Property="Padding" Value="10" />
-        </Style>
-
-        <Style Selector="Border#sectionSwitcher Button.selected">
-            <Setter Property="Background" Value="rgba(255, 255, 255, 15%)" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-        </Style>
-
-        <Style Selector="Border#viewToggle Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="CornerRadius" Value="100" />
-            <Setter Property="Padding" Value="8 4" />
-        </Style>
-
-        <Style Selector="Border#viewToggle Button.selected">
-            <Setter Property="Background" Value="rgba(255, 255, 255, 15%)" />
-        </Style>
-
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
@@ -57,36 +32,19 @@
         </render:DitheringControl>
 
         <DockPanel LastChildFill="True">
-            <!-- <Border -->
-            <!--     DockPanel.Dock="Top" -->
-            <!--     Height="32" -->
-            <!--     HorizontalAlignment="Stretch" -->
-            <!--     VerticalAlignment="Top" -->
-            <!--     Background="rgba(0, 0, 0, 40%)"> -->
-            <!-- -->
-            <!-- </Border> -->
-
             <Border x:Name="sidebar"
                     DockPanel.Dock="Left"
                     Width="300"
                     Padding="16 16 0 16"
                     Background="rgba(0, 0, 0, 25%)">
                 <DockPanel>
-                    <Border x:Name="sectionSwitcher"
-                            DockPanel.Dock="Top"
-                            Margin="0 0 16 0"
-                            Padding="4"
-                            CornerRadius="12"
-                            Background="rgba(255, 255, 255, 6%)"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource BorderBrush}">
-                        <UniformGrid Rows="1" ColumnSpacing="4">
-                            <Button Classes="selected"
-                                    ToolTip.Tip="Library">
-                                <controls:Icon IconName="library" />
-                            </Button>
-                        </UniformGrid>
-                    </Border>
+                    <controls:SegmentedControl DockPanel.Dock="Top"
+                                               Margin="0 0 16 0">
+                        <ListBoxItem Padding="10"
+                                     ToolTip.Tip="Library">
+                            <controls:Icon IconName="library" />
+                        </ListBoxItem>
+                    </controls:SegmentedControl>
 
                     <TextBlock DockPanel.Dock="Top"
                                Classes="Title"
@@ -119,29 +77,18 @@
                                         MaxWidth="480"
                                         Margin="136 0" />
 
-                    <Border x:Name="viewToggle"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Center"
-                            Margin="0 0 32 0"
-                            Padding="4"
-                            CornerRadius="100"
-                            Background="rgba(255, 255, 255, 10%)"
-                            BorderThickness="1"
-                            BorderBrush="{StaticResource BorderBrush}">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Button Command="{Binding ShowLibraryListCommand}"
-                                    Classes.selected="{Binding !IsLibraryGridView}"
-                                    ToolTip.Tip="List">
-                                <controls:Icon IconName="list" />
-                            </Button>
+                    <controls:SegmentedControl HorizontalAlignment="Right"
+                                               VerticalAlignment="Center"
+                                               Margin="0 0 32 0"
+                                               SelectedIndex="{Binding LibraryViewIndex}">
+                        <ListBoxItem ToolTip.Tip="List">
+                            <controls:Icon IconName="list" />
+                        </ListBoxItem>
 
-                            <Button Command="{Binding ShowLibraryGridCommand}"
-                                    Classes.selected="{Binding IsLibraryGridView}"
-                                    ToolTip.Tip="Grid">
-                                <controls:Icon IconName="grid" />
-                            </Button>
-                        </StackPanel>
-                    </Border>
+                        <ListBoxItem ToolTip.Tip="Grid">
+                            <controls:Icon IconName="grid" />
+                        </ListBoxItem>
+                    </controls:SegmentedControl>
                 </Panel>
 
                 <Panel Grid.Row="1">
