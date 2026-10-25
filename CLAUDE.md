@@ -30,7 +30,7 @@ Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 
 ## Verification
 
-Cover changes with unit tests. Run the app and verify the change in it (integration testing) only when unit tests can't cover the behavior: layout and rendering, focus and input handling, window behavior, real playback, startup and DI wiring. Pure logic (Core, view models) is verified by unit tests alone.
+Cover changes with unit tests. After a change, only build; run the tests only before a commit (see Commits). Don't run the app to verify a change: the user tests it in the app. Run the app only when the user reports a bug and asks you to check it. When unit tests can't cover the behavior (layout and rendering, focus and input handling, window behavior, real playback, startup and DI wiring), tell the user what to check in the app.
 
 ## Debugging
 
@@ -122,6 +122,8 @@ Build in Release (`dotnet build Nexora.sln -c Release -v q -nologo -clp:ErrorsOn
 Conventional Commits with a scope: `feat(core): ...`, `fix(ui): ...`, `perf(storage): ...`, `refactor(viewmodels): ...`, `chore: ...`. Lowercase, imperative, no trailing period.
 
 Every commit must build on its own. A feature may be incomplete, but the app must start and have no critical bugs at each commit. When splitting changes into several commits, make sure each intermediate state satisfies this.
+
+Before committing, run both test projects. Commit only if all tests pass; otherwise don't commit, report the failures and propose fixes.
 
 ## Do not read
 
