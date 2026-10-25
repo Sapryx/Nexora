@@ -286,7 +286,7 @@ public class PlaybackVmTests
     [Fact]
     public void PlaybackStarted_Raised_ShowsStartedTrack()
     {
-        var metadata = new Metadata() { Title = "Song", Artists = "Artist" };
+        var metadata = new Metadata() { Title = "Song", Artists = ["Artist"] };
         var playlistItem = Mock.Of<IPlaylistItem>(
             it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == ""
         );
@@ -306,7 +306,7 @@ public class PlaybackVmTests
         audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playlistItem);
         audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
 
-        await metadataEditor.EditAsync(playlistItem.AudioTrack, "Edited", "");
+        await metadataEditor.EditAsync(playlistItem.AudioTrack, "Edited", []);
 
         Assert.Equal("Edited", vm.PlayingTrackViewVm?.Title);
     }

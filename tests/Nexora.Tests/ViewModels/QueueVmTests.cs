@@ -1,3 +1,4 @@
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage;
@@ -22,16 +23,17 @@ public class QueueVmTests
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
 
+        var metadataEditor = new TrackMetadataEditor(
+            NullLogger<TrackMetadataEditor>.Instance,
+            Mock.Of<IMetadataSaver>(),
+            Mock.Of<IPendingMetadataStorage>(),
+            Mock.Of<IAudioPlayer>()
+        );
         var trackControlVmFactory = new TrackControlVmFactory(
             playbackQueue,
             Mock.Of<IAudioPlayer>(),
-            new TrackMetadataEditor(
-                NullLogger<TrackMetadataEditor>.Instance,
-                Mock.Of<IMetadataSaver>(),
-                Mock.Of<IPendingMetadataStorage>(),
-                Mock.Of<IAudioPlayer>()
-            ),
-            new TrackEditorVm(),
+            metadataEditor,
+            new TrackEditorVm(new ArtistRegistry(metadataEditor)),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
 

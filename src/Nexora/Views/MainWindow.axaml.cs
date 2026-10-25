@@ -24,6 +24,8 @@ public partial class MainWindow : Window
         }
     };
 
+    private bool IsTrackEditorOpen => DataContext is MainWindowVm vm && vm.TrackEditorVm.TrackVm != null;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -37,7 +39,7 @@ public partial class MainWindow : Window
     {
         base.OnKeyDown(e);
 
-        if(e.Handled || e.Source is TextBox)
+        if(e.Handled || e.Source is TextBox || IsTrackEditorOpen)
         {
             return;
         }
@@ -67,7 +69,9 @@ public partial class MainWindow : Window
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
-        if(DataContext is MainWindowVm mainWindowVm && e.Key == Key.S && e.KeyModifiers == KeyModifiers.Control)
+        var mainWindowVm = DataContext as MainWindowVm;
+
+        if(mainWindowVm != null && e.Key == Key.S && e.KeyModifiers == KeyModifiers.Control)
         {
             if(e.RoutedEvent == KeyDownEvent)
             {
@@ -78,7 +82,18 @@ public partial class MainWindow : Window
             return;
         }
 
-        if(e.Source is TextBox)
+        if(mainWindowVm != null && e.Key == Key.Escape && IsTrackEditorOpen)
+        {
+            if(e.RoutedEvent == KeyDownEvent)
+            {
+                mainWindowVm.TrackEditorVm.Cancel();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
+        if(e.Source is TextBox || IsTrackEditorOpen)
         {
             return;
         }

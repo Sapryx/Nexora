@@ -92,7 +92,7 @@ public class DiscordRichPresenceService : IRichPresenceService
     private void OnPlaybackStarted(IPlaylistItem playlistItem)
     {
         string title = playlistItem.AudioTrack.Metadata.Title;
-        string artists = playlistItem.AudioTrack.Metadata.Artists;
+        string artists = playlistItem.AudioTrack.Metadata.JoinedArtists;
         UpdateStatus(title, artists);
     }
 }

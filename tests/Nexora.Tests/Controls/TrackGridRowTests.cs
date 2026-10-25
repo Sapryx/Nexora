@@ -1,3 +1,4 @@
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage;
@@ -86,18 +87,19 @@ public class TrackGridRowTests
         var audioTrack = Mock.Of<IAudioTrack>(it =>
             it.Metadata == new Metadata() { Title = title } &&
             it.AudioPath == $"{title}.mp3");
+        var metadataEditor = new TrackMetadataEditor(
+            NullLogger<TrackMetadataEditor>.Instance,
+            Mock.Of<IMetadataSaver>(),
+            Mock.Of<IPendingMetadataStorage>(),
+            Mock.Of<IAudioPlayer>()
+        );
 
         return new TrackControlVm(
             Mock.Of<IPlaylistItem>(it => it.AudioTrack == audioTrack),
             new PlaybackQueue(Mock.Of<IAudioPlayer>()),
             Mock.Of<IAudioPlayer>(),
-            new TrackMetadataEditor(
-                NullLogger<TrackMetadataEditor>.Instance,
-                Mock.Of<IMetadataSaver>(),
-                Mock.Of<IPendingMetadataStorage>(),
-                Mock.Of<IAudioPlayer>()
-            ),
-            new TrackEditorVm(),
+            metadataEditor,
+            new TrackEditorVm(new ArtistRegistry(metadataEditor)),
             Mock.Of<ICoverCache>(),
             Mock.Of<IUiDispatcher>());
     }

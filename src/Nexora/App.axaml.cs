@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Core.Integrations;
+using Core.Library;
 using Core.Logging;
 using Core.Playlists;
 using Core.Storage;
@@ -105,6 +106,7 @@ public partial class App : Application
 
         var audioTrackLoaders = provider.GetServices<ITrackLoader>();
         var playlistRegistry = provider.GetRequiredService<PlaylistRegistry>();
+        var artistRegistry = provider.GetRequiredService<ArtistRegistry>();
 
         var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
@@ -139,6 +141,7 @@ public partial class App : Application
                 {
                     var loadedTracks = loader.Load();
                     metadataEditor.ApplyPendingChanges(loadedTracks);
+                    artistRegistry.AddTracks(loadedTracks);
                     playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
                 }
                 catch(Exception ex)

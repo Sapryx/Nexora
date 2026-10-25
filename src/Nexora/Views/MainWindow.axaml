@@ -66,9 +66,6 @@
                 </DockPanel>
             </Border>
 
-            <controls:TrackEditor DockPanel.Dock="Right"
-                                  DataContext="{Binding TrackEditorVm}" />
-
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
                 <Panel Grid.Row="0">
@@ -116,5 +113,7 @@
                                           Margin="48 0"/>
             </Grid>
         </DockPanel>
+
+        <controls:TrackEditor DataContext="{Binding TrackEditorVm}" />
     </Panel>
 </Window>

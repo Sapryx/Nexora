@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,13 +24,8 @@ public partial class TrackControlVm : CoveredTrackVm
     [ObservableProperty]
     public partial bool HasUnsavedChanges { get; set; }
 
-    [ObservableProperty]
-    public partial string EditedTitle { get; set; } = "";
-
-    [ObservableProperty]
-    public partial string EditedArtists { get; set; } = "";
-
     public bool IsInQueue { get; }
+    public IReadOnlyList<string> ArtistNames => playlistItem.AudioTrack.Metadata.Artists;
     private readonly IPlaylistItem playlistItem;
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
@@ -117,21 +113,15 @@ public partial class TrackControlVm : CoveredTrackVm
         trackEditorVm.Open(this);
     }
 
-    public void BeginEdit()
+    public Task ApplyEditAsync(string title, IEnumerable<string> artists)
     {
-        EditedTitle = Title;
-        EditedArtists = Artists;
-    }
-
-    public Task ApplyEditAsync()
-    {
-        return metadataEditor.EditAsync(playlistItem.AudioTrack, EditedTitle, EditedArtists);
+        return metadataEditor.EditAsync(playlistItem.AudioTrack, title, artists);
     }
 
     private void UpdateTrackInfo()
     {
         var metadata = playlistItem.AudioTrack.Metadata;
-        SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
+        SetTrackInfo(metadata.Title, metadata.JoinedArtists, playlistItem.AudioTrack.AudioPath);
         HasUnsavedChanges = metadataEditor.HasUnsavedChanges(playlistItem.AudioTrack.AudioPath);
     }
 }

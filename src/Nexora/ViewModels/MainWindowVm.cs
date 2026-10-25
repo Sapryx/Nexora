@@ -47,7 +47,7 @@ public partial class MainWindowVm : ViewModelBase
     [RelayCommand]
     public async Task SaveMetadata()
     {
-        await TrackEditorVm.ApplyAsync();
+        await TrackEditorVm.Save();
         await metadataEditor.SaveAllAsync();
     }
 }

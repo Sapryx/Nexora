@@ -44,11 +44,11 @@ public class FilePendingMetadataStorageTests : IDisposable
     public void Save_SameTrackTwice_KeepsLatestChangeOnly()
     {
         storage.Save(new MetadataChange() { AudioPath = "/music/Psycho.mp3", Title = "Uprising" });
-        storage.Save(new MetadataChange() { AudioPath = "/music/Psycho.mp3", Artists = "Muse" });
+        storage.Save(new MetadataChange() { AudioPath = "/music/Psycho.mp3", Artists = ["Muse"] });
 
         var change = Assert.Single(storage.LoadAll());
         Assert.Null(change.Title);
-        Assert.Equal("Muse", change.Artists);
+        Assert.Equal(["Muse"], change.Artists);
     }
 
     [Fact]

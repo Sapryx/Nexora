@@ -14,7 +14,6 @@ public class TagLibMetadataLoader : IMetadataLoader
     {
         using var tagFile = File.Create(filePath);
         string title = tagFile.Tag.Title;
-        string artists = string.Join(", ", tagFile.Tag.Performers);
 
         if(string.IsNullOrEmpty(title))
         {
@@ -24,7 +23,7 @@ public class TagLibMetadataLoader : IMetadataLoader
         return new Metadata()
         {
             Title = title,
-            Artists = artists,
+            Artists = tagFile.Tag.Performers,
             Duration = tagFile.Properties.Duration
         };
     }

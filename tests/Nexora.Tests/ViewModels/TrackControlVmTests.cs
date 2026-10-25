@@ -1,3 +1,4 @@
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage;
@@ -164,25 +165,11 @@ public class TrackControlVmTests
     }
 
     [Fact]
-    public void BeginEdit_TrackShown_CopiesTitleAndArtistsToEditedFields()
-    {
-        var vm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
-
-        vm.BeginEdit();
-
-        Assert.Equal("Psycho", vm.EditedTitle);
-        Assert.Equal("Muse", vm.EditedArtists);
-    }
-
-    [Fact]
     public async Task ApplyEditAsync_FieldsEdited_ShowsNewTitleAndArtists()
     {
         var vm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
-        vm.BeginEdit();
-        vm.EditedTitle = "Uprising";
-        vm.EditedArtists = "Muse, Queen";
 
-        await vm.ApplyEditAsync();
+        await vm.ApplyEditAsync("Uprising", ["Muse", "Queen"]);
 
         Assert.Equal("Uprising", vm.Title);
         Assert.Equal("Muse, Queen", vm.Artists);
@@ -194,10 +181,8 @@ public class TrackControlVmTests
         var playlistItem = CreatePlaylistItem("Psycho", "Muse");
         var editedVm = CreateVm(playlistItem);
         var otherVm = CreateVm(playlistItem);
-        editedVm.BeginEdit();
-        editedVm.EditedTitle = "Uprising";
 
-        await editedVm.ApplyEditAsync();
+        await editedVm.ApplyEditAsync("Uprising", ["Muse"]);
 
         Assert.Equal("Uprising", otherVm.Title);
     }
@@ -207,10 +192,8 @@ public class TrackControlVmTests
     {
         var editedVm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
         var otherVm = CreateVm(CreatePlaylistItem("Madness", "Muse"));
-        editedVm.BeginEdit();
-        editedVm.EditedTitle = "Uprising";
 
-        await editedVm.ApplyEditAsync();
+        await editedVm.ApplyEditAsync("Uprising", ["Muse"]);
 
         Assert.Equal("Madness", otherVm.Title);
     }
@@ -231,10 +214,8 @@ public class TrackControlVmTests
             playingAudioPlayerMock.Object
         );
         var vm = CreateVm(playlistItem, editor);
-        vm.BeginEdit();
-        vm.EditedTitle = "Uprising";
 
-        await vm.ApplyEditAsync();
+        await vm.ApplyEditAsync("Uprising", ["Muse"]);
         bool hadUnsavedChanges = vm.HasUnsavedChanges;
         await editor.SaveAllAsync();
 
@@ -245,7 +226,7 @@ public class TrackControlVmTests
 
     private static IPlaylistItem CreatePlaylistItem(string title, string artists)
     {
-        var metadata = new Metadata() { Title = title, Artists = artists };
+        var metadata = new Metadata() { Title = title, Artists = [artists] };
         return Mock.Of<IPlaylistItem>(
             it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == $"{title}.mp3"
         );
@@ -271,7 +252,7 @@ public class TrackControlVmTests
             playbackQueue,
             audioPlayerMock.Object,
             editor,
-            new TrackEditorVm(),
+            new TrackEditorVm(new ArtistRegistry(editor)),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
     }

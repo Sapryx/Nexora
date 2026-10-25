@@ -95,7 +95,7 @@ public class FileTrackLoaderTests
     [Fact]
     public void Load_SupportedFile_LoadsMetadataForThatFile()
     {
-        var metadata = new Metadata() { Title = "Title", Artists = "Artist" };
+        var metadata = new Metadata() { Title = "Title", Artists = ["Artist"] };
         metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(metadata);
         musicDirectoryProviderMock.Setup(it => it.GetFiles()).Returns(["/music/one.mp3"]);
 
@@ -149,17 +149,17 @@ public class FileTrackLoaderTests
     {
         metadataLoaderMock
             .Setup(it => it.Load("/music/one.mp3"))
-            .Returns(new Metadata() { Title = "Song", Artists = "Zed" });
+            .Returns(new Metadata() { Title = "Song", Artists = ["Zed"] });
         metadataLoaderMock
             .Setup(it => it.Load("/music/two.mp3"))
-            .Returns(new Metadata() { Title = "Song", Artists = "Abba" });
+            .Returns(new Metadata() { Title = "Song", Artists = ["Abba"] });
         musicDirectoryProviderMock
             .Setup(it => it.GetFiles())
             .Returns(["/music/one.mp3", "/music/two.mp3"]);
 
         var result = loader.Load();
 
-        Assert.Equal(["Abba", "Zed"], result.Select(it => it.Metadata.Artists));
+        Assert.Equal(["Abba", "Zed"], result.Select(it => it.Metadata.JoinedArtists));
     }
 
     [Fact]
