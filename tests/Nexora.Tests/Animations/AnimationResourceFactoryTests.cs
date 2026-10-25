@@ -18,7 +18,7 @@ public class AnimationResourceFactoryTests
     {
         factory = new AnimationResourceFactory(logger);
         loader = new AnimationSettingsLoader(
-            AnimationSettingsLoaderTests.ReadDefaults(),
+            AnimationTestSettings.Json,
             null,
             NullLogger<AnimationSettingsLoader>.Instance
         );
@@ -37,6 +37,8 @@ public class AnimationResourceFactoryTests
         Assert.Equal(TimeSpan.FromMilliseconds(200), resources["SegmentSlideDuration"]);
         Assert.Equal(0.5, resources["TrackCoverHoverOpacity"]);
         Assert.Equal(Color.Parse("#23FFFFFF"), ((ISolidColorBrush)resources["TrackHoverBrush"]).Color);
+        Assert.Equal(Colors.Black, ((ISolidColorBrush)resources["PopupBackdropBrush"]).Color);
+        Assert.Equal(0.6, ((ISolidColorBrush)resources["PopupBackdropBrush"]).Opacity);
         Assert.IsType<CubicEaseIn>(resources["DefaultEaseIn"]);
         Assert.IsType<CubicEaseOut>(resources["DefaultEaseOut"]);
         Assert.Empty(logger.Entries);

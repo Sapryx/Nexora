@@ -2,10 +2,11 @@
     "popup": {
         "open_duration": 150,
         "close_duration": 100,
-        "initial_scale": 0.95
+        "initial_scale": 0.95,
+        "backdrop_opacity": 0.5
     },
     "context_menu": {
-        "open_duration": 120
+        "open_duration": 100
     },
     "segmented_control": {
         "slide_duration": 200
