@@ -50,6 +50,7 @@ sealed class Program
 #if DEBUG
             .WithDeveloperTools()
 #endif
+            .With(new SkiaOptions() { UseOpacitySaveLayer = true })
             .WithInterFont();
     }
 }
