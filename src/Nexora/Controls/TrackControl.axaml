@@ -27,6 +27,10 @@
             </Setter>
         </Style>
 
+        <Style Selector="Border#MainTrackBorder:pointerover">
+            <Setter Property="Background" Value="rgba(255, 255, 255, 8%)" />
+        </Style>
+
         <Style Selector="Border#MainTrackBorder[Tag=True]">
             <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
         </Style>
