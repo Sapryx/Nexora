@@ -7,9 +7,9 @@ using Nexora.ViewModels;
 
 namespace Nexora.Controls;
 
-public partial class AudioTrackView : UserControl
+public partial class TrackControl : UserControl
 {
-    public AudioTrackView()
+    public TrackControl()
     {
         InitializeComponent();
         MainTrackBorder.AddHandler(PointerPressedEvent, OnTrackPointerPressed, RoutingStrategies.Bubble, true);
