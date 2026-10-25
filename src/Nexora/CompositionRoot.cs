@@ -1,9 +1,9 @@
+using Core.Input;
 using Core.Integrations;
 using Core.Library;
 using Core.Logging;
 using Core.Playback;
 using Core.Playlists;
-using Core.Search;
 using Core.Storage;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-namespace Core.Search;
+namespace Core.Input;
 
 public interface IKeyboardLayoutProvider
 {

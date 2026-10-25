@@ -1,5 +1,7 @@
+using Core.Input;
 using Core.Playback;
 using Core.Search;
+using Core.Tests.Input;
 using Moq;
 
 namespace Core.Tests.Search;
