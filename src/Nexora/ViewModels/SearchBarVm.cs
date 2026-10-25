@@ -16,7 +16,6 @@ public partial class SearchBarVm : ViewModelBase
 
     public Dictionary<IAudioTrack, TrackControlVm> AudioTrackVms { get; } = [];
     public ObservableCollection<TrackControlVm> DisplayedAudioTrackVms { get; } = [];
-
     private readonly ITrackControlVmFactory trackControlVmFactory;
     private readonly KeyboardLayoutTranslator layoutTranslator;
     private readonly List<TrackMatch> displayedMatches = [];

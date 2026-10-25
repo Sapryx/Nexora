@@ -5,7 +5,6 @@ namespace Nexora.Logging;
 public static class LogLevelArgument
 {
     public static string KnownNames => string.Join(", ", Levels.Keys);
-
     public const string Name = "--log-level";
 
     private static readonly Dictionary<string, LogLevel> Levels =
