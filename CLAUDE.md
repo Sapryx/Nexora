@@ -69,15 +69,8 @@ If the `rider` MCP server is available (Rider must be running with this project)
 
 ## Comments
 
-- Write a comment only when it adds what the code can't say, and keep existing comments that do:
-  - why a non-obvious technical decision is made this way (an optimization, a workaround for a library), not why the system is designed so;
-  - which algorithm is used (prefer a descriptive name and a link, e.g. to Wikipedia);
-  - the layout of a format (time, log line, date);
-  - API documentation.
-- Mark a hack, a temporary solution or a potential performance bottleneck with a `// FIXME` or `// TODO` comment saying what is wrong.
-- Keep comments short and to the point, but understandable.
-- No comments restating the code; don't add commented-out code (the layout placeholders in `MainWindow.axaml` stay on purpose).
-- Every time you add or edit a comment, list all such places in a separate part of your reply: the location in the code, the comment text and why you added it.
+- Don't write comments in code: no `//` comments, XML docs, `FIXME`/`TODO` or commented-out code.
+- Keep existing comments; when the code they describe changes, update or remove them so they stay accurate. The layout placeholders in `MainWindow.axaml` stay on purpose.
 
 ## Logging
 
