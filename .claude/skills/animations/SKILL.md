@@ -52,7 +52,7 @@ Easing names are Avalonia class names: `LinearEasing`, `{Sine,Quadratic,Cubic,Qu
 
 ## Patterns
 
-- **Different open and close durations or easings.** A transition runs with the `Transitions` of the state being entered. Put the close transition in the base style and the open transition in the active style (`[Tag=True]`, `:pointerover`, …), listed before the value setter. See `Panel#Backdrop` and `Border#Dialog` in `TrackEditor.axaml`.
+- **Different open and close durations or easings.** A transition runs with the `Transitions` of the state being entered. Put the close transition in the base style and the open transition in the active style (`:pointerover`, …), listed before the value setter. When one style is deactivated, the order in which its setters revert is not guaranteed: if the value changes before `Transitions`, the running transition is dropped and the value jumps. So for a close animation that must play, switch `Transitions` and values with two separate classes set from code in that order, as `TrackEditor.axaml.cs` does with `Opening` and `Open` on `Panel#Backdrop`.
 - **Prefer `Transitions` over `Style.Animations`.** Transitions start from the current value, so an interrupted animation reverses smoothly. Use keyframe `Style.Animations` only for one-shot entrance effects such as the context menu.
 - **Animate `Opacity` and `RenderTransform`**, not `Width`/`Height`/`Margin`: they skip layout and stay smooth in long track lists.
 - **Durations.** About 80–150 ms for hover and press, 150–250 ms for menus and small popups, 250–400 ms for large panels. Closing about 20–30% faster than opening.

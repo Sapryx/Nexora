@@ -11,6 +11,18 @@
         <Setter Property="Cursor" Value="Hand" />
     </Style>
 
+    <Style Selector="Button.Primary">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+    </Style>
+
+    <Style Selector="Button.Primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryPointerOverBrush}" />
+    </Style>
+
+    <Style Selector="Button.Primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryPressedBrush}" />
+    </Style>
+
     <Style Selector="ToolTip">
         <Setter Property="Transitions" Value="{x:Null}" />
     </Style>

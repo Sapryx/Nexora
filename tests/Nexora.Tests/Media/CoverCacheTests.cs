@@ -1,3 +1,4 @@
+using Avalonia;
 using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -55,5 +56,43 @@ public class CoverCacheTests
         await coverCache.GetOrLoadAsync(AudioPath);
         await coverCache.GetOrLoadAsync(AudioPath);
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+    }
+
+    [Fact]
+    public async Task LoadLargeAsync_LoaderThrows_ReturnsNullAndLogsWarning()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
+
+        var cover = await coverCache.LoadLargeAsync(AudioPath);
+
+        Assert.Null(cover);
+        Assert.Equal(LogLevel.Warning, Assert.Single(logger.Entries).Level);
+    }
+
+    [Fact]
+    public async Task LoadLargeAsync_CalledTwice_LoadsEachTime()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        await coverCache.LoadLargeAsync(AudioPath);
+        await coverCache.LoadLargeAsync(AudioPath);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
+    }
+
+    [Fact]
+    public void FitToMaxSide_LargerThanMax_ScalesLargestSideToMaxKeepingAspect()
+    {
+        var size = CoverCache.FitToMaxSide(new PixelSize(4000, 3000), 2048);
+
+        Assert.Equal(new PixelSize(2048, 1536), size);
+    }
+
+    [Fact]
+    public void FitToMaxSide_NotLargerThanMax_KeepsSize()
+    {
+        var size = CoverCache.FitToMaxSide(new PixelSize(2048, 1000), 2048);
+
+        Assert.Equal(new PixelSize(2048, 1000), size);
     }
 }

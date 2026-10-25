@@ -4,12 +4,16 @@
     <Color x:Key="TitleColor">#FFFFFF</Color>
     <Color x:Key="SubtitleColor">#B9B9B9</Color>
     <Color x:Key="PrimaryColor">#2877B5</Color>
+    <Color x:Key="PrimaryPointerOverColor">#2268A0</Color>
+    <Color x:Key="PrimaryPressedColor">#1D5A8B</Color>
     <Color x:Key="AccentColor">#5084AD</Color>
 
     <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}" />
     <SolidColorBrush x:Key="TitleBrush" Color="{StaticResource TitleColor}" />
     <SolidColorBrush x:Key="SubtitleBrush" Color="{StaticResource SubtitleColor}" />
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+    <SolidColorBrush x:Key="PrimaryPointerOverBrush" Color="{StaticResource PrimaryPointerOverColor}" />
+    <SolidColorBrush x:Key="PrimaryPressedBrush" Color="{StaticResource PrimaryPressedColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
 
     <SolidColorBrush x:Key="ToolTipBorderBrush" Color="{StaticResource BorderColor}" />

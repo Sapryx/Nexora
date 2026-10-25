@@ -15,6 +15,7 @@ public class TrackEditorVmTests
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
     private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
+    private readonly Mock<ICoverCache> coverCacheMock = new Mock<ICoverCache>();
     private readonly TrackMetadataEditor metadataEditor;
     private readonly ArtistRegistry artistRegistry;
     private readonly TrackEditorVm vm;
@@ -31,7 +32,12 @@ public class TrackEditorVmTests
             audioPlayerMock.Object
         );
         artistRegistry = new ArtistRegistry(metadataEditor);
-        vm = new TrackEditorVm(artistRegistry, audioPlayerMock.Object, uiDispatcherMock.Object);
+        vm = new TrackEditorVm(
+            artistRegistry,
+            audioPlayerMock.Object,
+            coverCacheMock.Object,
+            uiDispatcherMock.Object
+        );
     }
 
     [Fact]
@@ -42,8 +48,17 @@ public class TrackEditorVmTests
         trackVm.EditCommand.Execute(null);
 
         Assert.Same(trackVm, vm.TrackVm);
+        Assert.True(vm.IsOpen);
         Assert.Equal("Under Pressure", vm.EditedTitle);
         Assert.Equal(["Queen", "David Bowie"], vm.EditedArtists);
+    }
+
+    [Fact]
+    public void Open_Track_LoadsLargeCover()
+    {
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        coverCacheMock.Verify(it => it.LoadLargeAsync("Psycho.mp3"), Times.Once);
     }
 
     [Fact]
@@ -56,7 +71,7 @@ public class TrackEditorVmTests
 
         await vm.Save();
 
-        Assert.Null(vm.TrackVm);
+        Assert.False(vm.IsOpen);
         Assert.Equal("Uprising", trackVm.Title);
         Assert.Equal("Muse, Queen", trackVm.Artists);
     }
@@ -86,7 +101,7 @@ public class TrackEditorVmTests
 
         await vm.Save();
 
-        Assert.Same(trackVm, vm.TrackVm);
+        Assert.True(vm.IsOpen);
         Assert.Equal("Psycho", trackVm.Title);
     }
 
@@ -134,7 +149,7 @@ public class TrackEditorVmTests
 
         vm.CancelCommand.Execute(null);
 
-        Assert.Null(vm.TrackVm);
+        Assert.False(vm.IsOpen);
         Assert.Equal("Psycho", trackVm.Title);
         Assert.Equal("Muse", trackVm.Artists);
     }
@@ -225,6 +240,60 @@ public class TrackEditorVmTests
         vm.RemoveLastArtist();
 
         Assert.Equal(["Queen", "David Bowie"], vm.EditedArtists);
+    }
+
+    [Fact]
+    public void Open_Track_NoFieldsChanged()
+    {
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        Assert.False(vm.IsTitleChanged);
+        Assert.False(vm.AreArtistsChanged);
+    }
+
+    [Fact]
+    public void EditedTitle_ChangedAndRestored_UpdatesIsTitleChanged()
+    {
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        vm.EditedTitle = "Uprising";
+        Assert.True(vm.IsTitleChanged);
+
+        vm.EditedTitle = "Psycho";
+        Assert.False(vm.IsTitleChanged);
+    }
+
+    [Fact]
+    public void EditedArtists_ArtistRemovedAndReadded_UpdatesAreArtistsChanged()
+    {
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        vm.RemoveArtist("Muse");
+        Assert.True(vm.AreArtistsChanged);
+
+        vm.EditedArtists.Add("Muse");
+        Assert.False(vm.AreArtistsChanged);
+    }
+
+    [Fact]
+    public void MoveArtist_ToStart_ReordersArtistsAndMarksChanged()
+    {
+        vm.Open(CreateTrackVm("Under Pressure", "Queen", "David Bowie"));
+
+        vm.MoveArtist(1, 0);
+
+        Assert.Equal(["David Bowie", "Queen"], vm.EditedArtists);
+        Assert.True(vm.AreArtistsChanged);
+    }
+
+    [Fact]
+    public void ArtistQuery_Typed_ArtistsChanged()
+    {
+        vm.Open(CreateTrackVm("Psycho", "Muse"));
+
+        vm.ArtistQuery = "Queen";
+
+        Assert.True(vm.AreArtistsChanged);
     }
 
     private void SetupPlaying(string audioPath)

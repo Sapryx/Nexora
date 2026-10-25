@@ -97,7 +97,12 @@ public class TrackGridRowTests
             new PlaybackQueue(Mock.Of<IAudioPlayer>()),
             Mock.Of<IAudioPlayer>(),
             metadataEditor,
-            new TrackEditorVm(new ArtistRegistry(metadataEditor), Mock.Of<IAudioPlayer>(), Mock.Of<IUiDispatcher>()),
+            new TrackEditorVm(
+                new ArtistRegistry(metadataEditor),
+                Mock.Of<IAudioPlayer>(),
+                Mock.Of<ICoverCache>(),
+                Mock.Of<IUiDispatcher>()
+            ),
             Mock.Of<ICoverCache>(),
             Mock.Of<IUiDispatcher>());
     }

@@ -37,6 +37,7 @@ public class SearchBarVmTests
         var trackEditorVm = new TrackEditorVm(
             new ArtistRegistry(metadataEditor),
             Mock.Of<IAudioPlayer>(),
+            Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object
         );
 
