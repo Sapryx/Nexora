@@ -7,8 +7,6 @@ using SkiaSharp;
 
 namespace Nexora.Render;
 
-public readonly record struct GradientStopSnapshot(Color Color, float Offset);
-
 public class DitherGradientEffect : ICustomDrawOperation
 {
     public Rect Bounds { get; }
