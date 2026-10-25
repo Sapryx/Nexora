@@ -1,24 +1,35 @@
 using System;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 
 namespace Nexora.Controls;
 
 public sealed class SmoothScroller
 {
+    public int FirstVisibleItemIndex => GetItemIndex(scrollViewer.Offset.Y, GetWheelStep());
     private double MaxOffset => Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
 
     private const double FallbackWheelStep = 100;
     private const double TimeConstantSeconds = 0.08;
     private const double StopDistance = 0.5;
     private const double FallbackFrameSeconds = 1.0 / 60;
+    private const double FullRepeatSeconds = 3;
     private readonly ScrollViewer scrollViewer;
     private readonly ItemsControl itemsControl;
+    private readonly DispatcherTimer repeatTimer = new DispatcherTimer();
+    private readonly Stopwatch repeatStopwatch = new Stopwatch();
+    private double repeatDelta;
+    private int repeatInterval;
+    private double repeatAcceleration;
+    private int repeatedItemCount;
     private double targetOffset;
     private double expectedOffset;
     private TimeSpan? lastFrameTime;
@@ -31,6 +42,28 @@ public sealed class SmoothScroller
         scrollViewer.AddHandler(InputElement.PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
         scrollViewer.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         scrollViewer.TemplateApplied += OnScrollViewerTemplateApplied;
+        itemsControl.ItemsView.CollectionChanged += OnItemsChanged;
+        repeatTimer.Tick += OnRepeatTick;
+    }
+
+    public bool ScrollByKey(Key key)
+    {
+        return key switch
+        {
+            Key.PageUp => ScrollByPages(1),
+            Key.PageDown => ScrollByPages(-1),
+            Key.Home => ScrollTo(0),
+            Key.End => ScrollTo(MaxOffset),
+            _ => false
+        };
+    }
+
+    public void ScrollToItem(int index)
+    {
+        Dispatcher.UIThread.Post(
+            () => JumpTo(Math.Clamp(index * GetWheelStep(), 0, MaxOffset)),
+            DispatcherPriority.Background
+        );
     }
 
     private void OnScrollViewerTemplateApplied(object? sender, TemplateAppliedEventArgs e)
@@ -48,8 +81,8 @@ public sealed class SmoothScroller
     {
         SubscribePressed(e.NameScope.Find<Button>("PART_PageUpButton"), OnPageButtonPressed);
         SubscribePressed(e.NameScope.Find<Button>("PART_PageDownButton"), OnPageButtonPressed);
-        SubscribePressed(e.NameScope.Find<Button>("PART_LineUpButton"), (_, args) => OnLineButtonPressed(args, 1));
-        SubscribePressed(e.NameScope.Find<Button>("PART_LineDownButton"), (_, args) => OnLineButtonPressed(args, -1));
+        SubscribeLineButton(e.NameScope.Find<RepeatButton>("PART_LineUpButton"), 1);
+        SubscribeLineButton(e.NameScope.Find<RepeatButton>("PART_LineDownButton"), -1);
     }
 
     private static void SubscribePressed(Button? button, EventHandler<PointerPressedEventArgs> handler)
@@ -57,18 +90,29 @@ public sealed class SmoothScroller
         button?.AddHandler(InputElement.PointerPressedEvent, handler, RoutingStrategies.Tunnel);
     }
 
+    private void SubscribeLineButton(RepeatButton? button, double delta)
+    {
+        if(button == null)
+        {
+            return;
+        }
+
+        SubscribePressed(button, (_, args) => OnLineButtonPressed(button, args, delta));
+        button.AddHandler(InputElement.PointerReleasedEvent, (_, _) => repeatTimer.Stop(), handledEventsToo: true);
+        button.PointerCaptureLost += (_, _) => repeatTimer.Stop();
+    }
+
+    private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if(e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            JumpTo(0);
+        }
+    }
+
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
-        bool isScrolled = e.Key switch
-        {
-            Key.PageUp => ScrollByPages(1),
-            Key.PageDown => ScrollByPages(-1),
-            Key.Home => ScrollTo(0),
-            Key.End => ScrollTo(MaxOffset),
-            _ => false
-        };
-
-        if(isScrolled)
+        if(ScrollByKey(e.Key))
         {
             e.Handled = true;
         }
@@ -87,11 +131,46 @@ public sealed class SmoothScroller
         }
     }
 
-    private void OnLineButtonPressed(PointerPressedEventArgs e, double delta)
+    private void OnLineButtonPressed(RepeatButton button, PointerPressedEventArgs e, double delta)
     {
-        if(e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && ScrollByItems(delta))
+        if(!e.GetCurrentPoint(null).Properties.IsLeftButtonPressed || !ScrollByItems(delta))
         {
-            e.Handled = true;
+            return;
+        }
+
+        e.Handled = true;
+        e.Pointer.Capture(button);
+        repeatDelta = delta;
+        repeatInterval = button.Interval;
+        repeatAcceleration = GetRepeatAcceleration(
+            MaxOffset / GetWheelStep(),
+            1000.0 / repeatInterval,
+            FullRepeatSeconds - button.Delay / 1000.0
+        );
+        repeatedItemCount = 0;
+        repeatStopwatch.Reset();
+        repeatTimer.Interval = TimeSpan.FromMilliseconds(button.Delay);
+        repeatTimer.Start();
+    }
+
+    private void OnRepeatTick(object? sender, EventArgs e)
+    {
+        if(!repeatStopwatch.IsRunning)
+        {
+            repeatStopwatch.Start();
+            repeatTimer.Interval = TimeSpan.FromMilliseconds(repeatInterval);
+        }
+
+        int itemCount = GetRepeatItemCount(
+            repeatStopwatch.Elapsed.TotalSeconds,
+            1000.0 / repeatInterval,
+            repeatAcceleration
+        );
+
+        if(itemCount > repeatedItemCount)
+        {
+            ScrollByItems(repeatDelta * (itemCount - repeatedItemCount));
+            repeatedItemCount = itemCount;
         }
     }
 
@@ -145,6 +224,21 @@ public sealed class SmoothScroller
         return Math.Max(1, Math.Floor(viewportHeight / step));
     }
 
+    public static double GetRepeatAcceleration(double itemCount, double initialItemsPerSecond, double seconds)
+    {
+        return Math.Max(0, 2 * (itemCount - initialItemsPerSecond * seconds) / (seconds * seconds));
+    }
+
+    public static int GetRepeatItemCount(double seconds, double initialItemsPerSecond, double itemsPerSecondSquared)
+    {
+        return (int)Math.Floor(1 + initialItemsPerSecond * seconds + itemsPerSecondSquared * seconds * seconds / 2);
+    }
+
+    public static int GetItemIndex(double offset, double step)
+    {
+        return (int)Math.Floor((offset + StopDistance) / step);
+    }
+
     private bool ScrollByPages(double delta)
     {
         return ScrollByItems(delta * GetPageItemCount(scrollViewer.Viewport.Height, GetWheelStep()));
@@ -182,6 +276,12 @@ public sealed class SmoothScroller
         }
 
         return true;
+    }
+
+    private void JumpTo(double offset)
+    {
+        targetOffset = offset;
+        SetOffset(offset);
     }
 
     private void OnFrame(TimeSpan time)

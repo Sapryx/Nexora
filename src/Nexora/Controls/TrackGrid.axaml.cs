@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Nexora.ViewModels;
 
@@ -28,16 +30,36 @@ public partial class TrackGrid : UserControl
         set => SetValue(ColumnCountProperty, value);
     }
 
+    public static readonly StyledProperty<int> FirstVisibleTrackIndexProperty =
+        AvaloniaProperty.Register<TrackGrid, int>(
+            nameof(FirstVisibleTrackIndex),
+            defaultBindingMode: BindingMode.TwoWay
+        );
+
+    public int FirstVisibleTrackIndex
+    {
+        get => GetValue(FirstVisibleTrackIndexProperty);
+        set => SetValue(FirstVisibleTrackIndexProperty, value);
+    }
+
     public ObservableCollection<TrackGridRow> Rows { get; } = [];
 
     private const double CellWidth = 192;
     private const double RightInset = 32;
+    private readonly SmoothScroller scroller;
     private bool isUpdatePending;
+    private int? pendingTrackIndex;
 
     public TrackGrid()
     {
         InitializeComponent();
-        new SmoothScroller(RowScrollViewer, RowList);
+        scroller = new SmoothScroller(RowScrollViewer, RowList);
+        RowScrollViewer.ScrollChanged += OnScrollChanged;
+    }
+
+    public bool ScrollByKey(Key key)
+    {
+        return scroller.ScrollByKey(key);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -62,6 +84,11 @@ public partial class TrackGrid : UserControl
         {
             ScheduleRowsUpdate();
         }
+        else if(change.Property == IsVisibleProperty && IsVisible)
+        {
+            pendingTrackIndex = FirstVisibleTrackIndex;
+            ScheduleRowsUpdate();
+        }
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -72,7 +99,20 @@ public partial class TrackGrid : UserControl
 
     private void OnTrackVmsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if(e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            Rows.Clear();
+        }
+
         ScheduleRowsUpdate();
+    }
+
+    private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        if(IsVisible && pendingTrackIndex == null)
+        {
+            FirstVisibleTrackIndex = scroller.FirstVisibleItemIndex * ColumnCount;
+        }
     }
 
     // The search refills the collection one item at a time, so rows are rebuilt once after the whole batch.
@@ -88,6 +128,12 @@ public partial class TrackGrid : UserControl
         {
             isUpdatePending = false;
             TrackGridRow.UpdateRows(Rows, TrackVms ?? [], ColumnCount);
+
+            if(pendingTrackIndex != null)
+            {
+                scroller.ScrollToItem(pendingTrackIndex.Value / ColumnCount);
+                pendingTrackIndex = null;
+            }
         }, DispatcherPriority.Background);
     }
 }

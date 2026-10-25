@@ -2,6 +2,8 @@ using System.Collections.ObjectModel;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Data;
+using Avalonia.Input;
 using Nexora.ViewModels;
 
 namespace Nexora.Controls;
@@ -18,6 +20,20 @@ public partial class TrackArea : UserControl
         set => SetValue(TrackVmsProperty, value);
     }
 
+    public static readonly StyledProperty<int> FirstVisibleTrackIndexProperty =
+        AvaloniaProperty.Register<TrackArea, int>(
+            nameof(FirstVisibleTrackIndex),
+            defaultBindingMode: BindingMode.TwoWay
+        );
+
+    public int FirstVisibleTrackIndex
+    {
+        get => GetValue(FirstVisibleTrackIndexProperty);
+        set => SetValue(FirstVisibleTrackIndexProperty, value);
+    }
+
+    private SmoothScroller? scroller;
+
     public TrackArea()
     {
         InitializeComponent();
@@ -30,7 +46,31 @@ public partial class TrackArea : UserControl
 
         if(scrollViewer != null)
         {
-            new SmoothScroller(scrollViewer, TrackList);
+            scroller = new SmoothScroller(scrollViewer, TrackList);
+            scrollViewer.ScrollChanged += OnScrollChanged;
+        }
+    }
+
+    public bool ScrollByKey(Key key)
+    {
+        return scroller?.ScrollByKey(key) == true;
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if(change.Property == IsVisibleProperty && IsVisible)
+        {
+            scroller?.ScrollToItem(FirstVisibleTrackIndex);
+        }
+    }
+
+    private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        if(IsVisible && scroller != null)
+        {
+            FirstVisibleTrackIndex = scroller.FirstVisibleItemIndex;
         }
     }
 

@@ -145,14 +145,17 @@
                 </Panel>
 
                 <Panel Grid.Row="1">
-                    <controls:TrackArea Margin="32 0 0 0"
+                    <controls:TrackArea x:Name="LibraryList"
+                                        Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                         IsVisible="{Binding !IsLibraryGridView}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"/>
 
-                    <controls:TrackGrid Margin="32 0 0 0"
+                    <controls:TrackGrid x:Name="LibraryGrid"
+                                        Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                        FirstVisibleTrackIndex="{Binding #LibraryList.FirstVisibleTrackIndex}"
                                         IsVisible="{Binding IsLibraryGridView}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"/>
