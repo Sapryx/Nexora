@@ -29,6 +29,7 @@ public sealed class SmoothScroller
         this.scrollViewer = scrollViewer;
         this.itemsControl = itemsControl;
         scrollViewer.AddHandler(InputElement.PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
+        scrollViewer.AddHandler(InputElement.KeyDownEvent, OnKeyDown, RoutingStrategies.Tunnel);
         scrollViewer.TemplateApplied += OnScrollViewerTemplateApplied;
     }
 
@@ -39,18 +40,38 @@ public sealed class SmoothScroller
         if(scrollBar != null)
         {
             scrollBar.TemplateApplied += OnScrollBarTemplateApplied;
+            scrollBar.ContextFlyout = null;
         }
     }
 
     private void OnScrollBarTemplateApplied(object? sender, TemplateAppliedEventArgs e)
     {
-        SubscribePageButton(e.NameScope.Find<Button>("PART_PageUpButton"));
-        SubscribePageButton(e.NameScope.Find<Button>("PART_PageDownButton"));
+        SubscribePressed(e.NameScope.Find<Button>("PART_PageUpButton"), OnPageButtonPressed);
+        SubscribePressed(e.NameScope.Find<Button>("PART_PageDownButton"), OnPageButtonPressed);
+        SubscribePressed(e.NameScope.Find<Button>("PART_LineUpButton"), (_, args) => OnLineButtonPressed(args, 1));
+        SubscribePressed(e.NameScope.Find<Button>("PART_LineDownButton"), (_, args) => OnLineButtonPressed(args, -1));
     }
 
-    private void SubscribePageButton(Button? button)
+    private static void SubscribePressed(Button? button, EventHandler<PointerPressedEventArgs> handler)
     {
-        button?.AddHandler(InputElement.PointerPressedEvent, OnPageButtonPressed, RoutingStrategies.Tunnel);
+        button?.AddHandler(InputElement.PointerPressedEvent, handler, RoutingStrategies.Tunnel);
+    }
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        bool isScrolled = e.Key switch
+        {
+            Key.PageUp => ScrollByPages(1),
+            Key.PageDown => ScrollByPages(-1),
+            Key.Home => ScrollTo(0),
+            Key.End => ScrollTo(MaxOffset),
+            _ => false
+        };
+
+        if(isScrolled)
+        {
+            e.Handled = true;
+        }
     }
 
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
@@ -60,9 +81,15 @@ public sealed class SmoothScroller
             return;
         }
 
-        double start = isAnimating ? targetOffset : scrollViewer.Offset.Y;
+        if(ScrollByItems(e.Delta.Y))
+        {
+            e.Handled = true;
+        }
+    }
 
-        if(ScrollTo(GetWheelTarget(start, e.Delta.Y, GetWheelStep())))
+    private void OnLineButtonPressed(PointerPressedEventArgs e, double delta)
+    {
+        if(e.GetCurrentPoint(null).Properties.IsLeftButtonPressed && ScrollByItems(delta))
         {
             e.Handled = true;
         }
@@ -111,6 +138,22 @@ public sealed class SmoothScroller
         }
 
         return (delta < 0 ? Math.Ceiling(index) - delta - 1 : Math.Floor(index) - delta + 1) * step;
+    }
+
+    public static double GetPageItemCount(double viewportHeight, double step)
+    {
+        return Math.Max(1, Math.Floor(viewportHeight / step));
+    }
+
+    private bool ScrollByPages(double delta)
+    {
+        return ScrollByItems(delta * GetPageItemCount(scrollViewer.Viewport.Height, GetWheelStep()));
+    }
+
+    private bool ScrollByItems(double delta)
+    {
+        double start = isAnimating ? targetOffset : scrollViewer.Offset.Y;
+        return ScrollTo(GetWheelTarget(start, delta, GetWheelStep()));
     }
 
     private double GetWheelStep()

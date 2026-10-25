@@ -45,4 +45,16 @@ public class SmoothScrollerTests
     {
         Assert.Equal(80, SmoothScroller.GetWheelTarget(50, -0.3, 100));
     }
+
+    [Fact]
+    public void GetPageItemCount_PartiallyVisibleItem_CountsOnlyFullyVisibleItems()
+    {
+        Assert.Equal(5, SmoothScroller.GetPageItemCount(550, 100));
+    }
+
+    [Fact]
+    public void GetPageItemCount_ViewportSmallerThanItem_ReturnsOne()
+    {
+        Assert.Equal(1, SmoothScroller.GetPageItemCount(50, 100));
+    }
 }
