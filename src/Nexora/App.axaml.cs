@@ -63,7 +63,7 @@ public partial class App : Application
             loggerFactory.CreateLogger<AnimationSettingsLoader>()
         );
         var factory = new AnimationResourceFactory(loggerFactory.CreateLogger<AnimationResourceFactory>());
-        AnimationResources.Values = factory.Create(loader.Load(), loader.LoadDefaults());
+        AnimationResources.Entries = factory.Create(loader.Load(), loader.LoadDefaults());
     }
 
     private static string ReadDefaultAnimationSettings()
