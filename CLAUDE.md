@@ -64,7 +64,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - No target-typed `new()`: always spell out the type (`new Playlist()`). Parentheses are required even with an object initializer: `new Metadata() { Title = title }`.
 - No tuples (`(int, string)`, `(a, b) = ...`, `foreach(var (key, value) in dictionary)`, tuple literals in asserts): declare a small class with named properties instead, or use `pair.Key`/`pair.Value`.
 - No range syntax with two dots: neither ranges (`text[..length]`, `items[1..]`) nor spread in collection expressions (`[.. items]`). Use `Substring`, `Take`/`Skip`, `ToList()`/`Concat()` instead.
-- Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), not `Dispatcher.UIThread` directly, so view models stay testable.
+- Collections via collection expressions (`[]`). UI updates from background events — via the injected `IUiDispatcher` (`Nexora.Threading`), so view models stay testable. Only `AvaloniaUiDispatcher` uses `Dispatcher.UIThread` directly; controls, which are created by XAML without DI, hold an `AvaloniaUiDispatcher` as `IUiDispatcher`.
 - Tests: names `Method_Condition_Result`, mocks in `xxxMock` fields, lambdas `it => ...` (a short descriptive name is fine when it reads better; prefer `it` over a long one), `NullLogger<T>.Instance` for loggers (`TestLogger<T>` when the test checks what is logged).
 
 ## Comments

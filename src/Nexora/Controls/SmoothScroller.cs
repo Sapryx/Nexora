@@ -7,6 +7,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Nexora.Threading;
 
 namespace Nexora.Controls;
 
@@ -21,6 +22,7 @@ public sealed class SmoothScroller
     private const double FullRepeatSeconds = 3;
     private readonly ScrollViewer scrollViewer;
     private readonly ItemsControl itemsControl;
+    private readonly IUiDispatcher uiDispatcher = new AvaloniaUiDispatcher();
     private readonly DispatcherTimer repeatTimer = new DispatcherTimer();
     private readonly Stopwatch repeatStopwatch = new Stopwatch();
     private double repeatDelta;
@@ -57,7 +59,7 @@ public sealed class SmoothScroller
 
     public void ScrollToItem(int index)
     {
-        Dispatcher.UIThread.Post(
+        uiDispatcher.Post(
             () => JumpTo(Math.Clamp(index * GetWheelStep(), 0, MaxOffset)),
             DispatcherPriority.Background
         );

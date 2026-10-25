@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Nexora.Threading;
 using Nexora.ViewModels;
 
 namespace Nexora.Controls;
@@ -44,6 +45,7 @@ public partial class TrackGrid : UserControl
     public ObservableCollection<TrackGridRow> Rows { get; } = [];
     private const double CellWidth = 192;
     private const double RightInset = 32;
+    private readonly IUiDispatcher uiDispatcher = new AvaloniaUiDispatcher();
     private readonly SmoothScroller scroller;
     private bool isUpdatePending;
     private int? pendingTrackIndex;
@@ -122,7 +124,7 @@ public partial class TrackGrid : UserControl
         }
 
         isUpdatePending = true;
-        Dispatcher.UIThread.Post(() =>
+        uiDispatcher.Post(() =>
         {
             isUpdatePending = false;
             TrackGridRow.UpdateRows(Rows, TrackVms ?? [], ColumnCount);

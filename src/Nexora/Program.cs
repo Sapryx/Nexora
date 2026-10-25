@@ -1,5 +1,6 @@
 using Avalonia;
 using Nexora.Logging;
+using Nexora.Threading;
 
 namespace Nexora;
 
@@ -27,7 +28,7 @@ sealed class Program
         crashLogger.Register();
 
         BuildAvaloniaApp(() => new App(loggerFactory))
-            .AfterSetup(_ => crashLogger.RegisterUiThread())
+            .AfterSetup(_ => crashLogger.RegisterUiThread(new AvaloniaUiDispatcher()))
             .StartWithClassicDesktopLifetime(args);
     }
 
