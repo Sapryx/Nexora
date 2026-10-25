@@ -10,12 +10,15 @@ namespace Nexora.ViewModels;
 public partial class MainWindowVm : ViewModelBase
 {
     [ObservableProperty]
-    public partial bool IsLibraryGridView { get; private set; }
+    [NotifyPropertyChangedFor(nameof(IsLibraryGridView))]
+    public partial int LibraryViewIndex { get; set; }
 
+    public bool IsLibraryGridView => LibraryViewIndex == LibraryGridViewIndex;
     public SearchBarVm SearchBarVm { get; }
     public PlaybackVm PlaybackVm { get; }
     public QueueVm QueueVm { get; }
     public TrackEditorVm TrackEditorVm { get; }
+    private const int LibraryGridViewIndex = 1;
     private readonly ILogger logger;
     private readonly TrackMetadataEditor metadataEditor;
 
@@ -46,17 +49,5 @@ public partial class MainWindowVm : ViewModelBase
     {
         await TrackEditorVm.ApplyAsync();
         await metadataEditor.SaveAllAsync();
-    }
-
-    [RelayCommand]
-    public void ShowLibraryList()
-    {
-        IsLibraryGridView = false;
-    }
-
-    [RelayCommand]
-    public void ShowLibraryGrid()
-    {
-        IsLibraryGridView = true;
     }
 }
