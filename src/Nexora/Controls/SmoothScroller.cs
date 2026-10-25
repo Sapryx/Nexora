@@ -35,6 +35,7 @@ public sealed class SmoothScroller
     private void OnScrollViewerTemplateApplied(object? sender, TemplateAppliedEventArgs e)
     {
         var scrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+
         if(scrollBar != null)
         {
             scrollBar.TemplateApplied += OnScrollBarTemplateApplied;
@@ -60,6 +61,7 @@ public sealed class SmoothScroller
         }
 
         double start = isAnimating ? targetOffset : scrollViewer.Offset.Y;
+
         if(ScrollTo(GetWheelTarget(start, e.Delta.Y, GetWheelStep())))
         {
             e.Handled = true;
@@ -69,6 +71,7 @@ public sealed class SmoothScroller
     private void OnPageButtonPressed(object? sender, PointerPressedEventArgs e)
     {
         var track = (sender as Visual)?.GetVisualParent() as Track;
+
         if(track?.Thumb == null || !e.GetCurrentPoint(track).Properties.IsLeftButtonPressed)
         {
             return;
@@ -76,12 +79,14 @@ public sealed class SmoothScroller
 
         double thumbLength = track.Thumb.Bounds.Height;
         double trackLength = track.Bounds.Height - thumbLength;
+
         if(trackLength <= 0)
         {
             return;
         }
 
         double ratio = Math.Clamp((e.GetPosition(track).Y - thumbLength / 2) / trackLength, 0, 1);
+
         if(ScrollTo(ratio * MaxOffset))
         {
             e.Handled = true;
@@ -91,6 +96,7 @@ public sealed class SmoothScroller
     public static double GetWheelTarget(double offset, double delta, double step)
     {
         bool isWheelNotch = delta == Math.Round(delta);
+
         if(!isWheelNotch)
         {
             return offset - delta * step;
@@ -98,6 +104,7 @@ public sealed class SmoothScroller
 
         double index = offset / step;
         double nearestIndex = Math.Round(index);
+
         if(Math.Abs(offset - nearestIndex * step) < StopDistance)
         {
             return (nearestIndex - delta) * step;
@@ -115,6 +122,7 @@ public sealed class SmoothScroller
     private bool ScrollTo(double offset)
     {
         var topLevel = TopLevel.GetTopLevel(scrollViewer);
+
         if(topLevel == null)
         {
             return false;
@@ -140,6 +148,7 @@ public sealed class SmoothScroller
 
         double current = scrollViewer.Offset.Y;
         var topLevel = TopLevel.GetTopLevel(scrollViewer);
+
         if(topLevel == null || Math.Abs(current - expectedOffset) > StopDistance)
         {
             isAnimating = false;
@@ -147,6 +156,7 @@ public sealed class SmoothScroller
         }
 
         double distance = targetOffset - current;
+
         if(Math.Abs(distance) < StopDistance)
         {
             SetOffset(targetOffset);

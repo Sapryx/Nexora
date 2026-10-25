@@ -55,6 +55,7 @@ If the `rider` MCP server is available (Rider must be running with this project)
 - Lines are at most 120 characters in every code file (C#, axaml, scripts, workflows): code must never need horizontal scrolling. Wrap in the most readable way: parameters of a long declaration one per line with `)` on the last one; arguments of a long call one per line after `(` with `);` on its own line; a long collection expression as `= [` on the declaration line, one item per line, `];`; a long interpolated log message as several `$"..." +` parts. No trailing whitespace.
 - Member order: properties first, then fields (constants included), then events, constructors, methods. Exception: an Avalonia `StyledProperty` registration stays right before its CLR property.
 - No blank lines between single-line members: auto-properties, constants and fields form one contiguous block, also where properties end and fields begin. A blank line goes only around multi-line members (a property with an attribute such as `[ObservableProperty]`, a field with a multi-line initializer) and before events, constructors and methods.
+- An `if` statement is preceded by a blank line unless it is the first statement in its block.
 - Null checks via `== null` / `!= null`; `is` / `is not` only for type checks.
 - Private fields in camelCase without `_`, assigned via `this.field = field`.
 - VM properties: `[ObservableProperty] public partial T Name { get; set; }`, reactions — `partial void OnNameChanged`.
