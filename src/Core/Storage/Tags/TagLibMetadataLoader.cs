@@ -6,6 +6,10 @@ namespace Core.Storage.Tags;
 
 public class TagLibMetadataLoader : IMetadataLoader
 {
+    private const StringSplitOptions ArtistSplitOptions =
+        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
+    private static readonly char[] ArtistSeparators = [',', '&'];
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Mpeg.AudioFile))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Riff.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Ogg.File))]
@@ -23,8 +27,16 @@ public class TagLibMetadataLoader : IMetadataLoader
         return new Metadata()
         {
             Title = title,
-            Artists = tagFile.Tag.Performers,
+            Artists = SplitArtists(tagFile.Tag.Performers),
             Duration = tagFile.Properties.Duration
         };
+    }
+
+    public static IReadOnlyList<string> SplitArtists(IEnumerable<string> performers)
+    {
+        return performers
+            .SelectMany(it => it.Split(ArtistSeparators, ArtistSplitOptions))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 }
