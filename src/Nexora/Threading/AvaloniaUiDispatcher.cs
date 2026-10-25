@@ -1,4 +1,3 @@
-using System;
 using Avalonia.Threading;
 
 namespace Nexora.Threading;

@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -13,7 +14,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />    </ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" />
@@ -41,4 +43,5 @@
     <ItemGroup>
         <TrimmerRootAssembly Include="DiscordRPC" />
     </ItemGroup>
+
 </Project>

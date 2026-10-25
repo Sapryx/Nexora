@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 
 namespace Nexora.Media;
