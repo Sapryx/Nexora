@@ -37,7 +37,7 @@ public partial class TrackGrid : UserControl
     public TrackGrid()
     {
         InitializeComponent();
-        new SmoothScroller(RowScrollViewer);
+        new SmoothScroller(RowScrollViewer, RowList);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
