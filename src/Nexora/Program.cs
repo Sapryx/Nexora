@@ -1,6 +1,4 @@
 using Avalonia;
-using System;
-using System.Threading;
 using Nexora.Logging;
 
 namespace Nexora;

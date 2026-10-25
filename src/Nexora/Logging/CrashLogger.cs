@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using Avalonia.Threading;
 using Core.Logging;
 using Microsoft.Extensions.Logging;

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Media.Immutable;

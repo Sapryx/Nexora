@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Core.Logging;
 using Core.Search;
 using Microsoft.Extensions.Logging;
