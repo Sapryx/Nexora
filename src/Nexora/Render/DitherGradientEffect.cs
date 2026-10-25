@@ -12,7 +12,6 @@ public readonly record struct GradientStopSnapshot(Color Color, float Offset);
 public class DitherGradientEffect : ICustomDrawOperation
 {
     public Rect Bounds { get; }
-
     private const int MaxStops = 8;
     private static readonly SKRuntimeEffect? Effect;
     private readonly RelativePoint startPoint;

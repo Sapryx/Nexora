@@ -14,7 +14,6 @@ public sealed class SmoothScroller
 {
     public int FirstVisibleItemIndex => GetItemIndex(scrollViewer.Offset.Y, GetWheelStep());
     private double MaxOffset => Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
-
     private const double FallbackWheelStep = 100;
     private const double TimeConstantSeconds = 0.08;
     private const double StopDistance = 0.5;

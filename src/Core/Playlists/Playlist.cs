@@ -8,7 +8,6 @@ public class Playlist : IEnumerable<IPlaylistItem>
     public string Name { get; set; } = "";
     public bool IsEmpty => TrackCount == 0;
     public int TrackCount => items.Count;
-
     private readonly List<IPlaylistItem> items = [];
 
     public event Action<IPlaylistItem>? ItemAdded;

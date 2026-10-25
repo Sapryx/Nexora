@@ -42,7 +42,6 @@ public partial class TrackGrid : UserControl
     }
 
     public ObservableCollection<TrackGridRow> Rows { get; } = [];
-
     private const double CellWidth = 192;
     private const double RightInset = 32;
     private readonly SmoothScroller scroller;

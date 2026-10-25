@@ -11,7 +11,6 @@ public unsafe partial class WaylandKeymapReceiver
     public bool KeyboardFound { get; private set; }
     public string? Keymap { get; private set; }
     public string? KeymapError { get; private set; }
-
     private const string WaylandLibrary = "libwayland-client.so.0";
     private const uint DisplayGetRegistryOpcode = 1;
     private const uint RegistryBindOpcode = 0;
