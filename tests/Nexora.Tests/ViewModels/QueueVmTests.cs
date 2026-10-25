@@ -26,14 +26,13 @@ public class QueueVmTests
         var metadataEditor = new TrackMetadataEditor(
             NullLogger<TrackMetadataEditor>.Instance,
             Mock.Of<IMetadataSaver>(),
-            Mock.Of<IPendingMetadataStorage>(),
             Mock.Of<IAudioPlayer>()
         );
         var trackControlVmFactory = new TrackControlVmFactory(
             playbackQueue,
             Mock.Of<IAudioPlayer>(),
             metadataEditor,
-            new TrackEditorVm(new ArtistRegistry(metadataEditor)),
+            new TrackEditorVm(new ArtistRegistry(metadataEditor), Mock.Of<IAudioPlayer>(), uiDispatcherMock.Object),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
 

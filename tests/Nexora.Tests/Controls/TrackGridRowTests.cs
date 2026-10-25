@@ -90,7 +90,6 @@ public class TrackGridRowTests
         var metadataEditor = new TrackMetadataEditor(
             NullLogger<TrackMetadataEditor>.Instance,
             Mock.Of<IMetadataSaver>(),
-            Mock.Of<IPendingMetadataStorage>(),
             Mock.Of<IAudioPlayer>()
         );
 
@@ -99,7 +98,7 @@ public class TrackGridRowTests
             new PlaybackQueue(Mock.Of<IAudioPlayer>()),
             Mock.Of<IAudioPlayer>(),
             metadataEditor,
-            new TrackEditorVm(new ArtistRegistry(metadataEditor)),
+            new TrackEditorVm(new ArtistRegistry(metadataEditor), Mock.Of<IAudioPlayer>(), Mock.Of<IUiDispatcher>()),
             Mock.Of<ICoverCache>(),
             Mock.Of<IUiDispatcher>());
     }

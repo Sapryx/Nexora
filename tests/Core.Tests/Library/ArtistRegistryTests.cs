@@ -11,7 +11,6 @@ public class ArtistRegistryTests
     private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
         NullLogger<TrackMetadataEditor>.Instance,
         Mock.Of<IMetadataSaver>(),
-        Mock.Of<IPendingMetadataStorage>(),
         Mock.Of<IAudioPlayer>()
     );
     private readonly ArtistRegistry registry;

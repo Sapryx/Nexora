@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Library;
+using Core.Playback;
+using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -25,14 +27,26 @@ public partial class TrackEditorVm : ViewModelBase
     [ObservableProperty]
     public partial bool HasSuggestions { get; private set; }
 
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    public partial bool IsEditable { get; private set; } = true;
+
     public ObservableCollection<string> EditedArtists { get; } = [];
     public ObservableCollection<ArtistSuggestion> Suggestions { get; } = [];
     private const int MaxSuggestions = 8;
     private readonly ArtistRegistry artistRegistry;
+    private readonly IAudioPlayer audioPlayer;
 
-    public TrackEditorVm(ArtistRegistry artistRegistry)
+    public TrackEditorVm(ArtistRegistry artistRegistry, IAudioPlayer audioPlayer, IUiDispatcher uiDispatcher)
     {
         this.artistRegistry = artistRegistry;
+        this.audioPlayer = audioPlayer;
+
+        audioPlayer.PlaybackStarted += _ => uiDispatcher.Post(UpdateIsEditable);
+        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(UpdateIsEditable);
+        audioPlayer.PlaybackResumed += () => uiDispatcher.Post(UpdateIsEditable);
+        audioPlayer.PlaybackStopped += () => uiDispatcher.Post(UpdateIsEditable);
+        audioPlayer.PlaybackFinished += () => uiDispatcher.Post(UpdateIsEditable);
     }
 
     public void Open(TrackControlVm trackVm)
@@ -49,7 +63,7 @@ public partial class TrackEditorVm : ViewModelBase
         TrackVm = trackVm;
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(IsEditable))]
     public async Task Save()
     {
         var trackVm = TrackVm;
@@ -59,9 +73,12 @@ public partial class TrackEditorVm : ViewModelBase
             return;
         }
 
-        var artists = EditedArtists.Append(ArtistQuery).ToList();
-        Close();
-        await trackVm.ApplyEditAsync(EditedTitle, artists);
+        bool isSaved = await trackVm.ApplyEditAsync(EditedTitle, EditedArtists.Append(ArtistQuery).ToList());
+
+        if(isSaved && TrackVm == trackVm)
+        {
+            Close();
+        }
     }
 
     [RelayCommand]
@@ -106,6 +123,18 @@ public partial class TrackEditorVm : ViewModelBase
     partial void OnArtistQueryChanged(string value)
     {
         UpdateSuggestions();
+    }
+
+    partial void OnTrackVmChanged(TrackControlVm? value)
+    {
+        UpdateIsEditable();
+    }
+
+    private void UpdateIsEditable()
+    {
+        IsEditable = TrackVm == null
+            || !audioPlayer.IsPlaying
+            || audioPlayer.NowPlaying?.AudioTrack.AudioPath != TrackVm.AudioPath;
     }
 
     private void Close()

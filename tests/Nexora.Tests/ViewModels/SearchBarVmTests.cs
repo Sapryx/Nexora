@@ -32,10 +32,13 @@ public class SearchBarVmTests
         var metadataEditor = new TrackMetadataEditor(
             NullLogger<TrackMetadataEditor>.Instance,
             Mock.Of<IMetadataSaver>(),
-            Mock.Of<IPendingMetadataStorage>(),
             Mock.Of<IAudioPlayer>()
         );
-        var trackEditorVm = new TrackEditorVm(new ArtistRegistry(metadataEditor));
+        var trackEditorVm = new TrackEditorVm(
+            new ArtistRegistry(metadataEditor),
+            Mock.Of<IAudioPlayer>(),
+            uiDispatcherMock.Object
+        );
 
         trackControlVmFactoryMock
             .Setup(it => it.Create(It.IsAny<IPlaylistItem>()))

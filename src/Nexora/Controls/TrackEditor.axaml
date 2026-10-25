@@ -97,7 +97,8 @@
                     </Border>
 
                     <StackPanel Grid.Column="1"
-                                Spacing="16">
+                                Spacing="16"
+                                IsEnabled="{Binding IsEditable}">
                         <StackPanel Spacing="6">
                             <TextBlock Classes="Subtitle" Text="Title" />
                             <TextBox x:Name="TitleBox"

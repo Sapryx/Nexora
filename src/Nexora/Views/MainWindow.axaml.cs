@@ -69,20 +69,7 @@ public partial class MainWindow : Window
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
-        var mainWindowVm = DataContext as MainWindowVm;
-
-        if(mainWindowVm != null && e.Key == Key.S && e.KeyModifiers == KeyModifiers.Control)
-        {
-            if(e.RoutedEvent == KeyDownEvent)
-            {
-                mainWindowVm.SaveMetadataCommand.Execute(null);
-            }
-
-            e.Handled = true;
-            return;
-        }
-
-        if(mainWindowVm != null && e.Key == Key.Escape && IsTrackEditorOpen)
+        if(DataContext is MainWindowVm mainWindowVm && e.Key == Key.Escape && IsTrackEditorOpen)
         {
             if(e.RoutedEvent == KeyDownEvent)
             {
