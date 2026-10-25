@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
+using Core.Input;
 using Core.Logging;
-using Core.Search;
 using Microsoft.Extensions.Logging;
 
 namespace Nexora.Input;

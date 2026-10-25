@@ -1,8 +1,8 @@
-using Core.Search;
+using Core.Input;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace Core.Tests.Search;
+namespace Core.Tests.Input;
 
 public class KeyboardLayoutTranslatorTests
 {

@@ -1,7 +1,7 @@
 using Core.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Search;
+namespace Core.Input;
 
 public class KeyboardLayoutTranslator
 {
