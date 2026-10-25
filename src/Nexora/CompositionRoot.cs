@@ -5,6 +5,7 @@ using Core.Logging;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage;
+using Core.Storage.Tags;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

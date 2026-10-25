@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using Core.Logging;
 using Core.Playback;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Storage;

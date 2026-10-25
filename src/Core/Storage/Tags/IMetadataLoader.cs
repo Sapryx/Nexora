@@ -1,6 +1,6 @@
 using Core.Playback;
 
-namespace Core.Storage;
+namespace Core.Storage.Tags;
 
 public interface IMetadataLoader
 {

@@ -1,4 +1,4 @@
-namespace Core.Storage;
+namespace Core.Storage.Tags;
 
 public interface ITrackCoverLoader
 {

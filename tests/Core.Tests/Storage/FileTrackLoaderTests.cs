@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using Core.Playback;
 using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
