@@ -5,6 +5,17 @@
              x:Class="Nexora.Controls.TrackTile"
              x:DataType="viewModels:TrackControlVm">
 
+    <UserControl.Resources>
+        <MenuFlyout x:Key="TrackMenu">
+            <MenuItem Header="Add To Queue"
+                      Command="{Binding AddToQueueCommand}"
+                      IsVisible="{Binding !IsInQueue}" />
+            <MenuItem Header="Remove From Queue"
+                      Command="{Binding RemoveFromQueueCommand}"
+                      IsVisible="{Binding IsInQueue}" />
+        </MenuFlyout>
+    </UserControl.Resources>
+
     <UserControl.Styles>
         <Style Selector="Border#MainTrackBorder">
             <Setter Property="Background" Value="#00000000" />
@@ -45,31 +56,21 @@
             <Setter Property="Background" Value="Transparent" />
         </Style>
 
-        <Style Selector="Button#EditButton">
+        <Style Selector="Button#MenuButton">
             <Setter Property="Opacity" Value="0" />
         </Style>
 
-        <Style Selector="Border#MainTrackBorder:pointerover Button#EditButton">
+        <Style Selector="Border#MainTrackBorder:pointerover Button#MenuButton">
             <Setter Property="Opacity" Value="1" />
         </Style>
     </UserControl.Styles>
 
     <Border x:Name="MainTrackBorder"
             Tag="{Binding IsActive}"
+            ContextFlyout="{StaticResource TrackMenu}"
             HorizontalAlignment="Center"
             Padding="8"
             CornerRadius="12">
-        <Border.ContextFlyout>
-            <MenuFlyout>
-                <MenuItem Header="Add To Queue"
-                          Command="{Binding AddToQueueCommand}"
-                          IsVisible="{Binding !IsInQueue}" />
-                <MenuItem Header="Remove From Queue"
-                          Command="{Binding RemoveFromQueueCommand}"
-                          IsVisible="{Binding IsInQueue}" />
-            </MenuFlyout>
-        </Border.ContextFlyout>
-
         <StackPanel Width="160"
                     Spacing="8">
             <Panel>
@@ -101,15 +102,15 @@
                     </Panel>
                 </Button>
 
-                <Button x:Name="EditButton"
-                        Command="{Binding EditCommand}"
+                <Button x:Name="MenuButton"
+                        Flyout="{StaticResource TrackMenu}"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Margin="4"
                         Padding="4"
                         Background="rgba(0, 0, 0, 50%)"
                         CornerRadius="100"
-                        ToolTip.Tip="Edit">
+                        ToolTip.Tip="More">
                     <controls:Icon IconName="dots" />
                 </Button>
             </Panel>

@@ -6,6 +6,17 @@
              x:DataType="viewModels:TrackControlVm"
              x:Name="Root">
 
+    <UserControl.Resources>
+        <MenuFlyout x:Key="TrackMenu">
+            <MenuItem Header="Add To Queue"
+                      Command="{Binding AddToQueueCommand}"
+                      IsVisible="{Binding !IsInQueue}" />
+            <MenuItem Header="Remove From Queue"
+                      Command="{Binding RemoveFromQueueCommand}"
+                      IsVisible="{Binding IsInQueue}" />
+        </MenuFlyout>
+    </UserControl.Resources>
+
     <UserControl.Styles>
         <Style Selector="Border#MainTrackBorder">
             <Setter Property="Background" Value="#00000000" />
@@ -49,19 +60,9 @@
 
     <Border x:Name="MainTrackBorder"
             Tag="{Binding IsActive}"
+            ContextFlyout="{StaticResource TrackMenu}"
             Padding="8"
             CornerRadius="12">
-        <Border.ContextFlyout>
-            <MenuFlyout>
-                <MenuItem Header="Add To Queue"
-                          Command="{Binding AddToQueueCommand}"
-                          IsVisible="{Binding !IsInQueue}" />
-                <MenuItem Header="Remove From Queue"
-                          Command="{Binding RemoveFromQueueCommand}"
-                          IsVisible="{Binding IsInQueue}" />
-            </MenuFlyout>
-        </Border.ContextFlyout>
-
         <Grid ColumnDefinitions="Auto, *, Auto, Auto"
               RowDefinitions="Auto Auto"
               ColumnSpacing="8"
@@ -135,12 +136,12 @@
             <Button Grid.Column="3"
                     Grid.Row="0"
                     Grid.RowSpan="2"
-                    Command="{Binding EditCommand}"
+                    Flyout="{StaticResource TrackMenu}"
                     CornerRadius="100"
                     Padding="4"
                     Background="Transparent"
                     VerticalAlignment="Center"
-                    ToolTip.Tip="Edit">
+                    ToolTip.Tip="More">
                 <controls:Icon IconName="dots" />
             </Button>
         </Grid>
