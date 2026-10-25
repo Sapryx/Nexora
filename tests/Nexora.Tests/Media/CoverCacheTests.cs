@@ -1,4 +1,4 @@
-using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Nexora.Media;

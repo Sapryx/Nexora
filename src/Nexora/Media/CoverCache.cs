@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using Avalonia.Media.Imaging;
 using Core.Collections;
 using Core.Logging;
-using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 
 namespace Nexora.Media;

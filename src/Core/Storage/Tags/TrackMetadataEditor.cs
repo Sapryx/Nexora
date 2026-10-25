@@ -2,7 +2,7 @@ using Core.Logging;
 using Core.Playback;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Storage;
+namespace Core.Storage.Tags;
 
 public class TrackMetadataEditor
 {

@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Core.Playback;
 using File = TagLib.File;
 
-namespace Core.Storage;
+namespace Core.Storage.Tags;
 
 public class TagLibMetadataLoader : IMetadataLoader
 {

@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using File = TagLib.File;
 
-namespace Core.Storage;
+namespace Core.Storage.Tags;
 
 public class TagLibMetadataSaver : IMetadataSaver
 {

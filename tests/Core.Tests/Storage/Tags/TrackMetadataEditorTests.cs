@@ -1,11 +1,11 @@
 using Core.Playback;
 using Core.Playlists;
-using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Shared.Logging;
 
-namespace Core.Tests.Storage;
+namespace Core.Tests.Storage.Tags;
 
 public class TrackMetadataEditorTests
 {

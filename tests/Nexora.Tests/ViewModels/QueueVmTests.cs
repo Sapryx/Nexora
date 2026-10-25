@@ -1,13 +1,13 @@
 using Core.Library;
 using Core.Playback;
 using Core.Playlists;
-using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
-using Nexora.ViewModels.Factories;
 using Nexora.ViewModels;
+using Nexora.ViewModels.Factories;
 
 namespace Nexora.Tests.ViewModels;
 

@@ -2,7 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
-using Core.Storage;
+using Core.Storage.Tags;
 using Nexora.Media;
 using Nexora.Threading;
 
