@@ -5,7 +5,7 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Nexora.ViewModels;
 
-namespace Nexora.Controls;
+namespace Nexora.Views;
 
 public partial class TrackEditor : UserControl
 {

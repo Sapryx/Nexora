@@ -4,9 +4,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
+using Nexora.Controls;
 using Nexora.ViewModels;
 
-namespace Nexora.Controls;
+namespace Nexora.Views;
 
 public partial class TrackArea : UserControl
 {

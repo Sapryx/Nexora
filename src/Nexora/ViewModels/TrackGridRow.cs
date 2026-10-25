@@ -1,6 +1,5 @@
-using Nexora.ViewModels;
 
-namespace Nexora.Controls;
+namespace Nexora.ViewModels;
 
 public class TrackGridRow
 {

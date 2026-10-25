@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
              xmlns:controls="clr-namespace:Nexora.Controls"
+             xmlns:views="clr-namespace:Nexora.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Nexora.Controls.TrackArea"
-             x:DataType="controls:TrackArea"
+             x:Class="Nexora.Views.TrackArea"
+             x:DataType="views:TrackArea"
              x:Name="Root">
     <Border Margin="0, 16, 0, 0">
         <ListBox x:Name="TrackList"
