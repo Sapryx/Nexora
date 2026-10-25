@@ -1,9 +1,11 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Core.Integrations;
 using Core.Library;
 using Core.Logging;
@@ -12,6 +14,8 @@ using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Nexora.Animations;
+using Nexora.Theme.Resources;
 using Nexora.ViewModels;
 using Nexora.Views;
 
@@ -33,6 +37,7 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        LoadAnimationResources();
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -48,6 +53,24 @@ public partial class App : Application
         LibVLCSharp.Shared.Core.Initialize();
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void LoadAnimationResources()
+    {
+        var loader = new AnimationSettingsLoader(
+            ReadDefaultAnimationSettings(),
+            CompositionRoot.AnimationsFilePath,
+            loggerFactory.CreateLogger<AnimationSettingsLoader>()
+        );
+        var factory = new AnimationResourceFactory(loggerFactory.CreateLogger<AnimationResourceFactory>());
+        AnimationResources.Values = factory.Create(loader.Load(), loader.LoadDefaults());
+    }
+
+    private static string ReadDefaultAnimationSettings()
+    {
+        using var stream = AssetLoader.Open(new Uri("avares://Nexora/Assets/animations.json"));
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     private void RegisterDiContainer(ServiceCollection builder)

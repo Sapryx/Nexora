@@ -18,6 +18,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="..\..\src\Nexora\Assets\animations.json"
+              Link="Assets\animations.json"
+              CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\src\Nexora\Nexora.csproj" />
         <ProjectReference Include="..\Tests.Shared\Tests.Shared.csproj" />
     </ItemGroup>

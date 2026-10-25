@@ -13,8 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />
-    </ItemGroup>
+        <AvaloniaResource Include="Assets\**" />    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Avalonia" />
