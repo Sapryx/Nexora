@@ -327,6 +327,7 @@ public class TrackSearchQueryTests
 
     private static IAudioTrack CreateTrack(string title, string artists)
     {
-        return Mock.Of<IAudioTrack>(it => it.Metadata == new Metadata() { Title = title, Artists = artists });
+        var metadata = new Metadata() { Title = title, Artists = [artists] };
+        return Mock.Of<IAudioTrack>(it => it.Metadata == metadata);
     }
 }

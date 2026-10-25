@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Core.Integrations;
+using Core.Library;
 using Core.Logging;
 using Core.Playback;
 using Core.Playlists;
@@ -58,6 +59,7 @@ public static class CompositionRoot
         ));
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<PlaylistRegistry>();
+        builder.AddSingleton<ArtistRegistry>();
         builder.AddSingleton<PlaybackQueue>();
         builder.AddSingleton<KeyboardLayoutTranslator>();
 

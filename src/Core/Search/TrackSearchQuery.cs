@@ -28,7 +28,7 @@ public class TrackSearchQuery
     public TrackMatch? Match(IAudioTrack audioTrack)
     {
         string title = Normalize(audioTrack.Metadata.Title);
-        string artists = Normalize(audioTrack.Metadata.Artists);
+        string artists = Normalize(audioTrack.Metadata.JoinedArtists);
         TrackMatch? best = null;
 
         for(int i = 0; i < variants.Length; i++)

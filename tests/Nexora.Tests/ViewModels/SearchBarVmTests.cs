@@ -1,3 +1,4 @@
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using Core.Search;
@@ -28,19 +29,22 @@ public class SearchBarVmTests
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
 
+        var metadataEditor = new TrackMetadataEditor(
+            NullLogger<TrackMetadataEditor>.Instance,
+            Mock.Of<IMetadataSaver>(),
+            Mock.Of<IPendingMetadataStorage>(),
+            Mock.Of<IAudioPlayer>()
+        );
+        var trackEditorVm = new TrackEditorVm(new ArtistRegistry(metadataEditor));
+
         trackControlVmFactoryMock
             .Setup(it => it.Create(It.IsAny<IPlaylistItem>()))
             .Returns<IPlaylistItem>(it => new TrackControlVm(
                 it,
                 new PlaybackQueue(Mock.Of<IAudioPlayer>()),
                 Mock.Of<IAudioPlayer>(),
-                new TrackMetadataEditor(
-                    NullLogger<TrackMetadataEditor>.Instance,
-                    Mock.Of<IMetadataSaver>(),
-                    Mock.Of<IPendingMetadataStorage>(),
-                    Mock.Of<IAudioPlayer>()
-                ),
-                new TrackEditorVm(),
+                metadataEditor,
+                trackEditorVm,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object));
 
@@ -154,9 +158,8 @@ public class SearchBarVmTests
 
     private void AddTrack(string title, string artists)
     {
-        var track = Mock.Of<IAudioTrack>(it =>
-            it.Metadata == new Metadata() { Title = title, Artists = artists } &&
-            it.AudioPath == $"{title}.mp3");
+        var metadata = new Metadata() { Title = title, Artists = [artists] };
+        var track = Mock.Of<IAudioTrack>(it => it.Metadata == metadata && it.AudioPath == $"{title}.mp3");
 
         playlistRegistry.GlobalPlaylist.AddTrack(track);
     }

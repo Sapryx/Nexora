@@ -13,6 +13,6 @@ public partial class TrackViewVm : CoveredTrackVm
     public void Update(IPlaylistItem playlistItem)
     {
         var metadata = playlistItem.AudioTrack.Metadata;
-        SetTrackInfo(metadata.Title, metadata.Artists, playlistItem.AudioTrack.AudioPath);
+        SetTrackInfo(metadata.Title, metadata.JoinedArtists, playlistItem.AudioTrack.AudioPath);
     }
 }

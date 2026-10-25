@@ -92,21 +92,21 @@ public class TrackMetadataEditor
     /// <summary>
     /// Shows the new metadata at once and writes it to the file, or keeps it pending while the player holds the file.
     /// </summary>
-    public async Task EditAsync(IAudioTrack audioTrack, string title, string artists)
+    public async Task EditAsync(IAudioTrack audioTrack, string title, IEnumerable<string> artists)
     {
         var metadata = audioTrack.Metadata;
         title = title.Trim();
-        // Joined the same way as TagLibMetadataLoader joins performers, so the saved value reads back unchanged.
-        artists = string.Join(
-            ", ",
-            artists.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-        );
+        var normalizedArtists = artists
+            .Select(it => it.Trim())
+            .Where(it => it != "")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
         var change = new MetadataChange()
         {
             AudioPath = audioTrack.AudioPath,
             Title = GetDisplayedTitle(title, audioTrack.AudioPath) != metadata.Title ? title : null,
-            Artists = artists != metadata.Artists ? artists : null
+            Artists = normalizedArtists.SequenceEqual(metadata.Artists) ? null : normalizedArtists
         };
 
         if(change.Title == null && change.Artists == null)

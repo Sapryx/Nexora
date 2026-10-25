@@ -20,8 +20,7 @@ public class TagLibMetadataSaver : IMetadataSaver
 
         if(change.Artists != null)
         {
-            tagFile.Tag.Performers = change.Artists
-                .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            tagFile.Tag.Performers = change.Artists.ToArray();
         }
 
         tagFile.Save();

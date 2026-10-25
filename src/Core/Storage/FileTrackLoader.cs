@@ -59,7 +59,7 @@ public class FileTrackLoader : ITrackLoader
 
         return audioTracks
             .OrderBy(track => track.Metadata.Title, StringComparer.CurrentCultureIgnoreCase)
-            .ThenBy(track => track.Metadata.Artists, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(track => track.Metadata.JoinedArtists, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
 }

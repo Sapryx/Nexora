@@ -14,11 +14,11 @@ public class AudioTrack : IAudioTrack
     public override string ToString()
     {
         bool titleIsSpecified = Metadata.Title != "";
-        bool artistsAreSpecified = Metadata.Artists != "";
+        bool artistsAreSpecified = Metadata.Artists.Count > 0;
 
         if(titleIsSpecified && artistsAreSpecified)
         {
-            return $"{Metadata.Artists} - {Metadata.Title}";
+            return $"{Metadata.JoinedArtists} - {Metadata.Title}";
         }
         else
         {
