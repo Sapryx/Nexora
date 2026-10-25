@@ -4,11 +4,11 @@ namespace Nexora.Theme.Resources;
 
 public class AnimationResources : ResourceDictionary
 {
-    public static IReadOnlyDictionary<string, object> Values { get; set; } = new Dictionary<string, object>();
+    public static IReadOnlyDictionary<string, object> Entries { get; set; } = new Dictionary<string, object>();
 
     public AnimationResources()
     {
-        foreach(var pair in Values)
+        foreach(var pair in Entries)
         {
             Add(pair.Key, pair.Value);
         }
