@@ -17,7 +17,7 @@ All text in the project must be in English: code, comments, log messages, except
 
 Build (errors only):
 ```
-dotnet build Nexora.sln -v q -nologo -clp:ErrorsOnly
+dotnet build Nexora.slnx -v q -nologo -clp:ErrorsOnly
 ```
 Tests (minimal output):
 ```
@@ -109,7 +109,7 @@ Release builds use `PublishAot` and `TreatWarningsAsErrors`, so:
 - compiled bindings are on by default — every axaml view/control must set `x:DataType`;
 - don't introduce warnings: they break the Release build.
 
-Build in Release (`dotnet build Nexora.sln -c Release -v q -nologo -clp:ErrorsOnly`) only when the user asks.
+Build in Release (`dotnet build Nexora.slnx -c Release -v q -nologo -clp:ErrorsOnly`) only when the user asks.
 
 ## Commits
 
