@@ -75,6 +75,7 @@ public static class LoggingInitializer
 
         AvaloniaLogger.Sink = new AvaloniaLogSink(loggerFactory.CreateLogger<AvaloniaLogSink>());
         Trace.Listeners.Add(new DiagnosticsLogListener(loggerFactory.CreateLogger<DiagnosticsLogListener>()));
+
         if(sessionLogPath != null)
         {
             SessionLogFiles.DeleteOld(
