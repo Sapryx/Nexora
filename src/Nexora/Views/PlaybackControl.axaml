@@ -5,7 +5,7 @@
              xmlns:controls="clr-namespace:Nexora.Controls"
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
              mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="1024"
-             x:Class="Nexora.Controls.PlaybackControl"
+             x:Class="Nexora.Views.PlaybackControl"
              x:DataType="viewModels:PlaybackVm">
     <StackPanel Orientation="Vertical">
         <Slider x:Name="PlaybackPositionSlider"

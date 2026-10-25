@@ -4,12 +4,11 @@ using Core.Playlists;
 using Core.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Nexora.Controls;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
 
-namespace Nexora.Tests.Controls;
+namespace Nexora.Tests.ViewModels;
 
 public class TrackGridRowTests
 {

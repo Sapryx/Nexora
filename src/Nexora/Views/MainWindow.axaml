@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Nexora.Controls"
+        xmlns:views="clr-namespace:Nexora.Views"
         xmlns:render="clr-namespace:Nexora.Render"
         mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="1024"
         x:Class="Nexora.Views.MainWindow"
@@ -53,7 +54,7 @@
                                Margin="8 16 0 0" />
 
                     <Panel>
-                        <controls:TrackArea TrackVms="{Binding QueueVm.TrackVms}"
+                        <views:TrackArea TrackVms="{Binding QueueVm.TrackVms}"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch" />
 
@@ -69,7 +70,7 @@
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
                 <Panel Grid.Row="0">
-                    <controls:SearchBar DataContext="{Binding SearchBarVm}"
+                    <views:SearchBar DataContext="{Binding SearchBarVm}"
                                         HorizontalAlignment="Stretch"
                                         MaxWidth="480"
                                         Margin="136 0" />
@@ -89,14 +90,14 @@
                 </Panel>
 
                 <Panel Grid.Row="1">
-                    <controls:TrackArea x:Name="LibraryList"
+                    <views:TrackArea x:Name="LibraryList"
                                         Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                         IsVisible="{Binding !IsLibraryGridView}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"/>
 
-                    <controls:TrackGrid x:Name="LibraryGrid"
+                    <views:TrackGrid x:Name="LibraryGrid"
                                         Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                         FirstVisibleTrackIndex="{Binding #LibraryList.FirstVisibleTrackIndex}"
@@ -105,7 +106,7 @@
                                         VerticalAlignment="Stretch"/>
                 </Panel>
 
-                <controls:PlaybackControl Grid.Row="2"
+                <views:PlaybackControl Grid.Row="2"
                                           DataContext="{Binding PlaybackVm}"
                                           VerticalAlignment="Bottom"
                                           HorizontalAlignment="Stretch"
@@ -114,6 +115,6 @@
             </Grid>
         </DockPanel>
 
-        <controls:TrackEditor DataContext="{Binding TrackEditorVm}" />
+        <views:TrackEditor DataContext="{Binding TrackEditorVm}" />
     </Panel>
 </Window>

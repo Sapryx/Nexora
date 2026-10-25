@@ -3,7 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Nexora.ViewModels;
 
-namespace Nexora.Controls;
+namespace Nexora.Views;
 
 public partial class PlaybackControl : UserControl
 {

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace Nexora.Controls;
+namespace Nexora.Views;
 
 public partial class SearchBar : UserControl
 {

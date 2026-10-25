@@ -5,10 +5,11 @@ using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Nexora.Controls;
 using Nexora.Threading;
 using Nexora.ViewModels;
 
-namespace Nexora.Controls;
+namespace Nexora.Views;
 
 public partial class TrackGrid : UserControl
 {
