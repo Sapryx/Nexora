@@ -29,7 +29,7 @@ public partial class TrackArea : UserControl
         var scrollViewer = e.NameScope.Find<ScrollViewer>("PART_ScrollViewer");
         if(scrollViewer != null)
         {
-            new SmoothScroller(scrollViewer);
+            new SmoothScroller(scrollViewer, TrackList);
         }
     }
 

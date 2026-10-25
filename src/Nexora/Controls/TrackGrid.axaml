@@ -12,8 +12,9 @@
                   Margin="0 16 0 0"
                   AllowAutoHide="False"
                   HorizontalScrollBarVisibility="Disabled">
-        <ItemsControl ItemsSource="{Binding #Root.Rows}"
-                      Margin="0 0 32 0">
+        <ItemsControl x:Name="RowList"
+                      ItemsSource="{Binding #Root.Rows}"
+                      Margin="0 4 32 0">
             <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="controls:TrackGridRow">
                     <ItemsControl ItemsSource="{Binding TrackVms}"

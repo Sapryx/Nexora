@@ -1,10 +1,10 @@
 using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.VisualTree;
 
 namespace Nexora.Controls;
@@ -13,21 +13,43 @@ public sealed class SmoothScroller
 {
     private double MaxOffset => Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
 
-    private const double WheelStep = 100;
+    private const double FallbackWheelStep = 100;
     private const double TimeConstantSeconds = 0.08;
     private const double StopDistance = 0.5;
     private const double FallbackFrameSeconds = 1.0 / 60;
     private readonly ScrollViewer scrollViewer;
+    private readonly ItemsControl itemsControl;
     private double targetOffset;
     private double expectedOffset;
     private TimeSpan? lastFrameTime;
     private bool isAnimating;
 
-    public SmoothScroller(ScrollViewer scrollViewer)
+    public SmoothScroller(ScrollViewer scrollViewer, ItemsControl itemsControl)
     {
         this.scrollViewer = scrollViewer;
+        this.itemsControl = itemsControl;
         scrollViewer.AddHandler(InputElement.PointerWheelChangedEvent, OnPointerWheelChanged, RoutingStrategies.Tunnel);
-        scrollViewer.AddHandler(InputElement.PointerPressedEvent, OnPointerPressed, RoutingStrategies.Tunnel);
+        scrollViewer.TemplateApplied += OnScrollViewerTemplateApplied;
+    }
+
+    private void OnScrollViewerTemplateApplied(object? sender, TemplateAppliedEventArgs e)
+    {
+        var scrollBar = e.NameScope.Find<ScrollBar>("PART_VerticalScrollBar");
+        if(scrollBar != null)
+        {
+            scrollBar.TemplateApplied += OnScrollBarTemplateApplied;
+        }
+    }
+
+    private void OnScrollBarTemplateApplied(object? sender, TemplateAppliedEventArgs e)
+    {
+        SubscribePageButton(e.NameScope.Find<Button>("PART_PageUpButton"));
+        SubscribePageButton(e.NameScope.Find<Button>("PART_PageDownButton"));
+    }
+
+    private void SubscribePageButton(Button? button)
+    {
+        button?.AddHandler(InputElement.PointerPressedEvent, OnPageButtonPressed, RoutingStrategies.Tunnel);
     }
 
     private void OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
@@ -38,15 +60,15 @@ public sealed class SmoothScroller
         }
 
         double start = isAnimating ? targetOffset : scrollViewer.Offset.Y;
-        if(ScrollTo(start - e.Delta.Y * WheelStep))
+        if(ScrollTo(GetWheelTarget(start, e.Delta.Y, GetWheelStep())))
         {
             e.Handled = true;
         }
     }
 
-    private void OnPointerPressed(object? sender, PointerPressedEventArgs e)
+    private void OnPageButtonPressed(object? sender, PointerPressedEventArgs e)
     {
-        var track = FindPressedTrack(e.Source as Visual);
+        var track = (sender as Visual)?.GetVisualParent() as Track;
         if(track?.Thumb == null || !e.GetCurrentPoint(track).Properties.IsLeftButtonPressed)
         {
             return;
@@ -66,21 +88,28 @@ public sealed class SmoothScroller
         }
     }
 
-    private static Track? FindPressedTrack(Visual? source)
+    public static double GetWheelTarget(double offset, double delta, double step)
     {
-        var track = source?.FindAncestorOfType<Track>(true);
-        if(track == null || track.Orientation != Orientation.Vertical)
+        bool isWheelNotch = delta == Math.Round(delta);
+        if(!isWheelNotch)
         {
-            return null;
+            return offset - delta * step;
         }
 
-        bool isPageButton = IsWithin(source, track.IncreaseButton) || IsWithin(source, track.DecreaseButton);
-        return isPageButton ? track : null;
+        double index = offset / step;
+        double nearestIndex = Math.Round(index);
+        if(Math.Abs(offset - nearestIndex * step) < StopDistance)
+        {
+            return (nearestIndex - delta) * step;
+        }
+
+        return (delta < 0 ? Math.Ceiling(index) - delta - 1 : Math.Floor(index) - delta + 1) * step;
     }
 
-    private static bool IsWithin(Visual? source, Visual? button)
+    private double GetWheelStep()
     {
-        return source != null && button != null && (source == button || button.IsVisualAncestorOf(source));
+        var item = itemsControl.GetRealizedContainers().FirstOrDefault(it => it.Bounds.Height > 0);
+        return item?.Bounds.Height ?? FallbackWheelStep;
     }
 
     private bool ScrollTo(double offset)

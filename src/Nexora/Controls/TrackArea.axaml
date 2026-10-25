@@ -15,7 +15,7 @@
                  ScrollViewer.AllowAutoHide="False"
                  Background="Transparent"
                  BorderThickness="0"
-                 Padding="0 0 32 0">
+                 Padding="0 4 32 0">
 
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="viewModels:TrackControlVm">
