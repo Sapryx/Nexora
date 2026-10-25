@@ -30,8 +30,8 @@
                             <Border.Transitions>
                                 <Transitions>
                                     <TransformOperationsTransition Property="RenderTransform"
-                                                                   Duration="0:0:0.2"
-                                                                   Easing="CubicEaseOut" />
+                                                                   Duration="{StaticResource SegmentSlideDuration}"
+                                                                   Easing="{StaticResource DefaultEaseOut}" />
                                 </Transitions>
                             </Border.Transitions>
                         </Border>

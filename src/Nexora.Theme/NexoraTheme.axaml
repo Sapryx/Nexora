@@ -22,7 +22,7 @@
         <Setter Property="Focusable" Value="True" />
         <Setter Property="RenderTransformOrigin" Value="50%, 0%" />
         <Style.Animations>
-            <Animation Duration="0:0:0.12" Easing="CubicEaseOut">
+            <Animation Duration="{StaticResource FlyoutOpenDuration}" Easing="{StaticResource DefaultEaseOut}">
                 <KeyFrame Cue="0%">
                     <Setter Property="ScaleTransform.ScaleY" Value="0" />
                 </KeyFrame>
@@ -49,6 +49,7 @@
                 <ResourceInclude Source="avares://Nexora.Theme/Controls/TextBox.axaml" />
 
                 <ResourceInclude Source="avares://Nexora.Theme/Resources/Colors.axaml"/>
+                <ResourceInclude Source="avares://Nexora.Theme/Resources/Animations.axaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

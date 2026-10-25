@@ -21,13 +21,13 @@
             <Setter Property="Background" Value="#00000000" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.25" />
+                    <BrushTransition Property="Background" Duration="{StaticResource HoverDuration}" />
                 </Transitions>
             </Setter>
         </Style>
 
         <Style Selector="Border#MainTrackBorder:pointerover">
-            <Setter Property="Background" Value="rgba(255, 255, 255, 8%)" />
+            <Setter Property="Background" Value="{StaticResource TrackHoverBrush}" />
         </Style>
 
         <Style Selector="Border#MainTrackBorder[Tag=True]">
@@ -47,13 +47,13 @@
             <Setter Property="Opacity" Value="0.0" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                    <DoubleTransition Property="Opacity" Duration="{StaticResource FadeDuration}" />
                 </Transitions>
             </Setter>
         </Style>
 
         <Style Selector="Button:pointerover Border#HoverEffect">
-            <Setter Property="Opacity" Value="0.5" />
+            <Setter Property="Opacity" Value="{StaticResource TrackCoverHoverOpacity}" />
         </Style>
 
         <Style Selector="Button#TogglePlayButton:pointerover /template/ ContentPresenter">

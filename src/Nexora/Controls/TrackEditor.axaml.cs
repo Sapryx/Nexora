@@ -11,7 +11,8 @@ namespace Nexora.Controls;
 public partial class TrackEditor : UserControl
 {
     private bool IsOpen => Backdrop.Tag is true;
-    private static readonly TimeSpan CloseDuration = TimeSpan.FromMilliseconds(150);
+    private TimeSpan CloseDuration =>
+        this.FindResource("PopupCloseDuration") is TimeSpan duration ? duration : TimeSpan.Zero;
 
     public TrackEditor()
     {

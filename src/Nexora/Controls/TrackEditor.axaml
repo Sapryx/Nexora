@@ -9,28 +9,44 @@
             <Setter Property="Opacity" Value="0" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.15" Easing="CubicEaseOut" />
+                    <DoubleTransition Property="Opacity"
+                                      Duration="{StaticResource PopupCloseDuration}"
+                                      Easing="{StaticResource DefaultEaseIn}" />
                 </Transitions>
             </Setter>
         </Style>
 
         <Style Selector="Panel#Backdrop[Tag=True]">
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity"
+                                      Duration="{StaticResource PopupOpenDuration}"
+                                      Easing="{StaticResource DefaultEaseOut}" />
+                </Transitions>
+            </Setter>
             <Setter Property="Opacity" Value="1" />
         </Style>
 
         <Style Selector="Border#Dialog">
-            <Setter Property="RenderTransform" Value="translateY(16px) scale(0.96)" />
+            <Setter Property="RenderTransform" Value="{StaticResource PopupClosedTransform}" />
             <Setter Property="Transitions">
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform"
-                                                   Duration="0:0:0.15"
-                                                   Easing="CubicEaseOut" />
+                                                   Duration="{StaticResource PopupCloseDuration}"
+                                                   Easing="{StaticResource DefaultEaseIn}" />
                 </Transitions>
             </Setter>
         </Style>
 
         <Style Selector="Panel#Backdrop[Tag=True] Border#Dialog">
-            <Setter Property="RenderTransform" Value="translateY(0px) scale(1)" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform"
+                                                   Duration="{StaticResource PopupOpenDuration}"
+                                                   Easing="{StaticResource DefaultEaseOut}" />
+                </Transitions>
+            </Setter>
+            <Setter Property="RenderTransform" Value="scale(1)" />
         </Style>
 
         <Style Selector="TextBox.Field">
