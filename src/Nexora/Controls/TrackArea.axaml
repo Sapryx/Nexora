@@ -19,7 +19,7 @@
 
             <ListBox.ItemTemplate>
                 <DataTemplate DataType="viewModels:TrackControlVm">
-                    <controls:AudioTrackView Margin="0 0 0 8" />
+                    <controls:TrackControl Margin="0 0 0 8" />
                 </DataTemplate>
             </ListBox.ItemTemplate>
 
