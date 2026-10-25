@@ -158,6 +158,46 @@ public class TrackControlVmTests
         Assert.False(vm.IsActiveAndPlaying);
     }
 
+    [Fact]
+    public void PlaybackPositionChanged_ActiveQueueItem_ShowsProgress()
+    {
+        playbackQueue.AddTrack(CreateTrack());
+        var playlistItem = playbackQueue.GetItem(0);
+        var vm = CreateVm(playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+
+        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
+
+        Assert.Equal(0.5, vm.Progress);
+    }
+
+    [Fact]
+    public void PlaybackPositionChanged_ActiveGlobalPlaylistItem_KeepsZeroProgress()
+    {
+        playlistRegistry.GlobalPlaylist.AddTrack(CreateTrack());
+        var playlistItem = playlistRegistry.GlobalPlaylist.GetItem(0);
+        var vm = CreateVm(playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+
+        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
+
+        Assert.Equal(0, vm.Progress);
+    }
+
+    [Fact]
+    public void PlaybackStarted_OtherTrack_ResetsProgress()
+    {
+        playbackQueue.AddTrack(CreateTrack());
+        var playlistItem = playbackQueue.GetItem(0);
+        var vm = CreateVm(playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
+
+        audioPlayerMock.Raise(it => it.PlaybackStarted += null, CreatePlaylistItem(TimeSpan.Zero));
+
+        Assert.Equal(0, vm.Progress);
+    }
+
     private static IAudioTrack CreateTrack()
     {
         return Mock.Of<IAudioTrack>(it => it.Metadata == new Metadata() && it.AudioPath == "");

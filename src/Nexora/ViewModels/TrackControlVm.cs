@@ -19,6 +19,9 @@ public partial class TrackControlVm : CoveredTrackVm
     [ObservableProperty]
     public partial bool IsActive { get; set; }
 
+    [ObservableProperty]
+    public partial double Progress { get; set; }
+
     public bool IsInQueue { get; }
     public IReadOnlyList<string> ArtistNames => playlistItem.AudioTrack.Metadata.Artists;
     public string AudioPath => playlistItem.AudioTrack.AudioPath;
@@ -48,6 +51,11 @@ public partial class TrackControlVm : CoveredTrackVm
         IsActive = audioPlayer.NowPlaying == playlistItem;
         IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
 
+        if(IsActive && IsInQueue)
+        {
+            Progress = audioPlayer.PlaybackPosition;
+        }
+
         var duration = playlistItem.AudioTrack.Metadata.Duration;
         UpdateTrackInfo();
         Duration = $"{(int)duration.TotalMinutes:00}:{duration.Seconds:00}";
@@ -56,6 +64,15 @@ public partial class TrackControlVm : CoveredTrackVm
         {
             IsActive = nowPlaying == playlistItem;
             IsActiveAndPlaying = IsActive;
+            Progress = 0;
+        });
+
+        audioPlayer.PlaybackPositionChanged += position => uiDispatcher.Post(() =>
+        {
+            if(IsActive && IsInQueue)
+            {
+                Progress = position;
+            }
         });
 
         audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
@@ -67,6 +84,7 @@ public partial class TrackControlVm : CoveredTrackVm
         {
             IsActive = false;
             IsActiveAndPlaying = false;
+            Progress = 0;
         });
 
         metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
