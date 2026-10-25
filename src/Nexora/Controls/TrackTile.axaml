@@ -89,6 +89,7 @@
                         <Border CornerRadius="8"
                                 ClipToBounds="True">
                             <Image Source="{Binding Cover}"
+                                   RenderOptions.BitmapInterpolationMode="HighQuality"
                                    Width="160"
                                    Height="160" />
                         </Border>
