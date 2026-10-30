@@ -37,7 +37,8 @@ public partial class MainWindow : Window
     {
         base.OnKeyDown(e);
 
-        if(e.Handled || e.Source is TextBox || IsTrackEditorOpen)
+        if(e.Handled || e.Source is TextBox || IsTrackEditorOpen ||
+           DataContext is MainWindowVm { IsSettingsOpen: true })
         {
             return;
         }

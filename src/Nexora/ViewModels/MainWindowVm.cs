@@ -10,12 +10,18 @@ public partial class MainWindowVm : ViewModelBase
     [NotifyPropertyChangedFor(nameof(IsLibraryGridView))]
     public partial int LibraryViewIndex { get; set; }
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSettingsOpen))]
+    public partial int SidebarTabIndex { get; set; }
+
     public bool IsLibraryGridView => LibraryViewIndex == LibraryGridViewIndex;
+    public bool IsSettingsOpen => SidebarTabIndex == SettingsTabIndex;
     public SearchBarVm SearchBarVm { get; }
     public PlaybackVm PlaybackVm { get; }
     public QueueVm QueueVm { get; }
     public TrackEditorVm TrackEditorVm { get; }
     private const int LibraryGridViewIndex = 1;
+    private const int SettingsTabIndex = 1;
     private readonly ILogger logger;
 
     public MainWindowVm(
