@@ -93,12 +93,12 @@
                                                VerticalAlignment="Center"
                                                Margin="0 0 32 0"
                                                SelectedIndex="{Binding LibraryViewIndex}">
-                        <ListBoxItem ToolTip.Tip="List">
-                            <controls:Icon IconName="list" />
-                        </ListBoxItem>
-
                         <ListBoxItem ToolTip.Tip="Grid">
                             <controls:Icon IconName="grid" />
+                        </ListBoxItem>
+
+                        <ListBoxItem ToolTip.Tip="List">
+                            <controls:Icon IconName="list" />
                         </ListBoxItem>
                     </controls:SegmentedControl>
                 </Panel>
