@@ -1,7 +1,10 @@
 using System.Globalization;
+using Core.Logging;
+using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
 using LibVLCSharp.Shared;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Playback;
 
@@ -34,8 +37,10 @@ public class AudioPlayer : IAudioPlayer
     }
 
     private const int DefaultVolume = 50;
+    private readonly ILogger<AudioPlayer> logger;
     private readonly LibVLC vlc;
     private readonly MediaPlayer mediaPlayer;
+    private readonly Equalizer equalizer = new Equalizer();
     private readonly IVolumeStorage volumeStorage;
     private readonly Lock fileLock = new Lock();
     private int volume;
@@ -51,8 +56,9 @@ public class AudioPlayer : IAudioPlayer
     public event Action<float>? VolumeChanged;
     public event Action<bool>? MuteChanged;
 
-    public AudioPlayer(LibVLC vlc, IVolumeStorage volumeStorage)
+    public AudioPlayer(ILogger<AudioPlayer> logger, LibVLC vlc, IVolumeStorage volumeStorage)
     {
+        this.logger = logger;
         this.vlc = vlc;
         this.volumeStorage = volumeStorage;
         mediaPlayer = new MediaPlayer(vlc);
@@ -211,8 +217,19 @@ public class AudioPlayer : IAudioPlayer
         }
 
         isPauseRequested = startPaused;
+        ApplyLoudnessGain(playlistItem.AudioTrack);
         mediaPlayer.Media = media;
         mediaPlayer.Play();
+    }
+
+    private void ApplyLoudnessGain(IAudioTrack audioTrack)
+    {
+        var loudness = audioTrack.Metadata.Loudness;
+        double gain = loudness != null ? LoudnessGain.Calculate(loudness, LoudnessGain.TargetLufs) : 0;
+
+        equalizer.SetPreamp((float)gain);
+        mediaPlayer.SetEqualizer(equalizer);
+        logger.Debug($"Applied loudness gain {gain:0.00} dB to {audioTrack.AudioPath}");
     }
 
     private void OnPlaying()
