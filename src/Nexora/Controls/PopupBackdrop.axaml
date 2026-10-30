@@ -1,0 +1,54 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:Nexora.Controls">
+    <Style Selector="controls|PopupBackdrop">
+        <Setter Property="Background" Value="{StaticResource PopupBackdropBrush}" />
+        <Setter Property="Opacity" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource PopupCloseDuration}"
+                                  Easing="{StaticResource DefaultEaseIn}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="controls|PopupBackdrop.Opening">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity"
+                                  Duration="{StaticResource PopupOpenDuration}"
+                                  Easing="{StaticResource DefaultEaseOut}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="controls|PopupBackdrop.Open">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+
+    <Style Selector="controls|PopupBackdrop > :is(Control).Dialog">
+        <Setter Property="RenderTransform" Value="{StaticResource PopupClosedTransform}" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource PopupCloseDuration}"
+                                               Easing="{StaticResource DefaultEaseIn}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="controls|PopupBackdrop.Opening > :is(Control).Dialog">
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform"
+                                               Duration="{StaticResource PopupOpenDuration}"
+                                               Easing="{StaticResource DefaultEaseOut}" />
+            </Transitions>
+        </Setter>
+    </Style>
+
+    <Style Selector="controls|PopupBackdrop.Open > :is(Control).Dialog">
+        <Setter Property="RenderTransform" Value="scale(1)" />
+    </Style>
+</Styles>
