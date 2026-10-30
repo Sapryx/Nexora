@@ -1,28 +1,66 @@
 using System.Diagnostics.CodeAnalysis;
+using Core.Playback.Loudness;
+using TagLib;
 using File = TagLib.File;
 
 namespace Core.Storage.Tags;
 
 public class TagLibMetadataSaver : IMetadataSaver
 {
+    private const string TempFileSuffix = ".nexora-tmp";
+
+    public void Save(MetadataChange change)
+    {
+        SaveAtomically(change.AudioPath, tagFile =>
+        {
+            if(change.Title != null)
+            {
+                tagFile.Tag.Title = change.Title == "" ? null : change.Title;
+            }
+
+            if(change.Artists != null)
+            {
+                tagFile.Tag.Performers = change.Artists.ToArray();
+            }
+        });
+    }
+
+    public void SaveLoudness(string audioPath, TrackLoudness loudness)
+    {
+        SaveAtomically(audioPath, tagFile => LoudnessTags.Write(tagFile, loudness));
+    }
+
+    public static string GetTempPath(string audioPath)
+    {
+        string directory = Path.GetDirectoryName(audioPath) ?? "";
+
+        return Path.Combine(directory, $".{Path.GetFileName(audioPath)}{TempFileSuffix}");
+    }
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Mpeg.AudioFile))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Riff.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Ogg.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Flac.File))]
-    public void Save(MetadataChange change)
+    private static void SaveAtomically(string audioPath, Action<File> modify)
     {
-        using var tagFile = File.Create(change.AudioPath);
+        string tempPath = GetTempPath(audioPath);
+        string mimeType = $"taglib/{Path.GetExtension(audioPath).TrimStart('.').ToLowerInvariant()}";
 
-        if(change.Title != null)
+        try
         {
-            tagFile.Tag.Title = change.Title == "" ? null : change.Title;
-        }
+            System.IO.File.Copy(audioPath, tempPath, true);
 
-        if(change.Artists != null)
+            using(var tagFile = File.Create(tempPath, mimeType, ReadStyle.Average))
+            {
+                modify(tagFile);
+                tagFile.Save();
+            }
+
+            System.IO.File.Move(tempPath, audioPath, true);
+        }
+        finally
         {
-            tagFile.Tag.Performers = change.Artists.ToArray();
+            System.IO.File.Delete(tempPath);
         }
-
-        tagFile.Save();
     }
 }

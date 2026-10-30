@@ -28,7 +28,8 @@ public class TagLibMetadataLoader : IMetadataLoader
         {
             Title = title,
             Artists = SplitArtists(tagFile.Tag.Performers),
-            Duration = tagFile.Properties.Duration
+            Duration = tagFile.Properties.Duration,
+            Loudness = LoudnessTags.Read(tagFile)
         };
     }
 

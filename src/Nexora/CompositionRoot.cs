@@ -3,6 +3,7 @@ using Core.Integrations;
 using Core.Library;
 using Core.Logging;
 using Core.Playback;
+using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
 using Core.Storage.Tags;
@@ -49,6 +50,12 @@ public static class CompositionRoot
         builder.AddSingleton<IMusicDirectoryProvider, MusicDirectoryProvider>();
         builder.AddSingleton<IMetadataLoader, TagLibMetadataLoader>();
         builder.AddSingleton<IMetadataSaver, TagLibMetadataSaver>();
+        builder.AddSingleton<ILoudnessAnalyzer, VlcLoudnessAnalyzer>();
+        builder.AddSingleton<LoudnessScanner>();
+        builder.AddSingleton<
+            IDegreeOfParallelismProvider<LoudnessScanner>,
+            LoudnessScannerDegreeOfParallelismProvider
+        >();
         builder.AddSingleton<TrackMetadataEditor>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();

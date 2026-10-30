@@ -6,6 +6,7 @@ using Avalonia.Platform;
 using Core.Integrations;
 using Core.Library;
 using Core.Logging;
+using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -128,6 +129,7 @@ public partial class App : Application
         var audioTrackLoaders = provider.GetServices<ITrackLoader>();
         var playlistRegistry = provider.GetRequiredService<PlaylistRegistry>();
         var artistRegistry = provider.GetRequiredService<ArtistRegistry>();
+        var loudnessScanner = provider.GetRequiredService<LoudnessScanner>();
 
         var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
@@ -150,6 +152,7 @@ public partial class App : Application
                     var loadedTracks = loader.Load();
                     artistRegistry.AddTracks(loadedTracks);
                     playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
+                    loudnessScanner.Scan(loadedTracks);
                 }
                 catch(Exception ex)
                 {
