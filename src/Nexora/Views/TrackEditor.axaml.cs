@@ -178,7 +178,7 @@ public partial class TrackEditor : UserControl
         }
         else if(e.Property == IsVisibleProperty)
         {
-            vm?.ReleaseLargeCover();
+            vm?.LargeCover.Release();
         }
     }
 

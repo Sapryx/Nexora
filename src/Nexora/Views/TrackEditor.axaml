@@ -111,7 +111,7 @@
                             CornerRadius="12"
                             ClipToBounds="True"
                             VerticalAlignment="Top">
-                        <Image Source="{Binding Cover}"
+                        <Image Source="{Binding LargeCover.Cover}"
                                RenderOptions.BitmapInterpolationMode="HighQuality"
                                Width="256"
                                Height="256"
