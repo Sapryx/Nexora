@@ -6,5 +6,6 @@
     <Application.Styles>
         <theme:NexoraTheme />
         <StyleInclude Source="/Controls/SegmentedControl.axaml" />
+        <StyleInclude Source="/Controls/PopupBackdrop.axaml" />
     </Application.Styles>
 </Application>

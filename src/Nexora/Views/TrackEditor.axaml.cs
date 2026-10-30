@@ -5,16 +5,13 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml.Templates;
-using Avalonia.Threading;
+using Nexora.Controls;
 using Nexora.ViewModels;
 
 namespace Nexora.Views;
 
 public partial class TrackEditor : UserControl
 {
-    private bool IsOpen => Backdrop.Tag is true;
-    private TimeSpan CloseDuration =>
-        this.FindResource("PopupCloseDuration") is TimeSpan duration ? duration : TimeSpan.Zero;
     private const double ChipDragThreshold = 4;
     private const double DraggedChipOpacity = 0.4;
     private TrackEditorVm? vm;
@@ -170,21 +167,10 @@ public partial class TrackEditor : UserControl
 
     private void OnBackdropPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if(e.Property == TagProperty)
+        if(e.Property == PopupBackdrop.IsOpenProperty && Backdrop.IsOpen)
         {
-            if(IsOpen)
-            {
-                Backdrop.IsVisible = true;
-                TitleBox.ClearSelection();
-                TitleBox.CaretIndex = TitleBox.Text?.Length ?? 0;
-            }
-            else
-            {
-                DispatcherTimer.RunOnce(() => Backdrop.IsVisible = IsOpen, CloseDuration);
-            }
-
-            Backdrop.Classes.Set("Opening", IsOpen);
-            Backdrop.Classes.Set("Open", IsOpen);
+            TitleBox.ClearSelection();
+            TitleBox.CaretIndex = TitleBox.Text?.Length ?? 0;
         }
         else if(e.Property == IsVisibleProperty && Backdrop.IsVisible)
         {

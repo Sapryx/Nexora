@@ -5,56 +5,6 @@
              x:Class="Nexora.Views.TrackEditor"
              x:DataType="viewModels:TrackEditorVm">
     <UserControl.Styles>
-        <Style Selector="Panel#Backdrop">
-            <Setter Property="Opacity" Value="0" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity"
-                                      Duration="{StaticResource PopupCloseDuration}"
-                                      Easing="{StaticResource DefaultEaseIn}" />
-                </Transitions>
-            </Setter>
-        </Style>
-
-        <Style Selector="Panel#Backdrop.Opening">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <DoubleTransition Property="Opacity"
-                                      Duration="{StaticResource PopupOpenDuration}"
-                                      Easing="{StaticResource DefaultEaseOut}" />
-                </Transitions>
-            </Setter>
-        </Style>
-
-        <Style Selector="Panel#Backdrop.Open">
-            <Setter Property="Opacity" Value="1" />
-        </Style>
-
-        <Style Selector="Border#Dialog">
-            <Setter Property="RenderTransform" Value="{StaticResource PopupClosedTransform}" />
-            <Setter Property="Transitions">
-                <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform"
-                                                   Duration="{StaticResource PopupCloseDuration}"
-                                                   Easing="{StaticResource DefaultEaseIn}" />
-                </Transitions>
-            </Setter>
-        </Style>
-
-        <Style Selector="Panel#Backdrop.Opening Border#Dialog">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform"
-                                                   Duration="{StaticResource PopupOpenDuration}"
-                                                   Easing="{StaticResource DefaultEaseOut}" />
-                </Transitions>
-            </Setter>
-        </Style>
-
-        <Style Selector="Panel#Backdrop.Open Border#Dialog">
-            <Setter Property="RenderTransform" Value="scale(1)" />
-        </Style>
-
         <Style Selector="TextBox.Field">
             <Setter Property="Background" Value="rgba(0, 0, 0, 25%)" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -137,11 +87,9 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Panel x:Name="Backdrop"
-           Tag="{Binding IsOpen}"
-           IsVisible="False"
-           Background="{StaticResource PopupBackdropBrush}">
-        <Border x:Name="Dialog"
+    <controls:PopupBackdrop x:Name="Backdrop"
+                            IsOpen="{Binding IsOpen}">
+        <Border Classes="Dialog"
                 Width="640"
                 Margin="32"
                 Padding="24"
@@ -271,5 +219,5 @@
                 </StackPanel>
             </StackPanel>
         </Border>
-    </Panel>
+    </controls:PopupBackdrop>
 </UserControl>
