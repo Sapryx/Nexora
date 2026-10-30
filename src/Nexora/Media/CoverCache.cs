@@ -63,6 +63,11 @@ public class CoverCache : ICoverCache
         return Task.Run(() => LoadCover(audioPath, DecodeLarge));
     }
 
+    public Task<Bitmap?> LoadOriginalAsync(string audioPath)
+    {
+        return Task.Run(() => LoadCover(audioPath, stream => new Bitmap(stream)));
+    }
+
     public static PixelSize FitToMaxSide(PixelSize size, int maxSide)
     {
         int largestSide = Math.Max(size.Width, size.Height);

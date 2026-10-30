@@ -38,6 +38,7 @@ public class PlaybackVmTests
             audioPlayerMock.Object,
             metadataEditor,
             Mock.Of<ICoverCache>(),
+            new CoverViewerVm(Mock.Of<ICoverCache>(), uiDispatcherMock.Object),
             uiDispatcherMock.Object
         );
     }

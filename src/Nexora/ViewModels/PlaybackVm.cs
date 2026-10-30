@@ -40,6 +40,7 @@ public partial class PlaybackVm : ViewModelBase
         IAudioPlayer audioPlayer,
         TrackMetadataEditor metadataEditor,
         ICoverCache coverCache,
+        CoverViewerVm coverViewerVm,
         IUiDispatcher uiDispatcher)
     {
         this.audioPlayer = audioPlayer;
@@ -48,7 +49,7 @@ public partial class PlaybackVm : ViewModelBase
 
         audioPlayer.PlaybackStarted += playlistItem => uiDispatcher.Post(() =>
         {
-            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, uiDispatcher);
+            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, coverViewerVm, uiDispatcher);
             trackViewVm.Update(playlistItem);
             PlayingTrackViewVm = trackViewVm;
         });

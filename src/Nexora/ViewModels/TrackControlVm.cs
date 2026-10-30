@@ -24,7 +24,6 @@ public partial class TrackControlVm : CoveredTrackVm
 
     public bool IsInQueue { get; }
     public IReadOnlyList<string> ArtistNames => playlistItem.AudioTrack.Metadata.Artists;
-    public string AudioPath => playlistItem.AudioTrack.AudioPath;
     private readonly IPlaylistItem playlistItem;
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;

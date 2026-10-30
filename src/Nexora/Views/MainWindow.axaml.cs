@@ -22,7 +22,7 @@ public partial class MainWindow : Window
         }
     };
 
-    private bool IsTrackEditorOpen => DataContext is MainWindowVm vm && vm.TrackEditorVm.IsOpen;
+    private bool IsPopupOpen => DataContext is MainWindowVm vm && vm.IsPopupOpen;
 
     public MainWindow()
     {
@@ -37,8 +37,7 @@ public partial class MainWindow : Window
     {
         base.OnKeyDown(e);
 
-        if(e.Handled || e.Source is TextBox || IsTrackEditorOpen ||
-           DataContext is MainWindowVm { IsSettingsOpen: true })
+        if(e.Handled || e.Source is TextBox || IsPopupOpen || DataContext is MainWindowVm { IsSettingsOpen: true })
         {
             return;
         }
@@ -68,18 +67,18 @@ public partial class MainWindow : Window
 
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
-        if(DataContext is MainWindowVm mainWindowVm && e.Key == Key.Escape && IsTrackEditorOpen)
+        if(DataContext is MainWindowVm mainWindowVm && e.Key == Key.Escape && IsPopupOpen)
         {
             if(e.RoutedEvent == KeyDownEvent)
             {
-                mainWindowVm.TrackEditorVm.Cancel();
+                mainWindowVm.ClosePopup();
             }
 
             e.Handled = true;
             return;
         }
 
-        if(e.Source is TextBox || IsTrackEditorOpen)
+        if(e.Source is TextBox || IsPopupOpen)
         {
             return;
         }
