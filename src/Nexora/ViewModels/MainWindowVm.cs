@@ -22,7 +22,7 @@ public partial class MainWindowVm : ViewModelBase
     public TrackEditorVm TrackEditorVm { get; }
     public CoverViewerVm CoverViewerVm { get; }
     public bool IsPopupOpen => TrackEditorVm.IsOpen || CoverViewerVm.IsOpen;
-    private const int LibraryGridViewIndex = 1;
+    private const int LibraryGridViewIndex = 0;
     private const int SettingsTabIndex = 1;
     private readonly ILogger logger;
 
