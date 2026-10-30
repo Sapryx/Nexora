@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Library;
@@ -16,9 +15,6 @@ public partial class TrackEditorVm : ViewModelBase
 
     [ObservableProperty]
     public partial bool IsOpen { get; private set; }
-
-    [ObservableProperty]
-    public partial Bitmap? Cover { get; private set; }
 
     [ObservableProperty]
     public partial string EditedTitle { get; set; } = "";
@@ -44,12 +40,10 @@ public partial class TrackEditorVm : ViewModelBase
 
     public ObservableCollection<string> EditedArtists { get; } = [];
     public ObservableCollection<ArtistSuggestion> Suggestions { get; } = [];
+    public LargeCoverVm LargeCover { get; }
     private const int MaxSuggestions = 8;
     private readonly ArtistRegistry artistRegistry;
     private readonly IAudioPlayer audioPlayer;
-    private readonly ICoverCache coverCache;
-    private readonly IUiDispatcher uiDispatcher;
-    private Bitmap? largeCover;
 
     public TrackEditorVm(
         ArtistRegistry artistRegistry,
@@ -60,8 +54,7 @@ public partial class TrackEditorVm : ViewModelBase
     {
         this.artistRegistry = artistRegistry;
         this.audioPlayer = audioPlayer;
-        this.coverCache = coverCache;
-        this.uiDispatcher = uiDispatcher;
+        LargeCover = new LargeCoverVm(coverCache.LoadLargeAsync, uiDispatcher);
 
         EditedArtists.CollectionChanged += (_, _) => UpdateChanges();
         audioPlayer.PlaybackStarted += _ => uiDispatcher.Post(UpdateIsEditable);
@@ -84,8 +77,7 @@ public partial class TrackEditorVm : ViewModelBase
         ArtistQuery = "";
         TrackVm = trackVm;
         IsOpen = true;
-        SetLargeCover(null);
-        _ = LoadLargeCoverAsync(trackVm);
+        LargeCover.Load(trackVm.AudioPath, trackVm.Cover);
     }
 
     [RelayCommand(CanExecute = nameof(IsEditable))]
@@ -110,11 +102,6 @@ public partial class TrackEditorVm : ViewModelBase
     public void Cancel()
     {
         Close();
-    }
-
-    public void ReleaseLargeCover()
-    {
-        SetLargeCover(null);
     }
 
     public void RemoveArtist(string artist)
@@ -177,36 +164,6 @@ public partial class TrackEditorVm : ViewModelBase
         IsTitleChanged = TrackVm != null && EditedTitle != TrackVm.Title;
         AreArtistsChanged = TrackVm != null
             && (ArtistQuery.Trim() != "" || !EditedArtists.SequenceEqual(TrackVm.ArtistNames));
-    }
-
-    private async Task LoadLargeCoverAsync(TrackControlVm trackVm)
-    {
-        var cover = await coverCache.LoadLargeAsync(trackVm.AudioPath).ConfigureAwait(false);
-
-        if(cover == null)
-        {
-            return;
-        }
-
-        uiDispatcher.Post(() =>
-        {
-            if(IsOpen && TrackVm == trackVm)
-            {
-                SetLargeCover(cover);
-            }
-            else
-            {
-                cover.Dispose();
-            }
-        });
-    }
-
-    private void SetLargeCover(Bitmap? cover)
-    {
-        var previous = largeCover;
-        largeCover = cover;
-        Cover = cover ?? TrackVm?.Cover;
-        previous?.Dispose();
     }
 
     private void UpdateIsEditable()
