@@ -82,6 +82,17 @@ public class CoverCacheTests
     }
 
     [Fact]
+    public async Task LoadOriginalAsync_LoaderThrows_ReturnsNullAndLogsWarning()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
+
+        var cover = await coverCache.LoadOriginalAsync(AudioPath);
+
+        Assert.Null(cover);
+        Assert.Equal(LogLevel.Warning, Assert.Single(logger.Entries).Level);
+    }
+
+    [Fact]
     public void FitToMaxSide_LargerThanMax_ScalesLargestSideToMaxKeepingAspect()
     {
         var size = CoverCache.FitToMaxSide(new PixelSize(4000, 3000), 2048);

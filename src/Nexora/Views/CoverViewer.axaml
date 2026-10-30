@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:Nexora.ViewModels"
+             xmlns:controls="clr-namespace:Nexora.Controls"
+             x:Class="Nexora.Views.CoverViewer"
+             x:DataType="viewModels:CoverViewerVm">
+    <controls:PopupBackdrop x:Name="Backdrop"
+                            IsOpen="{Binding IsOpen}"
+                            Cursor="SizeAll">
+        <Panel Classes="Dialog">
+            <Border x:Name="Cover"
+                    Margin="64"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    CornerRadius="12"
+                    ClipToBounds="True"
+                    RenderTransformOrigin="50%,50%">
+                <Image Source="{Binding LargeCover.Cover}"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"
+                       MaxWidth="512"
+                       MaxHeight="512"
+                       Stretch="Uniform" />
+            </Border>
+        </Panel>
+
+        <Button x:Name="CloseButton"
+                Command="{Binding CloseCommand}"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Margin="16"
+                Width="36"
+                Height="36"
+                Padding="10"
+                CornerRadius="18"
+                Background="Transparent"
+                Cursor="Arrow"
+                ToolTip.Tip="Close">
+            <controls:Icon IconName="cross" />
+        </Button>
+    </controls:PopupBackdrop>
+</UserControl>

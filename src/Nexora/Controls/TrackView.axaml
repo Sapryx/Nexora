@@ -11,14 +11,21 @@
         VerticalAlignment="Center"
         HorizontalAlignment="Stretch"
         ColumnSpacing="8">
-        <Border Grid.Column="0"
+        <Button Grid.Column="0"
+                Command="{Binding ShowCoverCommand}"
+                Padding="0"
                 CornerRadius="4"
-                ClipToBounds="True">
-            <Image Source="{Binding Cover}"
-                   RenderOptions.BitmapInterpolationMode="HighQuality"
-                   Width="64"
-                   Height="64" />
-        </Border>
+                BorderThickness="0"
+                Cursor="Hand"
+                ToolTip.Tip="Show cover">
+            <Border CornerRadius="4"
+                    ClipToBounds="True">
+                <Image Source="{Binding Cover}"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"
+                       Width="64"
+                       Height="64" />
+            </Border>
+        </Button>
 
         <StackPanel Grid.Column="1"
                     Orientation="Vertical"

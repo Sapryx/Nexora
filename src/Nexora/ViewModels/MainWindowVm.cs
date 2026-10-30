@@ -20,6 +20,8 @@ public partial class MainWindowVm : ViewModelBase
     public PlaybackVm PlaybackVm { get; }
     public QueueVm QueueVm { get; }
     public TrackEditorVm TrackEditorVm { get; }
+    public CoverViewerVm CoverViewerVm { get; }
+    public bool IsPopupOpen => TrackEditorVm.IsOpen || CoverViewerVm.IsOpen;
     private const int LibraryGridViewIndex = 1;
     private const int SettingsTabIndex = 1;
     private readonly ILogger logger;
@@ -29,7 +31,8 @@ public partial class MainWindowVm : ViewModelBase
         SearchBarVm searchBarVm,
         PlaybackVm playbackVm,
         QueueVm queueVm,
-        TrackEditorVm trackEditorVm)
+        TrackEditorVm trackEditorVm,
+        CoverViewerVm coverViewerVm)
     {
         this.logger = logger;
 
@@ -37,10 +40,17 @@ public partial class MainWindowVm : ViewModelBase
         PlaybackVm = playbackVm;
         QueueVm = queueVm;
         TrackEditorVm = trackEditorVm;
+        CoverViewerVm = coverViewerVm;
     }
 
     public void Initialize()
     {
         logger.Info($"Application initialized");
+    }
+
+    public void ClosePopup()
+    {
+        TrackEditorVm.Cancel();
+        CoverViewerVm.Close();
     }
 }
