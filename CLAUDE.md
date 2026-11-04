@@ -30,7 +30,7 @@ Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 
 ## Verification
 
-Cover changes with unit tests. After a change, only build; run the tests only before a commit (see Commits). Don't run the app to verify a change: the user tests it in the app. Run the app only when the user reports a bug and asks you to check it. When unit tests can't cover the behavior (layout and rendering, focus and input handling, window behavior, real playback, startup and DI wiring), tell the user what to check in the app.
+Cover changes with unit tests. Don't run the app to verify a change: the user tests it in the app. Run the app only when the user reports a bug and asks you to check it. When unit tests can't cover the behavior (layout and rendering, focus and input handling, window behavior, real playback, startup and DI wiring), tell the user what to check in the app.
 
 ## Debugging
 
@@ -122,3 +122,17 @@ Before committing, run both test projects. Commit only if all tests pass; otherw
 ## Do not read
 
 `bin/`, `obj/`, `.idea/`, `Test Results/`, `Report/`.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked in GitHub Issues (`Sapryx/Nexora`) via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The default five triage labels (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
