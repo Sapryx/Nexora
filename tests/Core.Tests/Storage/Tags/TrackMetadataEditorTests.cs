@@ -4,6 +4,7 @@ using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Shared.Logging;
+using Tests.Shared.Playback;
 
 namespace Core.Tests.Storage.Tags;
 
@@ -11,7 +12,7 @@ public class TrackMetadataEditorTests
 {
     private const string AudioPath = "/music/Psycho.mp3";
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
-    private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
+    private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly TestLogger<TrackMetadataEditor> logger = new TestLogger<TrackMetadataEditor>();
     private readonly AudioTrack audioTrack = new AudioTrack(
         AudioPath,
@@ -103,7 +104,7 @@ public class TrackMetadataEditorTests
     [Fact]
     public async Task EditAsync_TrackLoadedInPlayer_SavesWithFileReleased()
     {
-        SetupNowPlaying(audioTrack);
+        SetupPlayingTrack(audioTrack);
 
         await editor.EditAsync(audioTrack, "Uprising", ["Muse"]);
 
@@ -115,7 +116,7 @@ public class TrackMetadataEditorTests
     [Fact]
     public async Task EditAsync_OtherTrackLoadedInPlayer_SavesWithoutReleasingFile()
     {
-        SetupNowPlaying(new AudioTrack("/music/Madness.mp3", new Metadata()));
+        SetupPlayingTrack(new AudioTrack("/music/Madness.mp3", new Metadata()));
 
         await editor.EditAsync(audioTrack, "Uprising", ["Muse"]);
 
@@ -123,12 +124,12 @@ public class TrackMetadataEditorTests
         metadataSaverMock.Verify(it => it.Save(It.Is<MetadataChange>(change => change.Title == "Uprising")));
     }
 
-    private void SetupNowPlaying(IAudioTrack track)
+    private void SetupPlayingTrack(IAudioTrack track)
     {
         var playlistItem = Mock.Of<IPlaylistItem>(it => it.AudioTrack == track);
 
         audioPlayerMock
-            .SetupGet(it => it.NowPlaying)
-            .Returns(playlistItem);
+            .SetupGet(it => it.State)
+            .Returns(PlaybackState.Playing(playlistItem));
     }
 }

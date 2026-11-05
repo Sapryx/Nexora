@@ -1,6 +1,6 @@
 namespace Core.Integrations;
 
-public interface IRichPresenceService : IDisposable
+public interface IRichPresenceService
 {
     public void Initialize();
 }

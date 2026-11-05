@@ -7,18 +7,19 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
 public class TrackControlVmTests
 {
     private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
-    private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
+    private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
     private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
         NullLogger<TrackMetadataEditor>.Instance,
         Mock.Of<IMetadataSaver>(),
-        Mock.Of<IAudioPlayer>()
+        AudioPlayerMock.Create().Object
     );
     private readonly PlaybackQueue playbackQueue;
 
@@ -44,28 +45,56 @@ public class TrackControlVmTests
     }
 
     [Fact]
-    public void PlaybackStarted_RaisedWithThisTrack_MarksTrackActiveAndPlaying()
+    public void StateChanged_PlayingThisTrack_MarksTrackActiveAndPlaying()
     {
         var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
         var vm = CreateVm(playlistItem);
 
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
 
         Assert.True(vm.IsActive);
         Assert.True(vm.IsActiveAndPlaying);
     }
 
     [Fact]
-    public void PlaybackStarted_RaisedWithOtherTrack_MarksTrackInactive()
+    public void StateChanged_PlayingOtherTrack_MarksTrackInactive()
     {
         var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
         var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
 
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, CreatePlaylistItem(TimeSpan.Zero));
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreatePlaylistItem(TimeSpan.Zero)));
 
         Assert.False(vm.IsActive);
         Assert.False(vm.IsActiveAndPlaying);
+    }
+
+    [Fact]
+    public void StateChanged_PausedThisTrack_MarksTrackActiveButNotPlaying()
+    {
+        var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
+        var vm = CreateVm(playlistItem);
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(playlistItem));
+
+        Assert.True(vm.IsActive);
+        Assert.False(vm.IsActiveAndPlaying);
+    }
+
+    [Fact]
+    public void StateChanged_ActiveQueueItemResumed_KeepsProgress()
+    {
+        playbackQueue.AddTrack(CreateTrack());
+        var playlistItem = playbackQueue.GetItem(0);
+        var vm = CreateVm(playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
+        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.4f);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(playlistItem));
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
+
+        Assert.Equal(0.4f, vm.Progress);
+        Assert.True(vm.IsActiveAndPlaying);
     }
 
     [Fact]
@@ -137,7 +166,7 @@ public class TrackControlVmTests
         playbackQueue.AddTrack(CreateTrack());
         var item = playbackQueue.GetItem(0);
         var next = playbackQueue.GetItem(1);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(item);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(item));
         var vm = CreateVm(item);
 
         vm.RemoveFromQueue();
@@ -146,13 +175,13 @@ public class TrackControlVmTests
     }
 
     [Fact]
-    public void PlaybackStopped_ActiveTrack_MarksTrackInactive()
+    public void StateChanged_StoppedActiveTrack_MarksTrackInactive()
     {
         var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
         var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
 
-        audioPlayerMock.Raise(it => it.PlaybackStopped += null);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Stopped);
 
         Assert.False(vm.IsActive);
         Assert.False(vm.IsActiveAndPlaying);
@@ -164,7 +193,7 @@ public class TrackControlVmTests
         playbackQueue.AddTrack(CreateTrack());
         var playlistItem = playbackQueue.GetItem(0);
         var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
 
         audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
 
@@ -177,7 +206,7 @@ public class TrackControlVmTests
         playlistRegistry.GlobalPlaylist.AddTrack(CreateTrack());
         var playlistItem = playlistRegistry.GlobalPlaylist.GetItem(0);
         var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
 
         audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
 
@@ -185,15 +214,15 @@ public class TrackControlVmTests
     }
 
     [Fact]
-    public void PlaybackStarted_OtherTrack_ResetsProgress()
+    public void StateChanged_PlayingOtherTrack_ResetsProgress()
     {
         playbackQueue.AddTrack(CreateTrack());
         var playlistItem = playbackQueue.GetItem(0);
         var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, playlistItem);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
         audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
 
-        audioPlayerMock.Raise(it => it.PlaybackStarted += null, CreatePlaylistItem(TimeSpan.Zero));
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreatePlaylistItem(TimeSpan.Zero)));
 
         Assert.Equal(0, vm.Progress);
     }

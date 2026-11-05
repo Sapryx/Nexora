@@ -7,6 +7,7 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
@@ -89,17 +90,17 @@ public class TrackGridRowTests
         var metadataEditor = new TrackMetadataEditor(
             NullLogger<TrackMetadataEditor>.Instance,
             Mock.Of<IMetadataSaver>(),
-            Mock.Of<IAudioPlayer>()
+            AudioPlayerMock.Create().Object
         );
 
         return new TrackControlVm(
             Mock.Of<IPlaylistItem>(it => it.AudioTrack == audioTrack),
-            new PlaybackQueue(Mock.Of<IAudioPlayer>()),
-            Mock.Of<IAudioPlayer>(),
+            new PlaybackQueue(AudioPlayerMock.Create().Object),
+            AudioPlayerMock.Create().Object,
             metadataEditor,
             new TrackEditorVm(
                 new ArtistRegistry(metadataEditor),
-                Mock.Of<IAudioPlayer>(),
+                AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 Mock.Of<IUiDispatcher>()
             ),

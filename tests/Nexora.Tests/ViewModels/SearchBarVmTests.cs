@@ -9,6 +9,7 @@ using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
 using Nexora.ViewModels.Factories;
+using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
@@ -32,11 +33,11 @@ public class SearchBarVmTests
         var metadataEditor = new TrackMetadataEditor(
             NullLogger<TrackMetadataEditor>.Instance,
             Mock.Of<IMetadataSaver>(),
-            Mock.Of<IAudioPlayer>()
+            AudioPlayerMock.Create().Object
         );
         var trackEditorVm = new TrackEditorVm(
             new ArtistRegistry(metadataEditor),
-            Mock.Of<IAudioPlayer>(),
+            AudioPlayerMock.Create().Object,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object
         );
@@ -45,8 +46,8 @@ public class SearchBarVmTests
             .Setup(it => it.Create(It.IsAny<IPlaylistItem>()))
             .Returns<IPlaylistItem>(it => new TrackControlVm(
                 it,
-                new PlaybackQueue(Mock.Of<IAudioPlayer>()),
-                Mock.Of<IAudioPlayer>(),
+                new PlaybackQueue(AudioPlayerMock.Create().Object),
+                AudioPlayerMock.Create().Object,
                 metadataEditor,
                 trackEditorVm,
                 Mock.Of<ICoverCache>(),

@@ -4,18 +4,13 @@ namespace Core.Playback;
 
 public interface IAudioPlayer
 {
-    public IPlaylistItem? NowPlaying { get; }
-    public bool IsPlaying { get; }
+    public PlaybackState State { get; }
     public int Volume { get; set; }
     public float PlaybackPosition { get; set; }
     public bool Mute { get; set; }
 
-    public event Action<IPlaylistItem>? PlaybackStarted;
+    public event Action<PlaybackState>? StateChanged;
     public event Action<float>? PlaybackPositionChanged;
-    public event Action? PlaybackPaused;
-    public event Action? PlaybackFinished;
-    public event Action? PlaybackResumed;
-    public event Action? PlaybackStopped;
     public event Action<float>? VolumeChanged;
     public event Action<bool>? MuteChanged;
 

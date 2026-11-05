@@ -1,15 +1,20 @@
 using Core.Integrations;
-using Core.Logging;
 using Core.Playback;
+using Core.Playlists;
+using DiscordRPC;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Tests.Shared.Logging;
+using Tests.Shared.Playback;
 
 namespace Core.Tests.Integrations;
 
 public class DiscordRichPresenceServiceTests
 {
+    private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
+    private readonly Mock<IDiscordClient> discordClientMock = new Mock<IDiscordClient>();
+
     [Fact]
     public void CreatePresence_TextWithinLimit_KeepsItAsIs()
     {
@@ -55,7 +60,7 @@ public class DiscordRichPresenceServiceTests
     public void OnConnectionFailed_CalledRepeatedly_LogsInfoOnce()
     {
         var logger = new TestLogger<DiscordRichPresenceService>();
-        using var service = CreateService(logger);
+        var service = CreateService(logger);
 
         service.OnConnectionFailed();
         service.OnConnectionFailed();
@@ -69,7 +74,7 @@ public class DiscordRichPresenceServiceTests
     public void OnConnectionFailed_AfterReady_LogsAgain()
     {
         var logger = new TestLogger<DiscordRichPresenceService>();
-        using var service = CreateService(logger);
+        var service = CreateService(logger);
         service.OnConnectionFailed();
         service.OnReady("user");
 
@@ -82,7 +87,7 @@ public class DiscordRichPresenceServiceTests
     public void OnReady_Called_LogsInfoWithUsername()
     {
         var logger = new TestLogger<DiscordRichPresenceService>();
-        using var service = CreateService(logger);
+        var service = CreateService(logger);
 
         service.OnReady("user");
 
@@ -94,7 +99,7 @@ public class DiscordRichPresenceServiceTests
     [Fact]
     public void UpdateStatus_TextLongerThanLimit_DoesNotThrow()
     {
-        using var service = CreateService(NullLogger<DiscordRichPresenceService>.Instance);
+        var service = CreateService(NullLogger<DiscordRichPresenceService>.Instance);
         string text = new string('a', 300);
 
         var exception = Record.Exception(() => service.UpdateStatus(text, text));
@@ -102,12 +107,39 @@ public class DiscordRichPresenceServiceTests
         Assert.Null(exception);
     }
 
-    private static DiscordRichPresenceService CreateService(ILogger<DiscordRichPresenceService> logger)
+    [Fact]
+    public void StateChanged_PlayingTrack_ShowsTrackInPresence()
     {
-        return new DiscordRichPresenceService(
-            Mock.Of<IAudioPlayer>(),
-            logger,
-            NullLogger<DiscordRpcLogger>.Instance
-        );
+        var service = CreateService(NullLogger<DiscordRichPresenceService>.Instance);
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreatePlaylistItem()));
+
+        discordClientMock.Verify(it => it.SetPresence(
+            It.Is<RichPresence?>(presence =>
+                presence != null && presence.Details == "Psycho" && presence.State == "Muse")
+        ));
+    }
+
+    [Fact]
+    public void StateChanged_Stopped_ClearsPresence()
+    {
+        var service = CreateService(NullLogger<DiscordRichPresenceService>.Instance);
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreatePlaylistItem()));
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Stopped);
+
+        discordClientMock.Verify(it => it.SetPresence(null));
+    }
+
+    private DiscordRichPresenceService CreateService(ILogger<DiscordRichPresenceService> logger)
+    {
+        return new DiscordRichPresenceService(audioPlayerMock.Object, discordClientMock.Object, logger);
+    }
+
+    private static IPlaylistItem CreatePlaylistItem()
+    {
+        var metadata = new Metadata() { Title = "Psycho", Artists = ["Muse"] };
+
+        return Mock.Of<IPlaylistItem>(it => it.AudioTrack.Metadata == metadata);
     }
 }

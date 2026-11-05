@@ -13,7 +13,7 @@ public class PlaybackQueue : Playlist
 
     public override void RemoveItem(IPlaylistItem item)
     {
-        if(item.Playlist == this && audioPlayer.NowPlaying == item)
+        if(item.Playlist == this && audioPlayer.State.Track == item)
         {
             PlayNextOrStop(item);
         }

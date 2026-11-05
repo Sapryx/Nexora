@@ -1,6 +1,5 @@
 using Core.Logging;
 using Core.Playback;
-using Core.Playlists;
 using DiscordRPC;
 using Microsoft.Extensions.Logging;
 
@@ -8,38 +7,29 @@ namespace Core.Integrations;
 
 public class DiscordRichPresenceService : IRichPresenceService
 {
-    private const string AppId = "1494383204252258484";
     private const int MaxTextLength = 128;
     private const string Ellipsis = "…";
     private readonly ILogger<DiscordRichPresenceService> logger;
-    private readonly DiscordRpcClient client;
+    private readonly IDiscordClient client;
     private bool connectionFailureLogged;
 
     public DiscordRichPresenceService(
         IAudioPlayer audioPlayer,
-        ILogger<DiscordRichPresenceService> logger,
-        ILogger<DiscordRpcLogger> rpcLogger)
+        IDiscordClient client,
+        ILogger<DiscordRichPresenceService> logger)
     {
+        this.client = client;
         this.logger = logger;
-        client = new DiscordRpcClient(AppId)
-        {
-            Logger = new DiscordRpcLogger(rpcLogger)
-        };
 
-        client.OnReady += (_, e) => OnReady(e.User.Username);
-        client.OnConnectionFailed += (_, _) => OnConnectionFailed();
-        client.OnError += (_, e) => logger.Warn($"(Discord) Error {e.Code}: {e.Message}");
-        audioPlayer.PlaybackStarted += OnPlaybackStarted;
+        client.Ready += OnReady;
+        client.ConnectionFailed += OnConnectionFailed;
+        client.Error += (code, message) => logger.Warn($"(Discord) Error {code}: {message}");
+        audioPlayer.StateChanged += OnStateChanged;
     }
 
     public void Initialize()
     {
         client.Initialize();
-    }
-
-    public void Dispose()
-    {
-        client.Dispose();
     }
 
     public void UpdateStatus(string title, string artist)
@@ -89,10 +79,15 @@ public class DiscordRichPresenceService : IRichPresenceService
         }
     }
 
-    private void OnPlaybackStarted(IPlaylistItem playlistItem)
+    private void OnStateChanged(PlaybackState state)
     {
-        string title = playlistItem.AudioTrack.Metadata.Title;
-        string artists = playlistItem.AudioTrack.Metadata.JoinedArtists;
-        UpdateStatus(title, artists);
+        if(state.Track == null)
+        {
+            client.SetPresence(null);
+            return;
+        }
+
+        var metadata = state.Track.AudioTrack.Metadata;
+        UpdateStatus(metadata.Title, metadata.JoinedArtists);
     }
 }

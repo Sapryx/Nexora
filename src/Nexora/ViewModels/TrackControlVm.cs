@@ -47,8 +47,9 @@ public partial class TrackControlVm : CoveredTrackVm
 
         IsInQueue = playlistItem.Playlist == playbackQueue;
 
-        IsActive = audioPlayer.NowPlaying == playlistItem;
-        IsActiveAndPlaying = IsActive && audioPlayer.IsPlaying;
+        var state = audioPlayer.State;
+        IsActive = state.Track == playlistItem;
+        IsActiveAndPlaying = IsActive && state.Status == PlaybackStatus.Playing;
 
         if(IsActive && IsInQueue)
         {
@@ -59,11 +60,16 @@ public partial class TrackControlVm : CoveredTrackVm
         UpdateTrackInfo();
         Duration = $"{(int)duration.TotalMinutes:00}:{duration.Seconds:00}";
 
-        audioPlayer.PlaybackStarted += nowPlaying => uiDispatcher.Post(() =>
+        audioPlayer.StateChanged += newState => uiDispatcher.Post(() =>
         {
-            IsActive = nowPlaying == playlistItem;
-            IsActiveAndPlaying = IsActive;
-            Progress = 0;
+            bool wasActive = IsActive;
+            IsActive = newState.Track == playlistItem;
+            IsActiveAndPlaying = IsActive && newState.Status == PlaybackStatus.Playing;
+
+            if(IsActive != wasActive)
+            {
+                Progress = 0;
+            }
         });
 
         audioPlayer.PlaybackPositionChanged += position => uiDispatcher.Post(() =>
@@ -72,18 +78,6 @@ public partial class TrackControlVm : CoveredTrackVm
             {
                 Progress = position;
             }
-        });
-
-        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
-        {
-            IsActiveAndPlaying = false;
-        });
-
-        audioPlayer.PlaybackStopped += () => uiDispatcher.Post(() =>
-        {
-            IsActive = false;
-            IsActiveAndPlaying = false;
-            Progress = 0;
         });
 
         metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
@@ -98,7 +92,7 @@ public partial class TrackControlVm : CoveredTrackVm
     [RelayCommand]
     public void PressPlayButton()
     {
-        if(audioPlayer.NowPlaying == playlistItem)
+        if(audioPlayer.State.Track == playlistItem)
         {
             audioPlayer.TogglePause();
         }

@@ -3,6 +3,7 @@ using Core.Playback;
 using Core.Storage.Tags;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using Tests.Shared.Playback;
 
 namespace Core.Tests.Library;
 
@@ -11,7 +12,7 @@ public class ArtistRegistryTests
     private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
         NullLogger<TrackMetadataEditor>.Instance,
         Mock.Of<IMetadataSaver>(),
-        Mock.Of<IAudioPlayer>()
+        AudioPlayerMock.Create().Object
     );
     private readonly ArtistRegistry registry;
 

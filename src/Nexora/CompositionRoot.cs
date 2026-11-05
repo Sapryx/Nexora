@@ -58,7 +58,9 @@ public static class CompositionRoot
         >();
         builder.AddSingleton<TrackMetadataEditor>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
+        builder.AddSingleton<IDiscordClient, DiscordRpcClientAdapter>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
+        builder.AddSingleton<IMediaEngine, VlcMediaEngine>();
         builder.AddSingleton<IAudioPlayer, AudioPlayer>();
         builder.AddSingleton<IVolumeStorage>(provider => new FileVolumeStorage(
             VolumeFilePath,

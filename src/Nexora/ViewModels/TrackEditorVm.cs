@@ -57,11 +57,7 @@ public partial class TrackEditorVm : ViewModelBase
         LargeCover = new LargeCoverVm(coverCache.LoadLargeAsync, uiDispatcher);
 
         EditedArtists.CollectionChanged += (_, _) => UpdateChanges();
-        audioPlayer.PlaybackStarted += _ => uiDispatcher.Post(UpdateIsEditable);
-        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(UpdateIsEditable);
-        audioPlayer.PlaybackResumed += () => uiDispatcher.Post(UpdateIsEditable);
-        audioPlayer.PlaybackStopped += () => uiDispatcher.Post(UpdateIsEditable);
-        audioPlayer.PlaybackFinished += () => uiDispatcher.Post(UpdateIsEditable);
+        audioPlayer.StateChanged += _ => uiDispatcher.Post(UpdateIsEditable);
     }
 
     public void Open(TrackControlVm trackVm)
@@ -168,9 +164,10 @@ public partial class TrackEditorVm : ViewModelBase
 
     private void UpdateIsEditable()
     {
+        var state = audioPlayer.State;
         IsEditable = TrackVm == null
-            || !audioPlayer.IsPlaying
-            || audioPlayer.NowPlaying?.AudioTrack.AudioPath != TrackVm.AudioPath;
+            || state.Status != PlaybackStatus.Playing
+            || state.Track?.AudioTrack.AudioPath != TrackVm.AudioPath;
     }
 
     private void Close()
