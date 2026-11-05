@@ -27,7 +27,6 @@ public partial class QueueVm : ViewModelBase
         // and a removed item keeps the index it had, which is the index of its view model.
         playbackQueue.ItemRemoved += playlistItem => uiDispatcher.Post(() =>
         {
-            // TODO: the removed view model stays subscribed to IAudioPlayer events, so it is never collected.
             TrackVms.RemoveAt(playlistItem.Index);
             IsEmpty = TrackVms.Count == 0;
         });

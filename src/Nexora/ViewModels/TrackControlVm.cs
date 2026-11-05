@@ -47,46 +47,32 @@ public partial class TrackControlVm : CoveredTrackVm
 
         IsInQueue = playlistItem.Playlist == playbackQueue;
 
-        var state = audioPlayer.State;
-        IsActive = state.Track == playlistItem;
-        IsActiveAndPlaying = IsActive && state.Status == PlaybackStatus.Playing;
-
-        if(IsActive && IsInQueue)
-        {
-            Progress = audioPlayer.PlaybackPosition;
-        }
+        ApplyState(audioPlayer.State);
+        ShowPosition(audioPlayer.PlaybackPosition);
 
         var duration = playlistItem.AudioTrack.Metadata.Duration;
         UpdateTrackInfo();
         Duration = $"{(int)duration.TotalMinutes:00}:{duration.Seconds:00}";
+    }
 
-        audioPlayer.StateChanged += newState => uiDispatcher.Post(() =>
+    public void ApplyState(PlaybackState state)
+    {
+        bool wasActive = IsActive;
+        IsActive = state.Track == playlistItem;
+        IsActiveAndPlaying = IsActive && state.Status == PlaybackStatus.Playing;
+
+        if(IsActive != wasActive)
         {
-            bool wasActive = IsActive;
-            IsActive = newState.Track == playlistItem;
-            IsActiveAndPlaying = IsActive && newState.Status == PlaybackStatus.Playing;
+            Progress = 0;
+        }
+    }
 
-            if(IsActive != wasActive)
-            {
-                Progress = 0;
-            }
-        });
-
-        audioPlayer.PlaybackPositionChanged += position => uiDispatcher.Post(() =>
+    public void ShowPosition(float position)
+    {
+        if(IsActive && IsInQueue)
         {
-            if(IsActive && IsInQueue)
-            {
-                Progress = position;
-            }
-        });
-
-        metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
-        {
-            if(audioPath == playlistItem.AudioTrack.AudioPath)
-            {
-                UpdateTrackInfo();
-            }
-        });
+            Progress = position;
+        }
     }
 
     [RelayCommand]
@@ -125,7 +111,7 @@ public partial class TrackControlVm : CoveredTrackVm
         return metadataEditor.EditAsync(playlistItem.AudioTrack, title, artists);
     }
 
-    private void UpdateTrackInfo()
+    public void UpdateTrackInfo()
     {
         var metadata = playlistItem.AudioTrack.Metadata;
         SetTrackInfo(metadata.Title, metadata.JoinedArtists, playlistItem.AudioTrack.AudioPath);
