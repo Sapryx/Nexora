@@ -4,9 +4,9 @@ using Core.Storage.Tags;
 using Nexora.Media;
 using Nexora.Threading;
 
-namespace Nexora.ViewModels.Factories;
+namespace Nexora.ViewModels;
 
-public class TrackControlVmFactory : ITrackControlVmFactory
+public class TrackControlVmRegistry
 {
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
@@ -15,7 +15,7 @@ public class TrackControlVmFactory : ITrackControlVmFactory
     private readonly ICoverCache coverCache;
     private readonly IUiDispatcher uiDispatcher;
 
-    public TrackControlVmFactory(
+    public TrackControlVmRegistry(
         PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
         TrackMetadataEditor metadataEditor,

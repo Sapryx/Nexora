@@ -6,7 +6,6 @@ using Core.Playback;
 using Core.Playlists;
 using Core.Search;
 using Nexora.Threading;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
@@ -17,18 +16,18 @@ public partial class SearchBarVm : ViewModelBase
 
     public Dictionary<IAudioTrack, TrackControlVm> AudioTrackVms { get; } = [];
     public ObservableCollection<TrackControlVm> DisplayedAudioTrackVms { get; } = [];
-    private readonly ITrackControlVmFactory trackControlVmFactory;
+    private readonly TrackControlVmRegistry trackControlVmRegistry;
     private readonly KeyboardLayoutTranslator layoutTranslator;
     private readonly List<TrackMatch> displayedMatches = [];
     private TrackSearchQuery searchQuery;
 
     public SearchBarVm(
         PlaylistRegistry playlistRegistry,
-        ITrackControlVmFactory trackControlVmFactory,
+        TrackControlVmRegistry trackControlVmRegistry,
         KeyboardLayoutTranslator layoutTranslator,
         IUiDispatcher uiDispatcher)
     {
-        this.trackControlVmFactory = trackControlVmFactory;
+        this.trackControlVmRegistry = trackControlVmRegistry;
         this.layoutTranslator = layoutTranslator;
         searchQuery = new TrackSearchQuery("", layoutTranslator);
 
@@ -41,7 +40,7 @@ public partial class SearchBarVm : ViewModelBase
 
     private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
-        var audioTrackVm = trackControlVmFactory.Create(playlistItem);
+        var audioTrackVm = trackControlVmRegistry.Create(playlistItem);
         AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
 
         return audioTrackVm;

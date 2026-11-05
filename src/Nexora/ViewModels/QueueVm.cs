@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Playlists;
 using Nexora.Threading;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
@@ -15,12 +14,12 @@ public partial class QueueVm : ViewModelBase
 
     public QueueVm(
         PlaybackQueue playbackQueue,
-        ITrackControlVmFactory trackControlVmFactory,
+        TrackControlVmRegistry trackControlVmRegistry,
         IUiDispatcher uiDispatcher)
     {
         playbackQueue.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
-            TrackVms.Add(trackControlVmFactory.Create(playlistItem));
+            TrackVms.Add(trackControlVmRegistry.Create(playlistItem));
             IsEmpty = false;
         });
 

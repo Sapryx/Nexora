@@ -7,7 +7,6 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
-using Nexora.ViewModels.Factories;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
@@ -29,7 +28,7 @@ public class QueueVmTests
             Mock.Of<IMetadataSaver>(),
             AudioPlayerMock.Create().Object
         );
-        var trackControlVmFactory = new TrackControlVmFactory(
+        var trackControlVmRegistry = new TrackControlVmRegistry(
             playbackQueue,
             AudioPlayerMock.Create().Object,
             metadataEditor,
@@ -42,7 +41,7 @@ public class QueueVmTests
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
 
-        vm = new QueueVm(playbackQueue, trackControlVmFactory, uiDispatcherMock.Object);
+        vm = new QueueVm(playbackQueue, trackControlVmRegistry, uiDispatcherMock.Object);
     }
 
     [Fact]

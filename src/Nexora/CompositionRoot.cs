@@ -15,7 +15,6 @@ using Nexora.Media;
 using Nexora.Render;
 using Nexora.Threading;
 using Nexora.ViewModels;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora;
 
@@ -40,7 +39,7 @@ public static class CompositionRoot
         builder.AddSingleton<LibVlcLogForwarder>();
         builder.AddSingleton(provider => CreateLibVlc(provider.GetRequiredService<LibVlcLogForwarder>()));
         builder.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
-        builder.AddSingleton<ITrackControlVmFactory, TrackControlVmFactory>();
+        builder.AddSingleton<TrackControlVmRegistry>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
         builder.AddSingleton<
             IDegreeOfParallelismProvider<FileTrackLoader>,

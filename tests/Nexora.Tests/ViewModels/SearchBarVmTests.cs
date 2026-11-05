@@ -8,7 +8,6 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
-using Nexora.ViewModels.Factories;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
@@ -16,14 +15,12 @@ namespace Nexora.Tests.ViewModels;
 public class SearchBarVmTests
 {
     private readonly PlaylistRegistry playlistRegistry;
-    private readonly Mock<ITrackControlVmFactory> trackControlVmFactoryMock;
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
     private readonly SearchBarVm vm;
 
     public SearchBarVmTests()
     {
         playlistRegistry = new PlaylistRegistry();
-        trackControlVmFactoryMock = new Mock<ITrackControlVmFactory>();
         uiDispatcherMock = new Mock<IUiDispatcher>();
 
         uiDispatcherMock
@@ -42,16 +39,13 @@ public class SearchBarVmTests
             uiDispatcherMock.Object
         );
 
-        trackControlVmFactoryMock
-            .Setup(it => it.Create(It.IsAny<IPlaylistItem>()))
-            .Returns<IPlaylistItem>(it => new TrackControlVm(
-                it,
-                new PlaybackQueue(AudioPlayerMock.Create().Object),
-                AudioPlayerMock.Create().Object,
-                metadataEditor,
-                trackEditorVm,
-                Mock.Of<ICoverCache>(),
-                uiDispatcherMock.Object));
+        var trackControlVmRegistry = new TrackControlVmRegistry(
+            new PlaybackQueue(AudioPlayerMock.Create().Object),
+            AudioPlayerMock.Create().Object,
+            metadataEditor,
+            trackEditorVm,
+            Mock.Of<ICoverCache>(),
+            uiDispatcherMock.Object);
 
         var layoutTranslator = new KeyboardLayoutTranslator(
             Mock.Of<IKeyboardLayoutProvider>(it => it.GetLayouts() == Array.Empty<KeyboardLayout>()),
@@ -59,7 +53,7 @@ public class SearchBarVmTests
 
         vm = new SearchBarVm(
             playlistRegistry,
-            trackControlVmFactoryMock.Object,
+            trackControlVmRegistry,
             layoutTranslator,
             uiDispatcherMock.Object
         );
