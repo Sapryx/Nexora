@@ -47,33 +47,20 @@ public partial class PlaybackVm : ViewModelBase
 
         SetVolumeDisplay(audioPlayer.Volume);
 
-        audioPlayer.PlaybackStarted += playlistItem => uiDispatcher.Post(() =>
+        audioPlayer.StateChanged += state => uiDispatcher.Post(() =>
         {
+            IsPlaying = state.Status == PlaybackStatus.Playing;
+
+            if(state.Track == null)
+            {
+                PlayingTrackViewVm = null;
+                SetPlaybackPositionDisplay(0);
+                return;
+            }
+
             var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, coverViewerVm, uiDispatcher);
-            trackViewVm.Update(playlistItem);
+            trackViewVm.Update(state.Track);
             PlayingTrackViewVm = trackViewVm;
-        });
-
-        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
-        {
-            IsPlaying = false;
-        });
-
-        audioPlayer.PlaybackResumed += () => uiDispatcher.Post(() =>
-        {
-            IsPlaying = true;
-        });
-
-        audioPlayer.PlaybackStopped += () => uiDispatcher.Post(() =>
-        {
-            IsPlaying = false;
-            PlayingTrackViewVm = null;
-            SetPlaybackPositionDisplay(0);
-        });
-
-        audioPlayer.PlaybackFinished += () => uiDispatcher.Post(() =>
-        {
-            audioPlayer.PlayNextTrack();
         });
 
         audioPlayer.PlaybackPositionChanged += value => uiDispatcher.Post(() =>
@@ -105,11 +92,11 @@ public partial class PlaybackVm : ViewModelBase
 
         metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
         {
-            var nowPlaying = audioPlayer.NowPlaying;
+            var playingTrack = audioPlayer.State.Track;
 
-            if(nowPlaying != null && nowPlaying.AudioTrack.AudioPath == audioPath)
+            if(playingTrack != null && playingTrack.AudioTrack.AudioPath == audioPath)
             {
-                PlayingTrackViewVm?.Update(nowPlaying);
+                PlayingTrackViewVm?.Update(playingTrack);
             }
         });
     }
@@ -150,15 +137,15 @@ public partial class PlaybackVm : ViewModelBase
 
     public void PreviewSeek(double position)
     {
-        var nowPlaying = audioPlayer.NowPlaying;
+        var playingTrack = audioPlayer.State.Track;
 
-        if(nowPlaying == null)
+        if(playingTrack == null)
         {
             SeekPreviewTime = null;
             return;
         }
 
-        var time = nowPlaying.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
+        var time = playingTrack.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
         SeekPreviewTime = $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
     }
 

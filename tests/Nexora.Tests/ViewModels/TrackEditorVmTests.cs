@@ -7,6 +7,7 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
@@ -14,7 +15,7 @@ public class TrackEditorVmTests
 {
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
-    private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
+    private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<ICoverCache> coverCacheMock = new Mock<ICoverCache>();
     private readonly TrackMetadataEditor metadataEditor;
     private readonly ArtistRegistry artistRegistry;
@@ -128,13 +129,14 @@ public class TrackEditorVmTests
     }
 
     [Fact]
-    public void PlaybackPaused_OpenTrackWasPlaying_AllowsEditing()
+    public void StateChanged_OpenTrackPaused_AllowsEditing()
     {
-        SetupPlaying("Psycho.mp3");
+        var playlistItem = SetupPlaying("Psycho.mp3");
         vm.Open(CreateTrackVm("Psycho", "Muse"));
-        audioPlayerMock.SetupGet(it => it.IsPlaying).Returns(false);
+        var paused = PlaybackState.Paused(playlistItem);
+        audioPlayerMock.SetupGet(it => it.State).Returns(paused);
 
-        audioPlayerMock.Raise(it => it.PlaybackPaused += null);
+        audioPlayerMock.Raise(it => it.StateChanged += null, paused);
 
         Assert.True(vm.IsEditable);
     }
@@ -296,11 +298,12 @@ public class TrackEditorVmTests
         Assert.True(vm.AreArtistsChanged);
     }
 
-    private void SetupPlaying(string audioPath)
+    private IPlaylistItem SetupPlaying(string audioPath)
     {
         var playlistItem = Mock.Of<IPlaylistItem>(it => it.AudioTrack.AudioPath == audioPath);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playlistItem);
-        audioPlayerMock.SetupGet(it => it.IsPlaying).Returns(true);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(playlistItem));
+
+        return playlistItem;
     }
 
     private void AddLibraryTrack(string title, string artist)
@@ -318,8 +321,8 @@ public class TrackEditorVmTests
 
         return new TrackControlVm(
             playlistItem,
-            new PlaybackQueue(Mock.Of<IAudioPlayer>()),
-            Mock.Of<IAudioPlayer>(),
+            new PlaybackQueue(AudioPlayerMock.Create().Object),
+            AudioPlayerMock.Create().Object,
             metadataEditor,
             vm,
             Mock.Of<ICoverCache>(),

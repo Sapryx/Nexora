@@ -1,12 +1,13 @@
 using Core.Playback;
 using Core.Playlists;
 using Moq;
+using Tests.Shared.Playback;
 
 namespace Core.Tests.Playlists;
 
 public class PlaybackQueueTests
 {
-    private readonly Mock<IAudioPlayer> audioPlayerMock = new Mock<IAudioPlayer>();
+    private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly PlaybackQueue queue;
 
     public PlaybackQueueTests()
@@ -21,7 +22,7 @@ public class PlaybackQueueTests
         queue.AddTrack(Mock.Of<IAudioTrack>());
         var playing = queue.GetItem(0);
         var item = queue.GetItem(1);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(playing);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(playing));
 
         queue.RemoveItem(item);
 
@@ -37,7 +38,7 @@ public class PlaybackQueueTests
         queue.AddTrack(Mock.Of<IAudioTrack>());
         var item = queue.GetItem(0);
         var next = queue.GetItem(1);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(item);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(item));
 
         queue.RemoveItem(item);
 
@@ -52,7 +53,7 @@ public class PlaybackQueueTests
         queue.AddTrack(Mock.Of<IAudioTrack>());
         var item = queue.GetItem(0);
         var next = queue.GetItem(1);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(item);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(item));
 
         item.Playlist.RemoveItem(item);
 
@@ -65,7 +66,7 @@ public class PlaybackQueueTests
         queue.AddTrack(Mock.Of<IAudioTrack>());
         queue.AddTrack(Mock.Of<IAudioTrack>());
         var item = queue.GetItem(1);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(item);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(item));
 
         queue.RemoveItem(item);
 
@@ -81,7 +82,7 @@ public class PlaybackQueueTests
         var otherPlaylist = new Playlist();
         otherPlaylist.AddTrack(Mock.Of<IAudioTrack>());
         var item = otherPlaylist.GetItem(0);
-        audioPlayerMock.SetupGet(it => it.NowPlaying).Returns(item);
+        audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(item));
 
         queue.RemoveItem(item);
 

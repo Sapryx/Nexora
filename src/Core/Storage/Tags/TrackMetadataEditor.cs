@@ -46,7 +46,7 @@ public class TrackMetadataEditor
 
         try
         {
-            if(audioPlayer.NowPlaying?.AudioTrack.AudioPath == audioTrack.AudioPath)
+            if(audioPlayer.State.Track?.AudioTrack.AudioPath == audioTrack.AudioPath)
             {
                 await audioPlayer.ReleaseFileAsync(() => SaveAsync(change)).ConfigureAwait(false);
             }
