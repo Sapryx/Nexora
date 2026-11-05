@@ -319,13 +319,14 @@ public class TrackEditorVmTests
             it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == $"{title}.mp3"
         );
 
-        return new TrackControlVm(
-            playlistItem,
+        var registry = new TrackControlVmRegistry(
             new PlaybackQueue(AudioPlayerMock.Create().Object),
             AudioPlayerMock.Create().Object,
             metadataEditor,
             vm,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
+
+        return registry.Create(playlistItem);
     }
 }

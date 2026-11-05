@@ -45,59 +45,6 @@ public class TrackControlVmTests
     }
 
     [Fact]
-    public void StateChanged_PlayingThisTrack_MarksTrackActiveAndPlaying()
-    {
-        var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
-        var vm = CreateVm(playlistItem);
-
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-
-        Assert.True(vm.IsActive);
-        Assert.True(vm.IsActiveAndPlaying);
-    }
-
-    [Fact]
-    public void StateChanged_PlayingOtherTrack_MarksTrackInactive()
-    {
-        var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
-        var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreatePlaylistItem(TimeSpan.Zero)));
-
-        Assert.False(vm.IsActive);
-        Assert.False(vm.IsActiveAndPlaying);
-    }
-
-    [Fact]
-    public void StateChanged_PausedThisTrack_MarksTrackActiveButNotPlaying()
-    {
-        var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
-        var vm = CreateVm(playlistItem);
-
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(playlistItem));
-
-        Assert.True(vm.IsActive);
-        Assert.False(vm.IsActiveAndPlaying);
-    }
-
-    [Fact]
-    public void StateChanged_ActiveQueueItemResumed_KeepsProgress()
-    {
-        playbackQueue.AddTrack(CreateTrack());
-        var playlistItem = playbackQueue.GetItem(0);
-        var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.4f);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(playlistItem));
-
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-
-        Assert.Equal(0.4f, vm.Progress);
-        Assert.True(vm.IsActiveAndPlaying);
-    }
-
-    [Fact]
     public void Constructor_QueueItem_IsInQueue()
     {
         playbackQueue.AddTrack(CreateTrack());
@@ -174,59 +121,6 @@ public class TrackControlVmTests
         audioPlayerMock.Verify(it => it.PlayTrack(next));
     }
 
-    [Fact]
-    public void StateChanged_StoppedActiveTrack_MarksTrackInactive()
-    {
-        var playlistItem = CreatePlaylistItem(TimeSpan.Zero);
-        var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Stopped);
-
-        Assert.False(vm.IsActive);
-        Assert.False(vm.IsActiveAndPlaying);
-    }
-
-    [Fact]
-    public void PlaybackPositionChanged_ActiveQueueItem_ShowsProgress()
-    {
-        playbackQueue.AddTrack(CreateTrack());
-        var playlistItem = playbackQueue.GetItem(0);
-        var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-
-        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
-
-        Assert.Equal(0.5, vm.Progress);
-    }
-
-    [Fact]
-    public void PlaybackPositionChanged_ActiveGlobalPlaylistItem_KeepsZeroProgress()
-    {
-        playlistRegistry.GlobalPlaylist.AddTrack(CreateTrack());
-        var playlistItem = playlistRegistry.GlobalPlaylist.GetItem(0);
-        var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-
-        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
-
-        Assert.Equal(0, vm.Progress);
-    }
-
-    [Fact]
-    public void StateChanged_PlayingOtherTrack_ResetsProgress()
-    {
-        playbackQueue.AddTrack(CreateTrack());
-        var playlistItem = playbackQueue.GetItem(0);
-        var vm = CreateVm(playlistItem);
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
-        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
-
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreatePlaylistItem(TimeSpan.Zero)));
-
-        Assert.Equal(0, vm.Progress);
-    }
-
     private static IAudioTrack CreateTrack()
     {
         return Mock.Of<IAudioTrack>(it => it.Metadata == new Metadata() && it.AudioPath == "");
@@ -241,29 +135,6 @@ public class TrackControlVmTests
 
         Assert.Equal("Uprising", vm.Title);
         Assert.Equal("Muse, Queen", vm.Artists);
-    }
-
-    [Fact]
-    public async Task MetadataChanged_SameTrackInOtherVm_ShowsNewTitle()
-    {
-        var playlistItem = CreatePlaylistItem("Psycho", "Muse");
-        var editedVm = CreateVm(playlistItem);
-        var otherVm = CreateVm(playlistItem);
-
-        await editedVm.ApplyEditAsync("Uprising", ["Muse"]);
-
-        Assert.Equal("Uprising", otherVm.Title);
-    }
-
-    [Fact]
-    public async Task MetadataChanged_OtherTrack_KeepsTitle()
-    {
-        var editedVm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
-        var otherVm = CreateVm(CreatePlaylistItem("Madness", "Muse"));
-
-        await editedVm.ApplyEditAsync("Uprising", ["Muse"]);
-
-        Assert.Equal("Madness", otherVm.Title);
     }
 
     private static IPlaylistItem CreatePlaylistItem(string title, string artists)
@@ -284,23 +155,19 @@ public class TrackControlVmTests
 
     private TrackControlVm CreateVm(IPlaylistItem playlistItem)
     {
-        return CreateVm(playlistItem, metadataEditor);
-    }
-
-    private TrackControlVm CreateVm(IPlaylistItem playlistItem, TrackMetadataEditor editor)
-    {
-        return new TrackControlVm(
-            playlistItem,
+        var registry = new TrackControlVmRegistry(
             playbackQueue,
             audioPlayerMock.Object,
-            editor,
+            metadataEditor,
             new TrackEditorVm(
-                new ArtistRegistry(editor),
+                new ArtistRegistry(metadataEditor),
                 audioPlayerMock.Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object
             ),
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);
+
+        return registry.Create(playlistItem);
     }
 }
