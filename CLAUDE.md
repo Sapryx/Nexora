@@ -30,6 +30,8 @@ Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 
 ## Verification
 
+Work test-first (TDD, the `tdd` skill): write a failing test for each behavior, watch it fail, then write the minimum code to pass it, and refactor with the tests green. Changes unit tests can't cover (see below) are the only exception.
+
 Cover changes with unit tests. Don't run the app to verify a change: the user tests it in the app. Run the app only when the user reports a bug and asks you to check it. When unit tests can't cover the behavior (layout and rendering, focus and input handling, window behavior, real playback, startup and DI wiring), tell the user what to check in the app.
 
 ## Debugging
