@@ -26,6 +26,7 @@ public class TrackMetadataEditor
     {
         var metadata = audioTrack.Metadata;
         title = title.Trim();
+        string displayedTitle = TagLibMetadataLoader.GetDisplayedTitle(title, audioTrack.AudioPath);
         var normalizedArtists = artists
             .Select(it => it.Trim())
             .Where(it => it != "")
@@ -35,7 +36,7 @@ public class TrackMetadataEditor
         var change = new MetadataChange()
         {
             AudioPath = audioTrack.AudioPath,
-            Title = GetDisplayedTitle(title, audioTrack.AudioPath) != metadata.Title ? title : null,
+            Title = displayedTitle != metadata.Title ? title : null,
             Artists = normalizedArtists.SequenceEqual(metadata.Artists) ? null : normalizedArtists
         };
 
@@ -70,18 +71,12 @@ public class TrackMetadataEditor
     {
         if(change.Title != null)
         {
-            metadata.Title = GetDisplayedTitle(change.Title, change.AudioPath);
+            metadata.Title = TagLibMetadataLoader.GetDisplayedTitle(change.Title, change.AudioPath);
         }
 
         if(change.Artists != null)
         {
             metadata.Artists = change.Artists;
         }
-    }
-
-    // Same fallback as TagLibMetadataLoader, so a cleared title shows the file name now as after a restart.
-    private static string GetDisplayedTitle(string title, string audioPath)
-    {
-        return title == "" ? Path.GetFileNameWithoutExtension(audioPath) : title;
     }
 }
