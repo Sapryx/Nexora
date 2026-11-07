@@ -9,6 +9,9 @@ public static class AudioPlayerMock
     {
         var audioPlayerMock = new Mock<IAudioPlayer>();
         audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Stopped);
+        audioPlayerMock
+            .Setup(it => it.ReleaseFileAsync(It.IsAny<string>(), It.IsAny<Func<Task>>()))
+            .Returns<string, Func<Task>>((audioPath, action) => action());
 
         return audioPlayerMock;
     }

@@ -23,8 +23,9 @@ public interface IAudioPlayer
     public void SkipBack();
 
     /// <summary>
-    /// Closes the playing track's file while <paramref name="action"/> runs, then reopens it at the same time.
+    /// Closes the playing track's file while <paramref name="action"/> runs if it is <paramref name="audioPath"/>,
+    /// then reopens it at the same time once the last overlapping release of it finishes.
     /// Pausing or resuming meanwhile changes whether it reopens playing or paused.
     /// </summary>
-    public Task ReleaseFileAsync(Func<Task> action);
+    public Task ReleaseFileAsync(string audioPath, Func<Task> action);
 }
