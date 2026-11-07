@@ -7,7 +7,7 @@ public class ArtistRegistry
 {
     private readonly Dictionary<string, Artist> artists =
         new Dictionary<string, Artist>(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, IAudioTrack> tracks = [];
+    private readonly HashSet<IAudioTrack> tracks = [];
     private readonly Lock artistsLock = new Lock();
 
     public ArtistRegistry(TrackMetadataEditor metadataEditor)
@@ -21,7 +21,7 @@ public class ArtistRegistry
         {
             foreach(var audioTrack in audioTracks)
             {
-                tracks[audioTrack.AudioPath] = audioTrack;
+                tracks.Add(audioTrack);
                 AddToArtists(audioTrack);
             }
         }
@@ -39,11 +39,11 @@ public class ArtistRegistry
         }
     }
 
-    private void OnMetadataChanged(string audioPath)
+    private void OnMetadataChanged(IAudioTrack audioTrack)
     {
         lock(artistsLock)
         {
-            if(!tracks.TryGetValue(audioPath, out var audioTrack))
+            if(!tracks.Contains(audioTrack))
             {
                 return;
             }

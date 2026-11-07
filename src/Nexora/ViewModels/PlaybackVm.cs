@@ -90,11 +90,11 @@ public partial class PlaybackVm : ViewModelBase
             ApplyMuteState(isMuted);
         });
 
-        metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
+        metadataEditor.MetadataChanged += audioTrack => uiDispatcher.Post(() =>
         {
             var playingTrack = audioPlayer.State.Track;
 
-            if(playingTrack != null && playingTrack.AudioTrack.AudioPath == audioPath)
+            if(playingTrack != null && playingTrack.AudioTrack == audioTrack)
             {
                 PlayingTrackViewVm?.Update(playingTrack);
             }
