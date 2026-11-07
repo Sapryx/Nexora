@@ -10,7 +10,7 @@ public class TrackMetadataEditor
     private readonly IMetadataSaver metadataSaver;
     private readonly IAudioPlayer audioPlayer;
 
-    public event Action<string>? MetadataChanged;
+    public event Action<IAudioTrack>? MetadataChanged;
 
     public TrackMetadataEditor(
         ILogger<TrackMetadataEditor> logger,
@@ -56,7 +56,7 @@ public class TrackMetadataEditor
 
         logger.Debug($"Saved metadata of {audioTrack.AudioPath}");
         Apply(metadata, change);
-        MetadataChanged?.Invoke(audioTrack.AudioPath);
+        MetadataChanged?.Invoke(audioTrack);
 
         return true;
     }

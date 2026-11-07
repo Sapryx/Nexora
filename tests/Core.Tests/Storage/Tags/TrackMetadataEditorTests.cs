@@ -17,13 +17,13 @@ public class TrackMetadataEditorTests
         AudioPath,
         new Metadata() { Title = "Psycho", Artists = ["Muse"] }
     );
-    private readonly List<string> changedPaths = [];
+    private readonly List<IAudioTrack> changedTracks = [];
     private readonly TrackMetadataEditor editor;
 
     public TrackMetadataEditorTests()
     {
         editor = new TrackMetadataEditor(logger, metadataSaverMock.Object, audioPlayerMock.Object);
-        editor.MetadataChanged += it => changedPaths.Add(it);
+        editor.MetadataChanged += it => changedTracks.Add(it);
     }
 
     [Fact]
@@ -33,7 +33,7 @@ public class TrackMetadataEditorTests
 
         Assert.True(isSaved);
         metadataSaverMock.Verify(it => it.Save(It.IsAny<MetadataChange>()), Times.Never);
-        Assert.Empty(changedPaths);
+        Assert.Empty(changedTracks);
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class TrackMetadataEditorTests
         metadataSaverMock.Verify(it => it.Save(It.Is<MetadataChange>(change =>
             change.AudioPath == AudioPath && change.Title == "Uprising" && change.Artists == null)));
         Assert.Equal("Uprising", audioTrack.Metadata.Title);
-        Assert.Equal([AudioPath], changedPaths);
+        Assert.Equal([audioTrack], changedTracks);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class TrackMetadataEditorTests
 
         Assert.False(isSaved);
         Assert.Equal("Psycho", audioTrack.Metadata.Title);
-        Assert.Empty(changedPaths);
+        Assert.Empty(changedTracks);
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Error, entry.Level);
         Assert.Contains(AudioPath, entry.Message);

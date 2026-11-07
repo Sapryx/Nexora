@@ -44,11 +44,11 @@ public class TrackControlVmRegistry
             activeTrackVm?.ShowPosition(position);
         });
 
-        metadataEditor.MetadataChanged += audioPath => uiDispatcher.Post(() =>
+        metadataEditor.MetadataChanged += audioTrack => uiDispatcher.Post(() =>
         {
-            foreach(var trackVm in trackVms.Values.Where(it => it.AudioPath == audioPath))
+            foreach(var pair in trackVms.Where(it => it.Key.AudioTrack == audioTrack))
             {
-                trackVm.UpdateTrackInfo();
+                pair.Value.UpdateTrackInfo();
             }
         });
 
