@@ -145,14 +145,14 @@ public partial class App : Application
 
         foreach(var loader in audioTrackLoaders)
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 try
                 {
                     var loadedTracks = loader.Load();
                     artistRegistry.AddTracks(loadedTracks);
                     playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
-                    loudnessScanner.Scan(loadedTracks);
+                    await loudnessScanner.ScanAsync(loadedTracks);
                 }
                 catch(Exception ex)
                 {
