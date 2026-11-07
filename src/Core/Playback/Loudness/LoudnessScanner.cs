@@ -10,21 +10,24 @@ public class LoudnessScanner
     private readonly ILogger<LoudnessScanner> logger;
     private readonly ILoudnessAnalyzer loudnessAnalyzer;
     private readonly IMetadataSaver metadataSaver;
+    private readonly IAudioPlayer audioPlayer;
     private readonly IDegreeOfParallelismProvider degreeOfParallelismProvider;
 
     public LoudnessScanner(
         ILogger<LoudnessScanner> logger,
         ILoudnessAnalyzer loudnessAnalyzer,
         IMetadataSaver metadataSaver,
+        IAudioPlayer audioPlayer,
         IDegreeOfParallelismProvider<LoudnessScanner> degreeOfParallelismProvider)
     {
         this.logger = logger;
         this.loudnessAnalyzer = loudnessAnalyzer;
         this.metadataSaver = metadataSaver;
+        this.audioPlayer = audioPlayer;
         this.degreeOfParallelismProvider = degreeOfParallelismProvider;
     }
 
-    public void Scan(IEnumerable<IAudioTrack> audioTracks)
+    public async Task ScanAsync(IEnumerable<IAudioTrack> audioTracks)
     {
         var pendingTracks = audioTracks.Where(it => it.Metadata.Loudness == null).ToList();
 
@@ -36,12 +39,15 @@ public class LoudnessScanner
         var parallelOptions = new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelismProvider.Value };
         logger.Info($"Started analyzing loudness of {pendingTracks.Count} tracks...");
 
-        Parallel.ForEach(pendingTracks, parallelOptions, Analyze);
+        await Parallel
+            .ForEachAsync(pendingTracks, parallelOptions, async (audioTrack, cancellationToken) =>
+                await AnalyzeAsync(audioTrack).ConfigureAwait(false))
+            .ConfigureAwait(false);
 
         logger.Info($"Finished analyzing loudness of {pendingTracks.Count} tracks");
     }
 
-    private void Analyze(IAudioTrack audioTrack)
+    private async Task AnalyzeAsync(IAudioTrack audioTrack)
     {
         string file = audioTrack.AudioPath;
         TrackLoudness? loudness;
@@ -67,7 +73,11 @@ public class LoudnessScanner
 
         try
         {
-            metadataSaver.SaveLoudness(file, loudness);
+            await audioPlayer.ReleaseFileAsync(file, () =>
+            {
+                metadataSaver.SaveLoudness(file, loudness);
+                return Task.CompletedTask;
+            }).ConfigureAwait(false);
         }
         catch(Exception ex)
         {
