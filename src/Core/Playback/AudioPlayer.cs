@@ -39,7 +39,7 @@ public class AudioPlayer : IAudioPlayer
     private readonly IVolumeStorage volumeStorage;
     private readonly Lock fileLock = new Lock();
     private int volume;
-    private bool isFileReleased;
+    private ReleasedFile? releasedFile;
     private bool isAtEnd;
 
     public event Action<PlaybackState>? StateChanged;
@@ -69,7 +69,7 @@ public class AudioPlayer : IAudioPlayer
 
         lock(fileLock)
         {
-            isFileReleased = false;
+            releasedFile = null;
             state = PlaybackState.Playing(playlistItem);
             State = state;
             Open(playlistItem, 0, false);
@@ -118,7 +118,7 @@ public class AudioPlayer : IAudioPlayer
             {
                 Open(track, 0, false);
             }
-            else if(!isFileReleased)
+            else if(releasedFile == null)
             {
                 // MediaPlayer.Pause() toggles the state LibVLC reports, which lags behind a quick second toggle.
                 mediaEngine.SetPause(state.Status == PlaybackStatus.Paused);
@@ -133,25 +133,30 @@ public class AudioPlayer : IAudioPlayer
         lock(fileLock)
         {
             State = PlaybackState.Stopped;
-            isFileReleased = false;
+            releasedFile = null;
             mediaEngine.Stop();
         }
 
         StateChanged?.Invoke(PlaybackState.Stopped);
     }
 
-    public async Task ReleaseFileAsync(Func<Task> action)
+    public async Task ReleaseFileAsync(string audioPath, Func<Task> action)
     {
-        IPlaylistItem? releasedItem = null;
-        long time = 0;
+        ReleasedFile? release = null;
 
         lock(fileLock)
         {
-            if(State.Track != null && mediaEngine.HoldsFile && !isFileReleased)
+            var track = State.Track;
+
+            if(releasedFile != null && releasedFile.PlaylistItem.AudioTrack.AudioPath == audioPath)
             {
-                releasedItem = State.Track;
-                time = Math.Max(0, mediaEngine.Time);
-                isFileReleased = true;
+                release = releasedFile;
+                release.Count++;
+            }
+            else if(track != null && track.AudioTrack.AudioPath == audioPath && mediaEngine.HoldsFile)
+            {
+                release = new ReleasedFile() { PlaylistItem = track, Time = Math.Max(0, mediaEngine.Time), Count = 1 };
+                releasedFile = release;
                 mediaEngine.Stop();
             }
         }
@@ -162,15 +167,17 @@ public class AudioPlayer : IAudioPlayer
         }
         finally
         {
-            if(releasedItem != null)
+            if(release != null)
             {
                 lock(fileLock)
                 {
+                    release.Count--;
+
                     // Playing another track or stopping meanwhile already replaced the released one.
-                    if(isFileReleased && State.Track == releasedItem)
+                    if(releasedFile == release && release.Count == 0)
                     {
-                        isFileReleased = false;
-                        Open(releasedItem, time, State.Status == PlaybackStatus.Paused);
+                        releasedFile = null;
+                        Open(release.PlaylistItem, release.Time, State.Status == PlaybackStatus.Paused);
                     }
                 }
             }
@@ -263,5 +270,12 @@ public class AudioPlayer : IAudioPlayer
             float normalizedAmount = amount / (float)track.AudioTrack.Metadata.Duration.TotalSeconds;
             mediaEngine.Position += normalizedAmount;
         }
+    }
+
+    private class ReleasedFile
+    {
+        public required IPlaylistItem PlaylistItem { get; init; }
+        public required long Time { get; init; }
+        public required int Count { get; set; }
     }
 }
