@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using Core.Playback.Loudness;
 using TagLib;
@@ -8,6 +9,7 @@ namespace Core.Storage.Tags;
 public class TagLibMetadataSaver : IMetadataSaver
 {
     private const string TempFileSuffix = ".nexora-tmp";
+    private readonly ConcurrentDictionary<string, Lock> fileLocks = new ConcurrentDictionary<string, Lock>();
 
     public void Save(MetadataChange change)
     {
@@ -37,11 +39,19 @@ public class TagLibMetadataSaver : IMetadataSaver
         return Path.Combine(directory, $".{Path.GetFileName(audioPath)}{TempFileSuffix}");
     }
 
+    private void SaveAtomically(string audioPath, Action<File> modify)
+    {
+        lock(fileLocks.GetOrAdd(audioPath, it => new Lock()))
+        {
+            ReplaceAtomically(audioPath, modify);
+        }
+    }
+
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Mpeg.AudioFile))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Riff.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Ogg.File))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Flac.File))]
-    private static void SaveAtomically(string audioPath, Action<File> modify)
+    private static void ReplaceAtomically(string audioPath, Action<File> modify)
     {
         string tempPath = GetTempPath(audioPath);
         string mimeType = $"taglib/{Path.GetExtension(audioPath).TrimStart('.').ToLowerInvariant()}";
