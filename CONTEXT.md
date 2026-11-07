@@ -13,3 +13,9 @@ _Avoid_: player status, IsPlaying
 **Playing track**:
 The track the playback state is Playing or Paused on; there is none while Stopped.
 _Avoid_: now playing, current track, active track
+
+### Tags
+
+**Tag write**:
+Saving a track's title, artists or loudness into its audio file. Writes to one file happen one at a time; if it is the playing track's file, the player releases it during the write.
+_Avoid_: metadata save, tag update
