@@ -80,6 +80,28 @@ public class TagLibMetadataSaverTests : IDisposable
         Assert.NotNull(LoudnessTags.Read(tagFile));
     }
 
+    [Fact]
+    public void SaveAndSaveLoudness_ConcurrentOnSameFile_BothLand()
+    {
+        string path = CreateWav();
+
+        Parallel.For(0, 100, index =>
+        {
+            if(index % 2 == 0)
+            {
+                saver.Save(new MetadataChange() { AudioPath = path, Title = "Title" });
+            }
+            else
+            {
+                saver.SaveLoudness(path, new TrackLoudness() { Lufs = -14 });
+            }
+        });
+
+        using var tagFile = TagLib.File.Create(path);
+        Assert.Equal("Title", tagFile.Tag.Title);
+        Assert.Equal(-14, LoudnessTags.Read(tagFile)!.Lufs, 6);
+    }
+
     private string CreateWav()
     {
         const int sampleRate = 48000;
