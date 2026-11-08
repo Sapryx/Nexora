@@ -61,7 +61,6 @@ public class TrackControlVmRegistry
             playlistItem,
             playbackQueue,
             audioPlayer,
-            tagWriter,
             trackEditorVm,
             coverCache,
             uiDispatcher

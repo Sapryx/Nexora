@@ -34,6 +34,7 @@ public class QueueVmTests
             tagWriter,
             new TrackEditorVm(
                 TestMusicLibrary.Create(tagWriter),
+                tagWriter,
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object
