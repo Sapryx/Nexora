@@ -1,6 +1,4 @@
-using Core.Playback.Loudness;
-
-namespace Core.Playback;
+namespace Core.Library;
 
 public class Metadata
 {

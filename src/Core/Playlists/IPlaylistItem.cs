@@ -1,4 +1,4 @@
-using Core.Playback;
+using Core.Library;
 
 namespace Core.Playlists;
 

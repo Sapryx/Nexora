@@ -1,6 +1,6 @@
-using Core.Playback;
+using Core.Library;
 
-namespace Core.Tests.Playback;
+namespace Core.Tests.Library;
 
 public class AudioTrackTests
 {

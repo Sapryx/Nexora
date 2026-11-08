@@ -1,5 +1,3 @@
-using Core.Playback;
-
 namespace Core.Library;
 
 public class Artist

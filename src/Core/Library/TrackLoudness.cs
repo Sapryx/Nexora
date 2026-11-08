@@ -1,4 +1,4 @@
-namespace Core.Playback.Loudness;
+namespace Core.Library;
 
 public class TrackLoudness
 {

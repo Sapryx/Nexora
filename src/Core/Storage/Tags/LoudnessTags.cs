@@ -1,5 +1,5 @@
 using System.Globalization;
-using Core.Playback.Loudness;
+using Core.Library;
 using TagLib;
 using TagLib.Id3v2;
 using TagLib.Ogg;
