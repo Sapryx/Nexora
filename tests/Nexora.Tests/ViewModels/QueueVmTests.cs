@@ -6,6 +6,7 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Library;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
@@ -32,7 +33,7 @@ public class QueueVmTests
             AudioPlayerMock.Create().Object,
             tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(tagWriter),
+                TestMusicLibrary.Create(tagWriter),
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object

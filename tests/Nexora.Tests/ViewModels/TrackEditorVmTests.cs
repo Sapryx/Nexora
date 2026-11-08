@@ -7,6 +7,7 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Library;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
@@ -18,7 +19,8 @@ public class TrackEditorVmTests
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<ICoverCache> coverCacheMock = new Mock<ICoverCache>();
     private readonly TrackTagWriter tagWriter;
-    private readonly ArtistRegistry artistRegistry;
+    private readonly List<IAudioTrack> libraryTracks = [];
+    private readonly MusicLibrary musicLibrary;
     private readonly TrackEditorVm vm;
 
     public TrackEditorVmTests()
@@ -32,9 +34,9 @@ public class TrackEditorVmTests
             metadataSaverMock.Object,
             audioPlayerMock.Object
         );
-        artistRegistry = new ArtistRegistry(tagWriter);
+        musicLibrary = TestMusicLibrary.Create(tagWriter, libraryTracks);
         vm = new TrackEditorVm(
-            artistRegistry,
+            musicLibrary,
             audioPlayerMock.Object,
             coverCacheMock.Object,
             uiDispatcherMock.Object
@@ -157,9 +159,9 @@ public class TrackEditorVmTests
     }
 
     [Fact]
-    public void ArtistQuery_PrefixOfKnownArtist_SuggestsArtistThenNewArtist()
+    public async Task ArtistQuery_PrefixOfKnownArtist_SuggestsArtistThenNewArtist()
     {
-        AddLibraryTrack("Bohemian Rhapsody", "Queen");
+        await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
         vm.Open(CreateTrackVm("Psycho", "Muse"));
 
         vm.ArtistQuery = "qu";
@@ -174,9 +176,9 @@ public class TrackEditorVmTests
     }
 
     [Fact]
-    public void ArtistQuery_WholeNameOfKnownArtist_DoesNotSuggestNewArtist()
+    public async Task ArtistQuery_WholeNameOfKnownArtist_DoesNotSuggestNewArtist()
     {
-        AddLibraryTrack("Bohemian Rhapsody", "Queen");
+        await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
         vm.Open(CreateTrackVm("Psycho", "Muse"));
 
         vm.ArtistQuery = "queen";
@@ -185,9 +187,9 @@ public class TrackEditorVmTests
     }
 
     [Fact]
-    public void ArtistQuery_ArtistAlreadyAdded_IsNotSuggested()
+    public async Task ArtistQuery_ArtistAlreadyAdded_IsNotSuggested()
     {
-        AddLibraryTrack("Hysteria", "Muse");
+        await LoadLibraryTrackAsync("Hysteria", "Muse");
         vm.Open(CreateTrackVm("Psycho", "Muse"));
 
         vm.ArtistQuery = "Muse";
@@ -197,9 +199,9 @@ public class TrackEditorVmTests
     }
 
     [Fact]
-    public void AddSelectedSuggestion_SuggestionSelected_AddsArtistAndClearsQuery()
+    public async Task AddSelectedSuggestion_SuggestionSelected_AddsArtistAndClearsQuery()
     {
-        AddLibraryTrack("Bohemian Rhapsody", "Queen");
+        await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
         vm.Open(CreateTrackVm("Psycho", "Muse"));
         vm.ArtistQuery = "Qu";
 
@@ -211,9 +213,9 @@ public class TrackEditorVmTests
     }
 
     [Fact]
-    public void MoveSuggestionSelection_PastLastSuggestion_StaysOnLast()
+    public async Task MoveSuggestionSelection_PastLastSuggestion_StaysOnLast()
     {
-        AddLibraryTrack("Bohemian Rhapsody", "Queen");
+        await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
         vm.Open(CreateTrackVm("Psycho", "Muse"));
         vm.ArtistQuery = "Qu";
 
@@ -306,10 +308,12 @@ public class TrackEditorVmTests
         return playlistItem;
     }
 
-    private void AddLibraryTrack(string title, string artist)
+    private Task LoadLibraryTrackAsync(string title, string artist)
     {
         var metadata = new Metadata() { Title = title, Artists = [artist] };
-        artistRegistry.AddTracks([new AudioTrack($"{title}.mp3", metadata)]);
+        libraryTracks.Add(new AudioTrack($"{title}.mp3", metadata));
+
+        return musicLibrary.LoadAsync();
     }
 
     private TrackControlVm CreateTrackVm(string title, params string[] artists)

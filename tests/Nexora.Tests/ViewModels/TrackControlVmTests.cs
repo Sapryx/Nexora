@@ -7,13 +7,14 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Library;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
 public class TrackControlVmTests
 {
-    private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
+    private readonly Playlist libraryPlaylist = new Playlist();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
@@ -55,11 +56,11 @@ public class TrackControlVmTests
     }
 
     [Fact]
-    public void Constructor_GlobalPlaylistItem_IsNotInQueue()
+    public void Constructor_LibraryPlaylistItem_IsNotInQueue()
     {
-        playlistRegistry.GlobalPlaylist.AddTrack(CreateTrack());
+        libraryPlaylist.AddTrack(CreateTrack());
 
-        var vm = CreateVm(playlistRegistry.GlobalPlaylist.GetItem(0));
+        var vm = CreateVm(libraryPlaylist.GetItem(0));
 
         Assert.False(vm.IsInQueue);
     }
@@ -70,8 +71,8 @@ public class TrackControlVmTests
         var queued = CreateTrack();
         var track = CreateTrack();
         playbackQueue.AddTrack(queued);
-        playlistRegistry.GlobalPlaylist.AddTrack(track);
-        var vm = CreateVm(playlistRegistry.GlobalPlaylist.GetItem(0));
+        libraryPlaylist.AddTrack(track);
+        var vm = CreateVm(libraryPlaylist.GetItem(0));
 
         vm.AddToQueue();
 
@@ -82,8 +83,8 @@ public class TrackControlVmTests
     public void AddToQueue_CalledTwice_AddsTrackTwice()
     {
         var track = CreateTrack();
-        playlistRegistry.GlobalPlaylist.AddTrack(track);
-        var vm = CreateVm(playlistRegistry.GlobalPlaylist.GetItem(0));
+        libraryPlaylist.AddTrack(track);
+        var vm = CreateVm(libraryPlaylist.GetItem(0));
 
         vm.AddToQueue();
         vm.AddToQueue();
@@ -160,7 +161,7 @@ public class TrackControlVmTests
             audioPlayerMock.Object,
             tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(tagWriter),
+                TestMusicLibrary.Create(tagWriter),
                 audioPlayerMock.Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object

@@ -7,19 +7,19 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Library;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
 public class SearchBarVmTests
 {
-    private readonly PlaylistRegistry playlistRegistry;
+    private readonly MusicLibrary musicLibrary;
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
     private readonly SearchBarVm vm;
 
     public SearchBarVmTests()
     {
-        playlistRegistry = new PlaylistRegistry();
         uiDispatcherMock = new Mock<IUiDispatcher>();
 
         uiDispatcherMock
@@ -31,8 +31,9 @@ public class SearchBarVmTests
             Mock.Of<IMetadataSaver>(),
             AudioPlayerMock.Create().Object
         );
+        musicLibrary = TestMusicLibrary.Create(tagWriter);
         var trackEditorVm = new TrackEditorVm(
-            new ArtistRegistry(tagWriter),
+            musicLibrary,
             AudioPlayerMock.Create().Object,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object
@@ -51,7 +52,7 @@ public class SearchBarVmTests
             NullLogger<KeyboardLayoutTranslator>.Instance);
 
         vm = new SearchBarVm(
-            playlistRegistry,
+            musicLibrary,
             trackControlVmRegistry,
             layoutTranslator,
             uiDispatcherMock.Object
@@ -159,7 +160,7 @@ public class SearchBarVmTests
         var metadata = new Metadata() { Title = title, Artists = [artists] };
         var track = Mock.Of<IAudioTrack>(it => it.Metadata == metadata && it.AudioPath == $"{title}.mp3");
 
-        playlistRegistry.GlobalPlaylist.AddTrack(track);
+        musicLibrary.Playlist.AddTrack(track);
     }
 
     private List<string> DisplayedTitles()

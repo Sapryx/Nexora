@@ -22,7 +22,7 @@ public partial class SearchBarVm : ViewModelBase
     private TrackSearchQuery searchQuery;
 
     public SearchBarVm(
-        PlaylistRegistry playlistRegistry,
+        MusicLibrary musicLibrary,
         TrackControlVmRegistry trackControlVmRegistry,
         KeyboardLayoutTranslator layoutTranslator,
         IUiDispatcher uiDispatcher)
@@ -31,7 +31,7 @@ public partial class SearchBarVm : ViewModelBase
         this.layoutTranslator = layoutTranslator;
         searchQuery = new TrackSearchQuery("", layoutTranslator);
 
-        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
+        musicLibrary.Playlist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
             DisplayIfMatches(playlistItem.AudioTrack, trackVm);

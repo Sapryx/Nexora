@@ -7,13 +7,14 @@ using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Library;
 using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
 public class TrackControlVmRegistryTests
 {
-    private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
+    private readonly Playlist libraryPlaylist = new Playlist();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
@@ -37,7 +38,7 @@ public class TrackControlVmRegistryTests
             audioPlayerMock.Object,
             tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(tagWriter),
+                TestMusicLibrary.Create(tagWriter),
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object
@@ -66,7 +67,7 @@ public class TrackControlVmRegistryTests
     [Fact]
     public void StateChanged_ManyTracks_PostsOnce()
     {
-        var vms = new[] { CreateQueueVm(), CreateQueueVm(), CreateGlobalVm() };
+        var vms = new[] { CreateQueueVm(), CreateQueueVm(), CreateLibraryVm() };
         uiDispatcherMock.Invocations.Clear();
 
         audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playbackQueue.GetItem(1)));
@@ -78,9 +79,9 @@ public class TrackControlVmRegistryTests
     [Fact]
     public void StateChanged_PlayingThisTrack_MarksTrackActiveAndPlaying()
     {
-        var vm = CreateGlobalVm();
+        var vm = CreateLibraryVm();
 
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(GlobalItem(0)));
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(LibraryItem(0)));
 
         Assert.True(vm.IsActive);
         Assert.True(vm.IsActiveAndPlaying);
@@ -89,10 +90,10 @@ public class TrackControlVmRegistryTests
     [Fact]
     public void StateChanged_PlayingOtherTrack_MarksTrackInactive()
     {
-        var vm = CreateGlobalVm();
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(GlobalItem(0)));
+        var vm = CreateLibraryVm();
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(LibraryItem(0)));
 
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreateGlobalItem("Aether")));
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreateLibraryItem("Aether")));
 
         Assert.False(vm.IsActive);
         Assert.False(vm.IsActiveAndPlaying);
@@ -101,9 +102,9 @@ public class TrackControlVmRegistryTests
     [Fact]
     public void StateChanged_PausedThisTrack_MarksTrackActiveButNotPlaying()
     {
-        var vm = CreateGlobalVm();
+        var vm = CreateLibraryVm();
 
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(GlobalItem(0)));
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(LibraryItem(0)));
 
         Assert.True(vm.IsActive);
         Assert.False(vm.IsActiveAndPlaying);
@@ -112,8 +113,8 @@ public class TrackControlVmRegistryTests
     [Fact]
     public void StateChanged_StoppedActiveTrack_MarksTrackInactive()
     {
-        var vm = CreateGlobalVm();
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(GlobalItem(0)));
+        var vm = CreateLibraryVm();
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(LibraryItem(0)));
 
         audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Stopped);
 
@@ -124,7 +125,7 @@ public class TrackControlVmRegistryTests
     [Fact]
     public void Create_TrackAlreadyPlaying_MarksTrackActive()
     {
-        var playlistItem = CreateGlobalItem("Psycho");
+        var playlistItem = CreateLibraryItem("Psycho");
         audioPlayerMock.SetupGet(it => it.State).Returns(PlaybackState.Playing(playlistItem));
         var vm = registry.Create(playlistItem);
 
@@ -145,12 +146,12 @@ public class TrackControlVmRegistryTests
     }
 
     [Fact]
-    public void PlaybackPositionChanged_ActiveGlobalPlaylistItem_KeepsZeroProgress()
+    public void PlaybackPositionChanged_ActiveLibraryPlaylistItem_KeepsZeroProgress()
     {
-        var vm = CreateGlobalVm();
+        var vm = CreateLibraryVm();
         audioPlayerMock.Raise(
             it => it.StateChanged += null,
-            PlaybackState.Playing(GlobalItem(0))
+            PlaybackState.Playing(LibraryItem(0))
         );
 
         audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
@@ -180,7 +181,7 @@ public class TrackControlVmRegistryTests
         audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playbackQueue.GetItem(0)));
         audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
 
-        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreateGlobalItem("Aether")));
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(CreateLibraryItem("Aether")));
 
         Assert.Equal(0, vm.Progress);
     }
@@ -188,12 +189,12 @@ public class TrackControlVmRegistryTests
     [Fact]
     public async Task TrackChanged_TrackInLibraryAndQueue_PostsOnceAndShowsNewTitleInBoth()
     {
-        var libraryVm = CreateGlobalVm();
-        playbackQueue.AddTrack(GlobalItem(0).AudioTrack);
+        var libraryVm = CreateLibraryVm();
+        playbackQueue.AddTrack(LibraryItem(0).AudioTrack);
         var queueVm = registry.Create(playbackQueue.GetItem(0));
         uiDispatcherMock.Invocations.Clear();
 
-        await tagWriter.EditAsync(GlobalItem(0).AudioTrack, "Uprising", ["Muse"]);
+        await tagWriter.EditAsync(LibraryItem(0).AudioTrack, "Uprising", ["Muse"]);
 
         uiDispatcherMock.Verify(it => it.Post(It.IsAny<Action>()), Times.Once());
         Assert.Equal(["Uprising", "Uprising"], new[] { libraryVm.Title, queueVm.Title });
@@ -202,9 +203,9 @@ public class TrackControlVmRegistryTests
     [Fact]
     public async Task TrackChanged_OtherTrack_KeepsTitle()
     {
-        var vm = CreateGlobalVm();
+        var vm = CreateLibraryVm();
 
-        await tagWriter.EditAsync(CreateGlobalItem("Aether").AudioTrack, "Uprising", ["Muse"]);
+        await tagWriter.EditAsync(CreateLibraryItem("Aether").AudioTrack, "Uprising", ["Muse"]);
 
         Assert.Equal("Psycho", vm.Title);
     }
@@ -228,19 +229,19 @@ public class TrackControlVmRegistryTests
         return registry.Create(playbackQueue.GetItem(playbackQueue.TrackCount - 1));
     }
 
-    private TrackControlVm CreateGlobalVm()
+    private TrackControlVm CreateLibraryVm()
     {
-        return registry.Create(CreateGlobalItem("Psycho"));
+        return registry.Create(CreateLibraryItem("Psycho"));
     }
 
-    private IPlaylistItem GlobalItem(int index)
+    private IPlaylistItem LibraryItem(int index)
     {
-        return playlistRegistry.GlobalPlaylist.GetItem(index);
+        return libraryPlaylist.GetItem(index);
     }
 
-    private IPlaylistItem CreateGlobalItem(string title)
+    private IPlaylistItem CreateLibraryItem(string title)
     {
-        var playlist = playlistRegistry.GlobalPlaylist;
+        var playlist = libraryPlaylist;
         playlist.AddTrack(CreateTrack(title));
 
         return playlist.GetItem(playlist.TrackCount - 1);

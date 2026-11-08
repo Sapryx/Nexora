@@ -6,8 +6,6 @@ using Avalonia.Platform;
 using Core.Integrations;
 using Core.Library;
 using Core.Logging;
-using Core.Playlists;
-using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -125,11 +123,6 @@ public partial class App : Application
             return;
         }
 
-        var audioTrackLoaders = provider.GetServices<ITrackLoader>();
-        var playlistRegistry = provider.GetRequiredService<PlaylistRegistry>();
-        var artistRegistry = provider.GetRequiredService<ArtistRegistry>();
-        var loudnessScanner = provider.GetRequiredService<LoudnessScanner>();
-
         var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
 
@@ -140,24 +133,6 @@ public partial class App : Application
         provider.GetRequiredService<RenderScaleProvider>().Track(mainWindow);
         desktop.MainWindow = mainWindow;
 
-        var logger = provider.GetRequiredService<ILogger<App>>();
-
-        foreach(var loader in audioTrackLoaders)
-        {
-            Task.Run(async () =>
-            {
-                try
-                {
-                    var loadedTracks = loader.Load();
-                    artistRegistry.AddTracks(loadedTracks);
-                    playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
-                    await loudnessScanner.ScanAsync(loadedTracks);
-                }
-                catch(Exception ex)
-                {
-                    logger.Error(ex, $"Failed to load tracks");
-                }
-            });
-        }
+        _ = provider.GetRequiredService<MusicLibrary>().LoadAsync();
     }
 }
