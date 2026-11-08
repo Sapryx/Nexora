@@ -16,8 +16,8 @@ public class PlaybackVmTests
     private const int InitialVolume = 50;
     private readonly Mock<IAudioPlayer> audioPlayerMock;
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
-    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
-        NullLogger<TrackMetadataEditor>.Instance,
+    private readonly TrackTagWriter tagWriter = new TrackTagWriter(
+        NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
@@ -38,7 +38,7 @@ public class PlaybackVmTests
 
         vm = new PlaybackVm(
             audioPlayerMock.Object,
-            metadataEditor,
+            tagWriter,
             Mock.Of<ICoverCache>(),
             new CoverViewerVm(Mock.Of<ICoverCache>(), uiDispatcherMock.Object),
             uiDispatcherMock.Object
@@ -315,7 +315,7 @@ public class PlaybackVmTests
     }
 
     [Fact]
-    public async Task MetadataChanged_PlayingTrackEdited_ShowsNewTitle()
+    public async Task TrackChanged_PlayingTrackEdited_ShowsNewTitle()
     {
         var playlistItem = Mock.Of<IPlaylistItem>(it =>
             it.AudioTrack.Metadata == new Metadata() { Title = "Song" } && it.AudioTrack.AudioPath == "");
@@ -323,7 +323,7 @@ public class PlaybackVmTests
         audioPlayerMock.SetupGet(it => it.State).Returns(state);
         audioPlayerMock.Raise(it => it.StateChanged += null, state);
 
-        await metadataEditor.EditAsync(playlistItem.AudioTrack, "Edited", []);
+        await tagWriter.EditAsync(playlistItem.AudioTrack, "Edited", []);
 
         Assert.Equal("Edited", vm.PlayingTrackViewVm?.Title);
     }

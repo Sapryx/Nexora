@@ -16,8 +16,8 @@ public class TrackControlVmTests
     private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
-    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
-        NullLogger<TrackMetadataEditor>.Instance,
+    private readonly TrackTagWriter tagWriter = new TrackTagWriter(
+        NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
@@ -158,9 +158,9 @@ public class TrackControlVmTests
         var registry = new TrackControlVmRegistry(
             playbackQueue,
             audioPlayerMock.Object,
-            metadataEditor,
+            tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(metadataEditor),
+                new ArtistRegistry(tagWriter),
                 audioPlayerMock.Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object

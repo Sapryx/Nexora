@@ -22,17 +22,17 @@ public class QueueVmTests
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
 
-        var metadataEditor = new TrackMetadataEditor(
-            NullLogger<TrackMetadataEditor>.Instance,
+        var tagWriter = new TrackTagWriter(
+            NullLogger<TrackTagWriter>.Instance,
             Mock.Of<IMetadataSaver>(),
             AudioPlayerMock.Create().Object
         );
         var trackControlVmRegistry = new TrackControlVmRegistry(
             playbackQueue,
             AudioPlayerMock.Create().Object,
-            metadataEditor,
+            tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(metadataEditor),
+                new ArtistRegistry(tagWriter),
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object

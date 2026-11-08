@@ -17,7 +17,7 @@ public class TrackEditorVmTests
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<ICoverCache> coverCacheMock = new Mock<ICoverCache>();
-    private readonly TrackMetadataEditor metadataEditor;
+    private readonly TrackTagWriter tagWriter;
     private readonly ArtistRegistry artistRegistry;
     private readonly TrackEditorVm vm;
 
@@ -27,12 +27,12 @@ public class TrackEditorVmTests
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
 
-        metadataEditor = new TrackMetadataEditor(
-            NullLogger<TrackMetadataEditor>.Instance,
+        tagWriter = new TrackTagWriter(
+            NullLogger<TrackTagWriter>.Instance,
             metadataSaverMock.Object,
             audioPlayerMock.Object
         );
-        artistRegistry = new ArtistRegistry(metadataEditor);
+        artistRegistry = new ArtistRegistry(tagWriter);
         vm = new TrackEditorVm(
             artistRegistry,
             audioPlayerMock.Object,
@@ -322,7 +322,7 @@ public class TrackEditorVmTests
         var registry = new TrackControlVmRegistry(
             new PlaybackQueue(AudioPlayerMock.Create().Object),
             AudioPlayerMock.Create().Object,
-            metadataEditor,
+            tagWriter,
             vm,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);

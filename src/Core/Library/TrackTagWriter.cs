@@ -1,20 +1,20 @@
-using Core.Library;
 using Core.Logging;
 using Core.Playback;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Storage.Tags;
+namespace Core.Library;
 
-public class TrackMetadataEditor
+public class TrackTagWriter
 {
-    private readonly ILogger<TrackMetadataEditor> logger;
+    private readonly ILogger<TrackTagWriter> logger;
     private readonly IMetadataSaver metadataSaver;
     private readonly IAudioPlayer audioPlayer;
 
-    public event Action<IAudioTrack>? MetadataChanged;
+    public event Action<IAudioTrack>? TrackChanged;
 
-    public TrackMetadataEditor(
-        ILogger<TrackMetadataEditor> logger,
+    public TrackTagWriter(
+        ILogger<TrackTagWriter> logger,
         IMetadataSaver metadataSaver,
         IAudioPlayer audioPlayer)
     {
@@ -27,7 +27,7 @@ public class TrackMetadataEditor
     {
         var metadata = audioTrack.Metadata;
         title = title.Trim();
-        string displayedTitle = TagLibMetadataLoader.GetDisplayedTitle(title, audioTrack.AudioPath);
+        string displayedTitle = Metadata.GetDisplayedTitle(title, audioTrack.AudioPath);
         var normalizedArtists = artists
             .Select(it => it.Trim())
             .Where(it => it != "")
@@ -58,9 +58,20 @@ public class TrackMetadataEditor
 
         logger.Debug($"Saved metadata of {audioTrack.AudioPath}");
         Apply(metadata, change);
-        MetadataChanged?.Invoke(audioTrack);
+        TrackChanged?.Invoke(audioTrack);
 
         return true;
+    }
+
+    public Task SaveLoudnessAsync(IAudioTrack audioTrack, TrackLoudness loudness)
+    {
+        audioTrack.Metadata.Loudness = loudness;
+
+        return audioPlayer.ReleaseFileAsync(audioTrack.AudioPath, () =>
+        {
+            metadataSaver.SaveLoudness(audioTrack.AudioPath, loudness);
+            return Task.CompletedTask;
+        });
     }
 
     private Task SaveAsync(MetadataChange change)
@@ -72,7 +83,7 @@ public class TrackMetadataEditor
     {
         if(change.Title != null)
         {
-            metadata.Title = TagLibMetadataLoader.GetDisplayedTitle(change.Title, change.AudioPath);
+            metadata.Title = Metadata.GetDisplayedTitle(change.Title, change.AudioPath);
         }
 
         if(change.Artists != null)

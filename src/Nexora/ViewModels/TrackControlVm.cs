@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
-using Core.Storage.Tags;
 using Nexora.Media;
 using Nexora.Threading;
 
@@ -27,14 +27,14 @@ public partial class TrackControlVm : CoveredTrackVm
     private readonly IPlaylistItem playlistItem;
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
-    private readonly TrackMetadataEditor metadataEditor;
+    private readonly TrackTagWriter tagWriter;
     private readonly TrackEditorVm trackEditorVm;
 
     public TrackControlVm(
         IPlaylistItem playlistItem,
         PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
-        TrackMetadataEditor metadataEditor,
+        TrackTagWriter tagWriter,
         TrackEditorVm trackEditorVm,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
@@ -42,7 +42,7 @@ public partial class TrackControlVm : CoveredTrackVm
         this.playlistItem = playlistItem;
         this.audioPlayer = audioPlayer;
         this.playbackQueue = playbackQueue;
-        this.metadataEditor = metadataEditor;
+        this.tagWriter = tagWriter;
         this.trackEditorVm = trackEditorVm;
 
         IsInQueue = playlistItem.Playlist == playbackQueue;
@@ -108,7 +108,7 @@ public partial class TrackControlVm : CoveredTrackVm
 
     public Task<bool> ApplyEditAsync(string title, IEnumerable<string> artists)
     {
-        return metadataEditor.EditAsync(playlistItem.AudioTrack, title, artists);
+        return tagWriter.EditAsync(playlistItem.AudioTrack, title, artists);
     }
 
     public void UpdateTrackInfo()

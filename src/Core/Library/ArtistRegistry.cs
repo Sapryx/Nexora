@@ -1,5 +1,3 @@
-using Core.Storage.Tags;
-
 namespace Core.Library;
 
 public class ArtistRegistry
@@ -9,9 +7,9 @@ public class ArtistRegistry
     private readonly HashSet<IAudioTrack> tracks = [];
     private readonly Lock artistsLock = new Lock();
 
-    public ArtistRegistry(TrackMetadataEditor metadataEditor)
+    public ArtistRegistry(TrackTagWriter tagWriter)
     {
-        metadataEditor.MetadataChanged += OnMetadataChanged;
+        tagWriter.TrackChanged += OnTrackChanged;
     }
 
     public void AddTracks(IEnumerable<IAudioTrack> audioTracks)
@@ -38,7 +36,7 @@ public class ArtistRegistry
         }
     }
 
-    private void OnMetadataChanged(IAudioTrack audioTrack)
+    private void OnTrackChanged(IAudioTrack audioTrack)
     {
         lock(artistsLock)
         {

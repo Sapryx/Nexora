@@ -1,30 +1,26 @@
-using Core.Library;
 using Core.Logging;
+using Core.Playback.Loudness;
 using Core.Storage;
-using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 
-namespace Core.Playback.Loudness;
+namespace Core.Library;
 
 public class LoudnessScanner
 {
     private readonly ILogger<LoudnessScanner> logger;
     private readonly ILoudnessAnalyzer loudnessAnalyzer;
-    private readonly IMetadataSaver metadataSaver;
-    private readonly IAudioPlayer audioPlayer;
+    private readonly TrackTagWriter tagWriter;
     private readonly IDegreeOfParallelismProvider degreeOfParallelismProvider;
 
     public LoudnessScanner(
         ILogger<LoudnessScanner> logger,
         ILoudnessAnalyzer loudnessAnalyzer,
-        IMetadataSaver metadataSaver,
-        IAudioPlayer audioPlayer,
+        TrackTagWriter tagWriter,
         IDegreeOfParallelismProvider<LoudnessScanner> degreeOfParallelismProvider)
     {
         this.logger = logger;
         this.loudnessAnalyzer = loudnessAnalyzer;
-        this.metadataSaver = metadataSaver;
-        this.audioPlayer = audioPlayer;
+        this.tagWriter = tagWriter;
         this.degreeOfParallelismProvider = degreeOfParallelismProvider;
     }
 
@@ -69,16 +65,11 @@ public class LoudnessScanner
             return;
         }
 
-        audioTrack.Metadata.Loudness = loudness;
         logger.Debug($"Analyzed loudness of {file}: {loudness.Lufs:0.00} LUFS");
 
         try
         {
-            await audioPlayer.ReleaseFileAsync(file, () =>
-            {
-                metadataSaver.SaveLoudness(file, loudness);
-                return Task.CompletedTask;
-            }).ConfigureAwait(false);
+            await tagWriter.SaveLoudnessAsync(audioTrack, loudness).ConfigureAwait(false);
         }
         catch(Exception ex)
         {

@@ -16,8 +16,8 @@ public class TrackControlVmRegistryTests
     private readonly PlaylistRegistry playlistRegistry = new PlaylistRegistry();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
-    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
-        NullLogger<TrackMetadataEditor>.Instance,
+    private readonly TrackTagWriter tagWriter = new TrackTagWriter(
+        NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
@@ -35,9 +35,9 @@ public class TrackControlVmRegistryTests
         registry = new TrackControlVmRegistry(
             playbackQueue,
             audioPlayerMock.Object,
-            metadataEditor,
+            tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(metadataEditor),
+                new ArtistRegistry(tagWriter),
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object
@@ -186,25 +186,25 @@ public class TrackControlVmRegistryTests
     }
 
     [Fact]
-    public async Task MetadataChanged_TrackInLibraryAndQueue_PostsOnceAndShowsNewTitleInBoth()
+    public async Task TrackChanged_TrackInLibraryAndQueue_PostsOnceAndShowsNewTitleInBoth()
     {
         var libraryVm = CreateGlobalVm();
         playbackQueue.AddTrack(GlobalItem(0).AudioTrack);
         var queueVm = registry.Create(playbackQueue.GetItem(0));
         uiDispatcherMock.Invocations.Clear();
 
-        await metadataEditor.EditAsync(GlobalItem(0).AudioTrack, "Uprising", ["Muse"]);
+        await tagWriter.EditAsync(GlobalItem(0).AudioTrack, "Uprising", ["Muse"]);
 
         uiDispatcherMock.Verify(it => it.Post(It.IsAny<Action>()), Times.Once());
         Assert.Equal(["Uprising", "Uprising"], new[] { libraryVm.Title, queueVm.Title });
     }
 
     [Fact]
-    public async Task MetadataChanged_OtherTrack_KeepsTitle()
+    public async Task TrackChanged_OtherTrack_KeepsTitle()
     {
         var vm = CreateGlobalVm();
 
-        await metadataEditor.EditAsync(CreateGlobalItem("Aether").AudioTrack, "Uprising", ["Muse"]);
+        await tagWriter.EditAsync(CreateGlobalItem("Aether").AudioTrack, "Uprising", ["Muse"]);
 
         Assert.Equal("Psycho", vm.Title);
     }
@@ -216,7 +216,7 @@ public class TrackControlVmRegistryTests
         var playlistItem = playbackQueue.GetItem(0);
         playbackQueue.RemoveItem(playlistItem);
 
-        await metadataEditor.EditAsync(playlistItem.AudioTrack, "Uprising", ["Muse"]);
+        await tagWriter.EditAsync(playlistItem.AudioTrack, "Uprising", ["Muse"]);
 
         Assert.Equal("Psycho", vm.Title);
     }
