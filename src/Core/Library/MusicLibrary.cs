@@ -1,30 +1,54 @@
+using Core.Logging;
+using Core.Playlists;
+using Core.Storage;
+using Microsoft.Extensions.Logging;
+
 namespace Core.Library;
 
-public class ArtistRegistry
+public class MusicLibrary
 {
-    private readonly Dictionary<string, Artist> artists =
-        new Dictionary<string, Artist>(StringComparer.OrdinalIgnoreCase);
+    public Playlist Playlist { get; } = new Playlist();
+    private readonly ILogger<MusicLibrary> logger;
+    private readonly ITrackLoader trackLoader;
+    private readonly LoudnessScanner loudnessScanner;
     private readonly HashSet<IAudioTrack> tracks = [];
     private readonly Lock artistsLock = new Lock();
 
-    public ArtistRegistry(TrackTagWriter tagWriter)
+    private readonly Dictionary<string, Artist> artists =
+        new Dictionary<string, Artist>(StringComparer.OrdinalIgnoreCase);
+
+    public MusicLibrary(
+        ILogger<MusicLibrary> logger,
+        ITrackLoader trackLoader,
+        LoudnessScanner loudnessScanner,
+        TrackTagWriter tagWriter)
     {
+        this.logger = logger;
+        this.trackLoader = trackLoader;
+        this.loudnessScanner = loudnessScanner;
+
         tagWriter.TrackChanged += OnTrackChanged;
     }
 
-    public void AddTracks(IEnumerable<IAudioTrack> audioTracks)
+    public Task LoadAsync()
     {
-        lock(artistsLock)
+        return Task.Run(async () =>
         {
-            foreach(var audioTrack in audioTracks)
+            try
             {
-                tracks.Add(audioTrack);
-                AddToArtists(audioTrack);
+                var audioTracks = trackLoader.Load();
+                AddToArtistIndex(audioTracks);
+                Playlist.AddTracks(audioTracks);
+                await loudnessScanner.ScanAsync(audioTracks).ConfigureAwait(false);
             }
-        }
+            catch(Exception ex)
+            {
+                logger.Error(ex, $"Failed to load tracks");
+            }
+        });
     }
 
-    public List<Artist> FindByPrefix(string prefix)
+    public List<Artist> FindArtistsByPrefix(string prefix)
     {
         lock(artistsLock)
         {
@@ -33,6 +57,18 @@ public class ArtistRegistry
                 .OrderByDescending(it => it.Tracks.Count)
                 .ThenBy(it => it.Name, StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
+        }
+    }
+
+    private void AddToArtistIndex(IEnumerable<IAudioTrack> audioTracks)
+    {
+        lock(artistsLock)
+        {
+            foreach(var audioTrack in audioTracks)
+            {
+                tracks.Add(audioTrack);
+                AddToArtists(audioTrack);
+            }
         }
     }
 

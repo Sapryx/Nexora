@@ -42,17 +42,17 @@ public partial class TrackEditorVm : ViewModelBase
     public ObservableCollection<ArtistSuggestion> Suggestions { get; } = [];
     public LargeCoverVm LargeCover { get; }
     private const int MaxSuggestions = 8;
-    private readonly ArtistRegistry artistRegistry;
+    private readonly MusicLibrary musicLibrary;
     private readonly IAudioPlayer audioPlayer;
 
     public TrackEditorVm(
-        ArtistRegistry artistRegistry,
+        MusicLibrary musicLibrary,
         IAudioPlayer audioPlayer,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher
     )
     {
-        this.artistRegistry = artistRegistry;
+        this.musicLibrary = musicLibrary;
         this.audioPlayer = audioPlayer;
         LargeCover = new LargeCoverVm(coverCache.LoadLargeAsync, uiDispatcher);
 
@@ -183,7 +183,7 @@ public partial class TrackEditorVm : ViewModelBase
 
         if(query != "")
         {
-            var artists = artistRegistry.FindByPrefix(query);
+            var artists = musicLibrary.FindArtistsByPrefix(query);
 
             foreach(var artist in artists.Where(it => !IsAdded(it.Name)).Take(MaxSuggestions))
             {

@@ -67,8 +67,7 @@ public static class CompositionRoot
         ));
         builder.AddSingleton<RenderScaleProvider>();
         builder.AddSingleton<ICoverCache, CoverCache>();
-        builder.AddSingleton<PlaylistRegistry>();
-        builder.AddSingleton<ArtistRegistry>();
+        builder.AddSingleton<MusicLibrary>();
         builder.AddSingleton<PlaybackQueue>();
         builder.AddSingleton<KeyboardLayoutTranslator>();
 
