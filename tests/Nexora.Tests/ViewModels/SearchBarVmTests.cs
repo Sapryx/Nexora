@@ -34,6 +34,7 @@ public class SearchBarVmTests
         musicLibrary = TestMusicLibrary.Create(tagWriter);
         var trackEditorVm = new TrackEditorVm(
             musicLibrary,
+            tagWriter,
             AudioPlayerMock.Create().Object,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object

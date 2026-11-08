@@ -127,25 +127,6 @@ public class TrackControlVmTests
         return Mock.Of<IAudioTrack>(it => it.Metadata == new Metadata() && it.AudioPath == "");
     }
 
-    [Fact]
-    public async Task ApplyEditAsync_FieldsEdited_ShowsNewTitleAndArtists()
-    {
-        var vm = CreateVm(CreatePlaylistItem("Psycho", "Muse"));
-
-        await vm.ApplyEditAsync("Uprising", ["Muse", "Queen"]);
-
-        Assert.Equal("Uprising", vm.Title);
-        Assert.Equal("Muse, Queen", vm.Artists);
-    }
-
-    private static IPlaylistItem CreatePlaylistItem(string title, string artists)
-    {
-        var metadata = new Metadata() { Title = title, Artists = [artists] };
-        return Mock.Of<IPlaylistItem>(
-            it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == $"{title}.mp3"
-        );
-    }
-
     private static IPlaylistItem CreatePlaylistItem(TimeSpan duration)
     {
         var metadata = new Metadata() { Duration = duration };
@@ -162,6 +143,7 @@ public class TrackControlVmTests
             tagWriter,
             new TrackEditorVm(
                 TestMusicLibrary.Create(tagWriter),
+                tagWriter,
                 audioPlayerMock.Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object

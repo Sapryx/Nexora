@@ -39,6 +39,7 @@ public class TrackControlVmRegistryTests
             tagWriter,
             new TrackEditorVm(
                 TestMusicLibrary.Create(tagWriter),
+                tagWriter,
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 uiDispatcherMock.Object

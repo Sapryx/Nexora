@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Library;
@@ -11,7 +12,7 @@ namespace Nexora.ViewModels;
 public partial class TrackEditorVm : ViewModelBase
 {
     [ObservableProperty]
-    public partial TrackControlVm? TrackVm { get; private set; }
+    public partial IAudioTrack? Track { get; private set; }
 
     [ObservableProperty]
     public partial bool IsOpen { get; private set; }
@@ -43,16 +44,19 @@ public partial class TrackEditorVm : ViewModelBase
     public LargeCoverVm LargeCover { get; }
     private const int MaxSuggestions = 8;
     private readonly MusicLibrary musicLibrary;
+    private readonly TrackTagWriter tagWriter;
     private readonly IAudioPlayer audioPlayer;
 
     public TrackEditorVm(
         MusicLibrary musicLibrary,
+        TrackTagWriter tagWriter,
         IAudioPlayer audioPlayer,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher
     )
     {
         this.musicLibrary = musicLibrary;
+        this.tagWriter = tagWriter;
         this.audioPlayer = audioPlayer;
         LargeCover = new LargeCoverVm(coverCache.LoadLargeAsync, uiDispatcher);
 
@@ -60,35 +64,35 @@ public partial class TrackEditorVm : ViewModelBase
         audioPlayer.StateChanged += _ => uiDispatcher.Post(UpdateIsEditable);
     }
 
-    public void Open(TrackControlVm trackVm)
+    public void Open(IAudioTrack track, Bitmap? preview)
     {
-        EditedTitle = trackVm.Title;
+        EditedTitle = track.Metadata.Title;
         EditedArtists.Clear();
 
-        foreach(string artist in trackVm.ArtistNames)
+        foreach(string artist in track.Metadata.Artists)
         {
             EditedArtists.Add(artist);
         }
 
         ArtistQuery = "";
-        TrackVm = trackVm;
+        Track = track;
         IsOpen = true;
-        LargeCover.Load(trackVm.AudioPath, trackVm.Cover);
+        LargeCover.Load(track.AudioPath, preview);
     }
 
     [RelayCommand(CanExecute = nameof(IsEditable))]
     public async Task Save()
     {
-        var trackVm = TrackVm;
+        var track = Track;
 
-        if(trackVm == null)
+        if(track == null)
         {
             return;
         }
 
-        bool isSaved = await trackVm.ApplyEditAsync(EditedTitle, EditedArtists.Append(ArtistQuery).ToList());
+        bool isSaved = await tagWriter.EditAsync(track, EditedTitle, EditedArtists.Append(ArtistQuery).ToList());
 
-        if(isSaved && IsOpen && TrackVm == trackVm)
+        if(isSaved && IsOpen && Track == track)
         {
             Close();
         }
@@ -149,7 +153,7 @@ public partial class TrackEditorVm : ViewModelBase
         UpdateChanges();
     }
 
-    partial void OnTrackVmChanged(TrackControlVm? value)
+    partial void OnTrackChanged(IAudioTrack? value)
     {
         UpdateIsEditable();
         UpdateChanges();
@@ -157,17 +161,17 @@ public partial class TrackEditorVm : ViewModelBase
 
     private void UpdateChanges()
     {
-        IsTitleChanged = TrackVm != null && EditedTitle != TrackVm.Title;
-        AreArtistsChanged = TrackVm != null
-            && (ArtistQuery.Trim() != "" || !EditedArtists.SequenceEqual(TrackVm.ArtistNames));
+        IsTitleChanged = Track != null && EditedTitle != Track.Metadata.Title;
+        AreArtistsChanged = Track != null
+            && (ArtistQuery.Trim() != "" || !EditedArtists.SequenceEqual(Track.Metadata.Artists));
     }
 
     private void UpdateIsEditable()
     {
         var state = audioPlayer.State;
-        IsEditable = TrackVm == null
+        IsEditable = Track == null
             || state.Status != PlaybackStatus.Playing
-            || state.Track?.AudioTrack.AudioPath != TrackVm.AudioPath;
+            || state.Track?.AudioTrack.AudioPath != Track.AudioPath;
     }
 
     private void Close()

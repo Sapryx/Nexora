@@ -37,6 +37,7 @@ public class TrackEditorVmTests
         musicLibrary = TestMusicLibrary.Create(tagWriter, libraryTracks);
         vm = new TrackEditorVm(
             musicLibrary,
+            tagWriter,
             audioPlayerMock.Object,
             coverCacheMock.Object,
             uiDispatcherMock.Object
@@ -46,11 +47,11 @@ public class TrackEditorVmTests
     [Fact]
     public void EditCommand_TrackExecutes_OpensTrackWithFieldsCopied()
     {
-        var trackVm = CreateTrackVm("Under Pressure", "Queen", "David Bowie");
+        var track = CreateTrack("Under Pressure", "Queen", "David Bowie");
 
-        trackVm.EditCommand.Execute(null);
+        CreateTrackVm(track).EditCommand.Execute(null);
 
-        Assert.Same(trackVm, vm.TrackVm);
+        Assert.Same(track, vm.Track);
         Assert.True(vm.IsOpen);
         Assert.Equal("Under Pressure", vm.EditedTitle);
         Assert.Equal(["Queen", "David Bowie"], vm.EditedArtists);
@@ -59,7 +60,7 @@ public class TrackEditorVmTests
     [Fact]
     public void Open_Track_LoadsLargeCover()
     {
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         coverCacheMock.Verify(it => it.LoadLargeAsync("Psycho.mp3"), Times.Once);
     }
@@ -67,28 +68,28 @@ public class TrackEditorVmTests
     [Fact]
     public async Task Save_FieldsEdited_AppliesEditAndCloses()
     {
-        var trackVm = CreateTrackVm("Psycho", "Muse");
-        vm.Open(trackVm);
+        var track = CreateTrack("Psycho", "Muse");
+        vm.Open(track, null);
         vm.EditedTitle = "Uprising";
         vm.EditedArtists.Add("Queen");
 
         await vm.Save();
 
         Assert.False(vm.IsOpen);
-        Assert.Equal("Uprising", trackVm.Title);
-        Assert.Equal("Muse, Queen", trackVm.Artists);
+        Assert.Equal("Uprising", track.Metadata.Title);
+        Assert.Equal("Muse, Queen", track.Metadata.JoinedArtists);
     }
 
     [Fact]
     public async Task Save_ArtistQueryTyped_AddsItAsArtist()
     {
-        var trackVm = CreateTrackVm("Psycho", "Muse");
-        vm.Open(trackVm);
+        var track = CreateTrack("Psycho", "Muse");
+        vm.Open(track, null);
         vm.ArtistQuery = "Queen";
 
         await vm.Save();
 
-        Assert.Equal("Muse, Queen", trackVm.Artists);
+        Assert.Equal("Muse, Queen", track.Metadata.JoinedArtists);
         Assert.False(vm.HasSuggestions);
     }
 
@@ -98,14 +99,14 @@ public class TrackEditorVmTests
         metadataSaverMock
             .Setup(it => it.Save(It.IsAny<MetadataChange>()))
             .Throws(new IOException("File is locked"));
-        var trackVm = CreateTrackVm("Psycho", "Muse");
-        vm.Open(trackVm);
+        var track = CreateTrack("Psycho", "Muse");
+        vm.Open(track, null);
         vm.EditedTitle = "Uprising";
 
         await vm.Save();
 
         Assert.True(vm.IsOpen);
-        Assert.Equal("Psycho", trackVm.Title);
+        Assert.Equal("Psycho", track.Metadata.Title);
     }
 
     [Fact]
@@ -113,7 +114,7 @@ public class TrackEditorVmTests
     {
         SetupPlaying("Psycho.mp3");
 
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         Assert.False(vm.IsEditable);
         Assert.False(vm.SaveCommand.CanExecute(null));
@@ -124,7 +125,7 @@ public class TrackEditorVmTests
     {
         SetupPlaying("Madness.mp3");
 
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         Assert.True(vm.IsEditable);
         Assert.True(vm.SaveCommand.CanExecute(null));
@@ -134,7 +135,7 @@ public class TrackEditorVmTests
     public void StateChanged_OpenTrackPaused_AllowsEditing()
     {
         var playlistItem = SetupPlaying("Psycho.mp3");
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
         var paused = PlaybackState.Paused(playlistItem);
         audioPlayerMock.SetupGet(it => it.State).Returns(paused);
 
@@ -146,23 +147,23 @@ public class TrackEditorVmTests
     [Fact]
     public void Cancel_FieldsEdited_DiscardsEditAndCloses()
     {
-        var trackVm = CreateTrackVm("Psycho", "Muse");
-        vm.Open(trackVm);
+        var track = CreateTrack("Psycho", "Muse");
+        vm.Open(track, null);
         vm.EditedTitle = "Uprising";
         vm.EditedArtists.Clear();
 
         vm.CancelCommand.Execute(null);
 
         Assert.False(vm.IsOpen);
-        Assert.Equal("Psycho", trackVm.Title);
-        Assert.Equal("Muse", trackVm.Artists);
+        Assert.Equal("Psycho", track.Metadata.Title);
+        Assert.Equal("Muse", track.Metadata.JoinedArtists);
     }
 
     [Fact]
     public async Task ArtistQuery_PrefixOfKnownArtist_SuggestsArtistThenNewArtist()
     {
         await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         vm.ArtistQuery = "qu";
 
@@ -179,7 +180,7 @@ public class TrackEditorVmTests
     public async Task ArtistQuery_WholeNameOfKnownArtist_DoesNotSuggestNewArtist()
     {
         await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         vm.ArtistQuery = "queen";
 
@@ -190,7 +191,7 @@ public class TrackEditorVmTests
     public async Task ArtistQuery_ArtistAlreadyAdded_IsNotSuggested()
     {
         await LoadLibraryTrackAsync("Hysteria", "Muse");
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         vm.ArtistQuery = "Muse";
 
@@ -202,7 +203,7 @@ public class TrackEditorVmTests
     public async Task AddSelectedSuggestion_SuggestionSelected_AddsArtistAndClearsQuery()
     {
         await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
         vm.ArtistQuery = "Qu";
 
         vm.AddSelectedSuggestion();
@@ -216,7 +217,7 @@ public class TrackEditorVmTests
     public async Task MoveSuggestionSelection_PastLastSuggestion_StaysOnLast()
     {
         await LoadLibraryTrackAsync("Bohemian Rhapsody", "Queen");
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
         vm.ArtistQuery = "Qu";
 
         vm.MoveSuggestionSelection(1);
@@ -228,7 +229,7 @@ public class TrackEditorVmTests
     [Fact]
     public void RemoveLastArtist_QueryEmpty_RemovesLastArtist()
     {
-        vm.Open(CreateTrackVm("Under Pressure", "Queen", "David Bowie"));
+        vm.Open(CreateTrack("Under Pressure", "Queen", "David Bowie"), null);
 
         vm.RemoveLastArtist();
 
@@ -238,7 +239,7 @@ public class TrackEditorVmTests
     [Fact]
     public void RemoveLastArtist_QueryTyped_KeepsArtists()
     {
-        vm.Open(CreateTrackVm("Under Pressure", "Queen", "David Bowie"));
+        vm.Open(CreateTrack("Under Pressure", "Queen", "David Bowie"), null);
         vm.ArtistQuery = "F";
 
         vm.RemoveLastArtist();
@@ -249,7 +250,7 @@ public class TrackEditorVmTests
     [Fact]
     public void Open_Track_NoFieldsChanged()
     {
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         Assert.False(vm.IsTitleChanged);
         Assert.False(vm.AreArtistsChanged);
@@ -258,7 +259,7 @@ public class TrackEditorVmTests
     [Fact]
     public void EditedTitle_ChangedAndRestored_UpdatesIsTitleChanged()
     {
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         vm.EditedTitle = "Uprising";
         Assert.True(vm.IsTitleChanged);
@@ -270,7 +271,7 @@ public class TrackEditorVmTests
     [Fact]
     public void EditedArtists_ArtistRemovedAndReadded_UpdatesAreArtistsChanged()
     {
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         vm.RemoveArtist("Muse");
         Assert.True(vm.AreArtistsChanged);
@@ -282,7 +283,7 @@ public class TrackEditorVmTests
     [Fact]
     public void MoveArtist_ToStart_ReordersArtistsAndMarksChanged()
     {
-        vm.Open(CreateTrackVm("Under Pressure", "Queen", "David Bowie"));
+        vm.Open(CreateTrack("Under Pressure", "Queen", "David Bowie"), null);
 
         vm.MoveArtist(1, 0);
 
@@ -293,7 +294,7 @@ public class TrackEditorVmTests
     [Fact]
     public void ArtistQuery_Typed_ArtistsChanged()
     {
-        vm.Open(CreateTrackVm("Psycho", "Muse"));
+        vm.Open(CreateTrack("Psycho", "Muse"), null);
 
         vm.ArtistQuery = "Queen";
 
@@ -316,12 +317,14 @@ public class TrackEditorVmTests
         return musicLibrary.LoadAsync();
     }
 
-    private TrackControlVm CreateTrackVm(string title, params string[] artists)
+    private static AudioTrack CreateTrack(string title, params string[] artists)
     {
-        var metadata = new Metadata() { Title = title, Artists = artists };
-        var playlistItem = Mock.Of<IPlaylistItem>(
-            it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == $"{title}.mp3"
-        );
+        return new AudioTrack($"{title}.mp3", new Metadata() { Title = title, Artists = artists });
+    }
+
+    private TrackControlVm CreateTrackVm(IAudioTrack track)
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it => it.AudioTrack == track);
 
         var registry = new TrackControlVmRegistry(
             new PlaybackQueue(AudioPlayerMock.Create().Object),

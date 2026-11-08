@@ -97,9 +97,9 @@ public class TrackGridRowTests
             Mock.Of<IPlaylistItem>(it => it.AudioTrack == audioTrack),
             new PlaybackQueue(AudioPlayerMock.Create().Object),
             AudioPlayerMock.Create().Object,
-            tagWriter,
             new TrackEditorVm(
                 TestMusicLibrary.Create(tagWriter),
+                tagWriter,
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 Mock.Of<IUiDispatcher>()
