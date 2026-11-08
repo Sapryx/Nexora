@@ -8,8 +8,8 @@ namespace Core.Tests.Library;
 
 public class ArtistRegistryTests
 {
-    private readonly TrackMetadataEditor metadataEditor = new TrackMetadataEditor(
-        NullLogger<TrackMetadataEditor>.Instance,
+    private readonly TrackTagWriter tagWriter = new TrackTagWriter(
+        NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
@@ -17,7 +17,7 @@ public class ArtistRegistryTests
 
     public ArtistRegistryTests()
     {
-        registry = new ArtistRegistry(metadataEditor);
+        registry = new ArtistRegistry(tagWriter);
     }
 
     [Fact]
@@ -48,21 +48,21 @@ public class ArtistRegistryTests
     }
 
     [Fact]
-    public async Task MetadataChanged_ArtistReplaced_MovesTrackAndRemovesEmptyArtist()
+    public async Task TrackChanged_ArtistReplaced_MovesTrackAndRemovesEmptyArtist()
     {
         var track = CreateTrack("Under Pressure", "Queen");
         registry.AddTracks([track]);
 
-        await metadataEditor.EditAsync(track, "Under Pressure", ["David Bowie"]);
+        await tagWriter.EditAsync(track, "Under Pressure", ["David Bowie"]);
 
         Assert.Empty(registry.FindByPrefix("Queen"));
         Assert.Same(track, Assert.Single(Assert.Single(registry.FindByPrefix("David")).Tracks));
     }
 
     [Fact]
-    public async Task MetadataChanged_TrackNotAdded_IsIgnored()
+    public async Task TrackChanged_TrackNotAdded_IsIgnored()
     {
-        await metadataEditor.EditAsync(CreateTrack("Psycho", "Muse"), "Psycho", ["Queen"]);
+        await tagWriter.EditAsync(CreateTrack("Psycho", "Muse"), "Psycho", ["Queen"]);
 
         Assert.Empty(registry.FindByPrefix(""));
     }

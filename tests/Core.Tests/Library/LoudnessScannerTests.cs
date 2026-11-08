@@ -9,7 +9,7 @@ using Moq;
 using Tests.Shared.Logging;
 using Tests.Shared.Playback;
 
-namespace Core.Tests.Playback.Loudness;
+namespace Core.Tests.Library;
 
 public class LoudnessScannerTests
 {
@@ -115,6 +115,24 @@ public class LoudnessScannerTests
     }
 
     [Fact]
+    public async Task ScanAsync_SavingLoudnessThrows_LogsWarningWithFileAndException()
+    {
+        var loudness = new TrackLoudness() { Lufs = -10 };
+        var exception = new IOException("Locked");
+        var logger = new TestLogger<LoudnessScanner>();
+        loudnessAnalyzerMock.Setup(it => it.Analyze("/music/one.mp3")).Returns(loudness);
+        metadataSaverMock
+            .Setup(it => it.SaveLoudness("/music/one.mp3", loudness))
+            .Throws(exception);
+
+        await CreateScanner(logger).ScanAsync([CreateTrack("/music/one.mp3", null)]);
+
+        var warning = Assert.Single(logger.Entries, it => it.Level == LogLevel.Warning);
+        Assert.Contains("/music/one.mp3", warning.Message);
+        Assert.Same(exception, warning.Exception);
+    }
+
+    [Fact]
     public async Task ScanAsync_TracksWithoutLoudness_ReadsDegreeOfParallelismFromProvider()
     {
         await scanner.ScanAsync([CreateTrack("/music/one.mp3", null)]);
@@ -151,8 +169,7 @@ public class LoudnessScannerTests
         return new LoudnessScanner(
             logger,
             loudnessAnalyzerMock.Object,
-            metadataSaverMock.Object,
-            audioPlayerMock.Object,
+            new TrackTagWriter(NullLogger<TrackTagWriter>.Instance, metadataSaverMock.Object, audioPlayerMock.Object),
             degreeOfParallelismProviderMock.Object
         );
     }

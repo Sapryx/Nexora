@@ -1,6 +1,6 @@
 using Core.Storage;
 
-namespace Core.Playback.Loudness;
+namespace Core.Library;
 
 public class LoudnessScannerDegreeOfParallelismProvider : IDegreeOfParallelismProvider<LoudnessScanner>
 {

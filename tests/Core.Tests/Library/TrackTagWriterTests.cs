@@ -6,31 +6,32 @@ using Moq;
 using Tests.Shared.Logging;
 using Tests.Shared.Playback;
 
-namespace Core.Tests.Storage.Tags;
+namespace Core.Tests.Library;
 
-public class TrackMetadataEditorTests
+public class TrackTagWriterTests
 {
     private const string AudioPath = "/music/Psycho.mp3";
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
-    private readonly TestLogger<TrackMetadataEditor> logger = new TestLogger<TrackMetadataEditor>();
+    private readonly TestLogger<TrackTagWriter> logger = new TestLogger<TrackTagWriter>();
     private readonly AudioTrack audioTrack = new AudioTrack(
         AudioPath,
         new Metadata() { Title = "Psycho", Artists = ["Muse"] }
     );
     private readonly List<IAudioTrack> changedTracks = [];
-    private readonly TrackMetadataEditor editor;
+    private readonly TrackTagWriter writer;
+    private bool isReleasing;
 
-    public TrackMetadataEditorTests()
+    public TrackTagWriterTests()
     {
-        editor = new TrackMetadataEditor(logger, metadataSaverMock.Object, audioPlayerMock.Object);
-        editor.MetadataChanged += it => changedTracks.Add(it);
+        writer = new TrackTagWriter(logger, metadataSaverMock.Object, audioPlayerMock.Object);
+        writer.TrackChanged += it => changedTracks.Add(it);
     }
 
     [Fact]
     public async Task EditAsync_NothingChanged_DoesNotSave()
     {
-        bool isSaved = await editor.EditAsync(audioTrack, " Psycho ", ["Muse"]);
+        bool isSaved = await writer.EditAsync(audioTrack, " Psycho ", ["Muse"]);
 
         Assert.True(isSaved);
         metadataSaverMock.Verify(it => it.Save(It.IsAny<MetadataChange>()), Times.Never);
@@ -40,7 +41,7 @@ public class TrackMetadataEditorTests
     [Fact]
     public async Task EditAsync_TitleChanged_SavesOnlyTitleAndShowsIt()
     {
-        bool isSaved = await editor.EditAsync(audioTrack, "Uprising", ["Muse"]);
+        bool isSaved = await writer.EditAsync(audioTrack, "Uprising", ["Muse"]);
 
         Assert.True(isSaved);
         metadataSaverMock.Verify(it => it.Save(It.Is<MetadataChange>(change =>
@@ -52,7 +53,7 @@ public class TrackMetadataEditorTests
     [Fact]
     public async Task EditAsync_ArtistsChanged_SavesNormalizedArtistsOnly()
     {
-        await editor.EditAsync(audioTrack, "Psycho", [" Muse", "Queen ", "", " ", "muse"]);
+        await writer.EditAsync(audioTrack, "Psycho", [" Muse", "Queen ", "", " ", "muse"]);
 
         metadataSaverMock.Verify(it => it.Save(It.Is<MetadataChange>(change =>
             change.Title == null && change.Artists != null)));
@@ -64,7 +65,7 @@ public class TrackMetadataEditorTests
     {
         audioTrack.Metadata.Title = "Uprising";
 
-        await editor.EditAsync(audioTrack, "  ", ["Muse"]);
+        await writer.EditAsync(audioTrack, "  ", ["Muse"]);
 
         metadataSaverMock.Verify(it => it.Save(It.Is<MetadataChange>(change => change.Title == "")));
         Assert.Equal("Psycho", audioTrack.Metadata.Title);
@@ -73,7 +74,7 @@ public class TrackMetadataEditorTests
     [Fact]
     public async Task EditAsync_TitleClearedAndAlreadyFileName_DoesNotSave()
     {
-        await editor.EditAsync(audioTrack, "", ["Muse"]);
+        await writer.EditAsync(audioTrack, "", ["Muse"]);
 
         metadataSaverMock.Verify(it => it.Save(It.IsAny<MetadataChange>()), Times.Never);
     }
@@ -86,7 +87,7 @@ public class TrackMetadataEditorTests
             .Setup(it => it.Save(It.IsAny<MetadataChange>()))
             .Throws(exception);
 
-        bool isSaved = await editor.EditAsync(audioTrack, "Uprising", ["Muse"]);
+        bool isSaved = await writer.EditAsync(audioTrack, "Uprising", ["Muse"]);
 
         Assert.False(isSaved);
         Assert.Equal("Psycho", audioTrack.Metadata.Title);
@@ -101,7 +102,57 @@ public class TrackMetadataEditorTests
     public async Task EditAsync_TitleChanged_SavesWhileTrackFileIsReleased()
     {
         bool wasReleasedDuringSave = false;
-        bool isReleasing = false;
+        SetupFileRelease();
+        metadataSaverMock
+            .Setup(it => it.Save(It.IsAny<MetadataChange>()))
+            .Callback(() => wasReleasedDuringSave = isReleasing);
+
+        await writer.EditAsync(audioTrack, "Uprising", ["Muse"]);
+
+        Assert.True(wasReleasedDuringSave);
+    }
+
+    [Fact]
+    public async Task SaveLoudnessAsync_Loudness_ShowsItAndSavesWhileTrackFileIsReleased()
+    {
+        var loudness = new TrackLoudness() { Lufs = -10, PeakDb = -1 };
+        bool wasReleasedDuringSave = false;
+        SetupFileRelease();
+        metadataSaverMock
+            .Setup(it => it.SaveLoudness(AudioPath, loudness))
+            .Callback(() => wasReleasedDuringSave = isReleasing);
+
+        await writer.SaveLoudnessAsync(audioTrack, loudness);
+
+        Assert.Same(loudness, audioTrack.Metadata.Loudness);
+        Assert.True(wasReleasedDuringSave);
+    }
+
+    [Fact]
+    public async Task SaveLoudnessAsync_Loudness_DoesNotRaiseTrackChanged()
+    {
+        await writer.SaveLoudnessAsync(audioTrack, new TrackLoudness() { Lufs = -10 });
+
+        Assert.Empty(changedTracks);
+    }
+
+    [Fact]
+    public async Task SaveLoudnessAsync_SaveFails_ThrowsAndKeepsLoudness()
+    {
+        var loudness = new TrackLoudness() { Lufs = -10 };
+        var exception = new IOException("File is locked");
+        metadataSaverMock
+            .Setup(it => it.SaveLoudness(AudioPath, loudness))
+            .Throws(exception);
+
+        var thrown = await Assert.ThrowsAsync<IOException>(() => writer.SaveLoudnessAsync(audioTrack, loudness));
+
+        Assert.Same(exception, thrown);
+        Assert.Same(loudness, audioTrack.Metadata.Loudness);
+    }
+
+    private void SetupFileRelease()
+    {
         audioPlayerMock
             .Setup(it => it.ReleaseFileAsync(AudioPath, It.IsAny<Func<Task>>()))
             .Returns<string, Func<Task>>(async (audioPath, action) =>
@@ -110,12 +161,5 @@ public class TrackMetadataEditorTests
                 await action();
                 isReleasing = false;
             });
-        metadataSaverMock
-            .Setup(it => it.Save(It.IsAny<MetadataChange>()))
-            .Callback(() => wasReleasedDuringSave = isReleasing);
-
-        await editor.EditAsync(audioTrack, "Uprising", ["Muse"]);
-
-        Assert.True(wasReleasedDuringSave);
     }
 }

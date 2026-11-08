@@ -26,13 +26,13 @@ public class SearchBarVmTests
             .Setup(it => it.Post(It.IsAny<Action>()))
             .Callback<Action>(it => it());
 
-        var metadataEditor = new TrackMetadataEditor(
-            NullLogger<TrackMetadataEditor>.Instance,
+        var tagWriter = new TrackTagWriter(
+            NullLogger<TrackTagWriter>.Instance,
             Mock.Of<IMetadataSaver>(),
             AudioPlayerMock.Create().Object
         );
         var trackEditorVm = new TrackEditorVm(
-            new ArtistRegistry(metadataEditor),
+            new ArtistRegistry(tagWriter),
             AudioPlayerMock.Create().Object,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object
@@ -41,7 +41,7 @@ public class SearchBarVmTests
         var trackControlVmRegistry = new TrackControlVmRegistry(
             new PlaybackQueue(AudioPlayerMock.Create().Object),
             AudioPlayerMock.Create().Object,
-            metadataEditor,
+            tagWriter,
             trackEditorVm,
             Mock.Of<ICoverCache>(),
             uiDispatcherMock.Object);

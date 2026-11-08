@@ -86,8 +86,8 @@ public class TrackGridRowTests
         var audioTrack = Mock.Of<IAudioTrack>(it =>
             it.Metadata == new Metadata() { Title = title } &&
             it.AudioPath == $"{title}.mp3");
-        var metadataEditor = new TrackMetadataEditor(
-            NullLogger<TrackMetadataEditor>.Instance,
+        var tagWriter = new TrackTagWriter(
+            NullLogger<TrackTagWriter>.Instance,
             Mock.Of<IMetadataSaver>(),
             AudioPlayerMock.Create().Object
         );
@@ -96,9 +96,9 @@ public class TrackGridRowTests
             Mock.Of<IPlaylistItem>(it => it.AudioTrack == audioTrack),
             new PlaybackQueue(AudioPlayerMock.Create().Object),
             AudioPlayerMock.Create().Object,
-            metadataEditor,
+            tagWriter,
             new TrackEditorVm(
-                new ArtistRegistry(metadataEditor),
+                new ArtistRegistry(tagWriter),
                 AudioPlayerMock.Create().Object,
                 Mock.Of<ICoverCache>(),
                 Mock.Of<IUiDispatcher>()

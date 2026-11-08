@@ -20,16 +20,11 @@ public class TagLibMetadataLoader : IMetadataLoader
 
         return new Metadata()
         {
-            Title = GetDisplayedTitle(tagFile.Tag.Title, tagFile.Name),
+            Title = Metadata.GetDisplayedTitle(tagFile.Tag.Title, tagFile.Name),
             Artists = SplitArtists(tagFile.Tag.Performers),
             Duration = tagFile.Properties.Duration,
             Loudness = LoudnessTags.Read(tagFile)
         };
-    }
-
-    public static string GetDisplayedTitle(string? title, string audioPath)
-    {
-        return string.IsNullOrEmpty(title) ? Path.GetFileNameWithoutExtension(audioPath) : title;
     }
 
     public static IReadOnlyList<string> SplitArtists(IEnumerable<string> performers)

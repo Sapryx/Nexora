@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Core.Library;
 using Core.Playback;
-using Core.Storage.Tags;
 using Nexora.Media;
 using Nexora.Threading;
 
@@ -38,7 +38,7 @@ public partial class PlaybackVm : ViewModelBase
 
     public PlaybackVm(
         IAudioPlayer audioPlayer,
-        TrackMetadataEditor metadataEditor,
+        TrackTagWriter tagWriter,
         ICoverCache coverCache,
         CoverViewerVm coverViewerVm,
         IUiDispatcher uiDispatcher)
@@ -90,7 +90,7 @@ public partial class PlaybackVm : ViewModelBase
             ApplyMuteState(isMuted);
         });
 
-        metadataEditor.MetadataChanged += audioTrack => uiDispatcher.Post(() =>
+        tagWriter.TrackChanged += audioTrack => uiDispatcher.Post(() =>
         {
             var playingTrack = audioPlayer.State.Track;
 

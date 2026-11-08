@@ -1,6 +1,6 @@
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
-using Core.Storage.Tags;
 using Nexora.Media;
 using Nexora.Threading;
 
@@ -10,7 +10,7 @@ public class TrackControlVmRegistry
 {
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
-    private readonly TrackMetadataEditor metadataEditor;
+    private readonly TrackTagWriter tagWriter;
     private readonly TrackEditorVm trackEditorVm;
     private readonly ICoverCache coverCache;
     private readonly IUiDispatcher uiDispatcher;
@@ -20,14 +20,14 @@ public class TrackControlVmRegistry
     public TrackControlVmRegistry(
         PlaybackQueue playbackQueue,
         IAudioPlayer audioPlayer,
-        TrackMetadataEditor metadataEditor,
+        TrackTagWriter tagWriter,
         TrackEditorVm trackEditorVm,
         ICoverCache coverCache,
         IUiDispatcher uiDispatcher)
     {
         this.playbackQueue = playbackQueue;
         this.audioPlayer = audioPlayer;
-        this.metadataEditor = metadataEditor;
+        this.tagWriter = tagWriter;
         this.trackEditorVm = trackEditorVm;
         this.coverCache = coverCache;
         this.uiDispatcher = uiDispatcher;
@@ -44,7 +44,7 @@ public class TrackControlVmRegistry
             activeTrackVm?.ShowPosition(position);
         });
 
-        metadataEditor.MetadataChanged += audioTrack => uiDispatcher.Post(() =>
+        tagWriter.TrackChanged += audioTrack => uiDispatcher.Post(() =>
         {
             foreach(var pair in trackVms.Where(it => it.Key.AudioTrack == audioTrack))
             {
@@ -61,7 +61,7 @@ public class TrackControlVmRegistry
             playlistItem,
             playbackQueue,
             audioPlayer,
-            metadataEditor,
+            tagWriter,
             trackEditorVm,
             coverCache,
             uiDispatcher

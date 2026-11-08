@@ -55,7 +55,7 @@ public static class CompositionRoot
             IDegreeOfParallelismProvider<LoudnessScanner>,
             LoudnessScannerDegreeOfParallelismProvider
         >();
-        builder.AddSingleton<TrackMetadataEditor>();
+        builder.AddSingleton<TrackTagWriter>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
         builder.AddSingleton<IDiscordClient, DiscordRpcClientAdapter>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();

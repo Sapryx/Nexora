@@ -6,7 +6,6 @@ using Avalonia.Platform;
 using Core.Integrations;
 using Core.Library;
 using Core.Logging;
-using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
