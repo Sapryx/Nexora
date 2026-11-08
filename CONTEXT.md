@@ -4,6 +4,16 @@ A desktop audio player: it loads the user's music library, plays tracks from a p
 
 ## Language
 
+### Library
+
+**Library**:
+The tracks loaded from the music folder at startup, one track per audio file; the library playlist lists them in title order.
+_Avoid_: global playlist, collection
+
+**Track**:
+One audio file and its tags; every playlist and the artist index share the same track.
+_Avoid_: song, audio track item
+
 ### Playback
 
 **Playback state**:
