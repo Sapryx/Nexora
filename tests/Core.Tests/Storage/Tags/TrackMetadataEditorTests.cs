@@ -1,3 +1,4 @@
+using Core.Library;
 using Core.Playback;
 using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;

@@ -1,3 +1,5 @@
+using Core.Library;
+
 namespace Core.Playback.Loudness;
 
 public static class LoudnessGain

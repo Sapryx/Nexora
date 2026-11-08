@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using Core.Playback.Loudness;
+using Core.Library;
 using TagLib;
 using File = TagLib.File;
 

@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Input;
-using Core.Playback;
+using Core.Library;
 using Core.Playlists;
 using Core.Search;
 using Nexora.Threading;

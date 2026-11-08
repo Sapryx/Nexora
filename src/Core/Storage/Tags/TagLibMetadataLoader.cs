@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using Core.Playback;
+using Core.Library;
 using File = TagLib.File;
 
 namespace Core.Storage.Tags;

@@ -1,4 +1,4 @@
-using Core.Playback;
+using Core.Library;
 using Core.Playlists;
 using Moq;
 

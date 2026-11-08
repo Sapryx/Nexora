@@ -1,4 +1,4 @@
-namespace Core.Playback;
+namespace Core.Library;
 
 public class AudioTrack : IAudioTrack
 {

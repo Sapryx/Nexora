@@ -1,4 +1,5 @@
 using Core.Integrations;
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using DiscordRPC;
