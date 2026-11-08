@@ -10,7 +10,6 @@ public class TrackControlVmRegistry
 {
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
-    private readonly TrackTagWriter tagWriter;
     private readonly TrackEditorVm trackEditorVm;
     private readonly ICoverCache coverCache;
     private readonly IUiDispatcher uiDispatcher;
@@ -27,7 +26,6 @@ public class TrackControlVmRegistry
     {
         this.playbackQueue = playbackQueue;
         this.audioPlayer = audioPlayer;
-        this.tagWriter = tagWriter;
         this.trackEditorVm = trackEditorVm;
         this.coverCache = coverCache;
         this.uiDispatcher = uiDispatcher;
