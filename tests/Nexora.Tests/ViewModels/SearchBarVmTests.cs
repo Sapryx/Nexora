@@ -46,11 +46,13 @@ public class SearchBarVmTests
             tagWriter,
             trackEditorVm,
             Mock.Of<ICoverCache>(),
-            uiDispatcherMock.Object);
+            uiDispatcherMock.Object
+        );
 
         var layoutTranslator = new KeyboardLayoutTranslator(
             Mock.Of<IKeyboardLayoutProvider>(it => it.GetLayouts() == Array.Empty<KeyboardLayout>()),
-            NullLogger<KeyboardLayoutTranslator>.Instance);
+            NullLogger<KeyboardLayoutTranslator>.Instance
+        );
 
         vm = new SearchBarVm(
             musicLibrary,

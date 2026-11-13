@@ -14,8 +14,7 @@ public class AnimationSettingsLoader
     public AnimationSettingsLoader(
         string defaultsJson,
         string? overridesFilePath,
-        ILogger<AnimationSettingsLoader> logger
-    )
+        ILogger<AnimationSettingsLoader> logger)
     {
         this.defaultsJson = defaultsJson;
         this.overridesFilePath = overridesFilePath;

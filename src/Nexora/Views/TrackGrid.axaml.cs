@@ -125,16 +125,19 @@ public partial class TrackGrid : UserControl
         }
 
         isUpdatePending = true;
-        uiDispatcher.Post(() =>
-        {
-            isUpdatePending = false;
-            TrackGridRow.UpdateRows(Rows, TrackVms ?? [], ColumnCount);
-
-            if(pendingTrackIndex != null)
+        uiDispatcher.Post(
+            () =>
             {
-                scroller.ScrollToItem(pendingTrackIndex.Value / ColumnCount);
-                pendingTrackIndex = null;
-            }
-        }, DispatcherPriority.Background);
+                isUpdatePending = false;
+                TrackGridRow.UpdateRows(Rows, TrackVms ?? [], ColumnCount);
+
+                if(pendingTrackIndex != null)
+                {
+                    scroller.ScrollToItem(pendingTrackIndex.Value / ColumnCount);
+                    pendingTrackIndex = null;
+                }
+            },
+            DispatcherPriority.Background
+        );
     }
 }

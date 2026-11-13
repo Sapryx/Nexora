@@ -17,6 +17,8 @@ public static class LoggingInitializer
     private const string ColoredLogLevelLegendCategory = "Nexora.Logging.ColoredLogLevelLegend";
     private const string CurrentLevelMarker = "<--";
     private const string CurrentLevelMarkerColor = "\e[38;2;0;255;0m";
+    private const string ResetColor = "\e[0m";
+
     private static readonly LogLevel[] LegendLevels = [
         LogLevel.Trace,
         LogLevel.Debug,
@@ -25,7 +27,7 @@ public static class LoggingInitializer
         LogLevel.Error,
         LogLevel.Critical
     ];
-    private const string ResetColor = "\e[0m";
+
     private static readonly string LogsDirectory = Path.Combine(
         Environment.GetFolderPath(
             Environment.SpecialFolder.ApplicationData,
@@ -135,18 +137,22 @@ public static class LoggingInitializer
     {
         options.UsePlainTextFormatter(formatter =>
         {
-            formatter.SetPrefixFormatter($"{0}{1:HH:mm:ss.fff} [{2}] ",
+            formatter.SetPrefixFormatter(
+                $"{0}{1:HH:mm:ss.fff} [{2}] ",
                 (in template, in info) => template.Format(
                     GetLevelColor(info.LogLevel),
                     info.Timestamp,
                     GetLevelName(info.LogLevel)
                 )
             );
-            formatter.SetSuffixFormatter($"{0}",
+            formatter.SetSuffixFormatter(
+                $"{0}",
                 (in template, in info) => template.Format(info.Exception == null ? ResetColor : "")
             );
-            formatter.SetExceptionFormatter((writer, exception) =>
-                writer.Write(Encoding.UTF8.GetBytes($"{Environment.NewLine}{exception}{ResetColor}"))
+            formatter.SetExceptionFormatter(
+                (writer, exception) => writer.Write(
+                    Encoding.UTF8.GetBytes($"{Environment.NewLine}{exception}{ResetColor}")
+                )
             );
         });
     }
@@ -156,7 +162,8 @@ public static class LoggingInitializer
         options.UsePlainTextFormatter(formatter =>
         {
             // "hh:mm:ss.fff [Info ] message"
-            formatter.SetPrefixFormatter($"{0:HH:mm:ss.fff} [{1}] ",
+            formatter.SetPrefixFormatter(
+                $"{0:HH:mm:ss.fff} [{1}] ",
                 (in template, in info) => template.Format(info.Timestamp, GetLevelName(info.LogLevel))
             );
         });

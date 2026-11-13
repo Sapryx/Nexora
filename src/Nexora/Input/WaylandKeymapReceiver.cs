@@ -23,11 +23,13 @@ public unsafe partial class WaylandKeymapReceiver
 
     private static readonly nint* RegistryListener = CreateListener(
         (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, byte*, uint, void>)&OnRegistryGlobal,
-        (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, void>)&OnRegistryGlobalRemove);
+        (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, void>)&OnRegistryGlobalRemove
+    );
 
     private static readonly nint* SeatListener = CreateListener(
         (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, void>)&OnSeatCapabilities,
-        (nint)(delegate* unmanaged[Cdecl]<nint, nint, byte*, void>)&OnSeatName);
+        (nint)(delegate* unmanaged[Cdecl]<nint, nint, byte*, void>)&OnSeatName
+    );
 
     private static readonly nint* KeyboardListener = CreateListener(
         (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, int, uint, void>)&OnKeyboardKeymap,
@@ -35,7 +37,8 @@ public unsafe partial class WaylandKeymapReceiver
         (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, nint, void>)&OnKeyboardLeave,
         (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, uint, uint, uint, void>)&OnKeyboardKey,
         (nint)(delegate* unmanaged[Cdecl]<nint, nint, uint, uint, uint, uint, uint, void>)&OnKeyboardModifiers,
-        (nint)(delegate* unmanaged[Cdecl]<nint, nint, int, int, void>)&OnKeyboardRepeatInfo);
+        (nint)(delegate* unmanaged[Cdecl]<nint, nint, int, int, void>)&OnKeyboardRepeatInfo
+    );
 
     private nint userData;
     private nint seatInterface;

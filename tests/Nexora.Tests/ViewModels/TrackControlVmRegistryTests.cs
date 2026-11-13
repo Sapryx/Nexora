@@ -17,11 +17,13 @@ public class TrackControlVmRegistryTests
     private readonly Playlist libraryPlaylist = new Playlist();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
+
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
         NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
+
     private readonly PlaybackQueue playbackQueue;
     private readonly TrackControlVmRegistry registry;
 
@@ -45,7 +47,8 @@ public class TrackControlVmRegistryTests
                 uiDispatcherMock.Object
             ),
             Mock.Of<ICoverCache>(),
-            uiDispatcherMock.Object);
+            uiDispatcherMock.Object
+        );
     }
 
     [Fact]
@@ -198,7 +201,7 @@ public class TrackControlVmRegistryTests
         await tagWriter.EditAsync(LibraryItem(0).AudioTrack, "Uprising", ["Muse"]);
 
         uiDispatcherMock.Verify(it => it.Post(It.IsAny<Action>()), Times.Once());
-        Assert.Equal(["Uprising", "Uprising"], new[] { libraryVm.Title, queueVm.Title });
+        Assert.Equal(["Uprising", "Uprising"], [libraryVm.Title, queueVm.Title]);
     }
 
     [Fact]

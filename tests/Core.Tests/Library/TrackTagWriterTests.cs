@@ -14,10 +14,12 @@ public class TrackTagWriterTests
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly TestLogger<TrackTagWriter> logger = new TestLogger<TrackTagWriter>();
+
     private readonly AudioTrack audioTrack = new AudioTrack(
         AudioPath,
         new Metadata() { Title = "Psycho", Artists = ["Muse"] }
     );
+
     private readonly List<IAudioTrack> changedTracks = [];
     private readonly TrackTagWriter writer;
     private bool isReleasing;

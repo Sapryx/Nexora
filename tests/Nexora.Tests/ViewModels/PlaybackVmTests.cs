@@ -16,11 +16,13 @@ public class PlaybackVmTests
     private const int InitialVolume = 50;
     private readonly Mock<IAudioPlayer> audioPlayerMock;
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
+
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
         NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
+
     private readonly PlaybackVm vm;
 
     public PlaybackVmTests()

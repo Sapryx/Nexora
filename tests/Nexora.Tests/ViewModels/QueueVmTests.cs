@@ -40,7 +40,8 @@ public class QueueVmTests
                 uiDispatcherMock.Object
             ),
             Mock.Of<ICoverCache>(),
-            uiDispatcherMock.Object);
+            uiDispatcherMock.Object
+        );
 
         vm = new QueueVm(playbackQueue, trackControlVmRegistry, uiDispatcherMock.Object);
     }

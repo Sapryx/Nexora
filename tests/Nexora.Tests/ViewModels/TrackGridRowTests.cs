@@ -105,6 +105,7 @@ public class TrackGridRowTests
                 Mock.Of<IUiDispatcher>()
             ),
             Mock.Of<ICoverCache>(),
-            Mock.Of<IUiDispatcher>());
+            Mock.Of<IUiDispatcher>()
+        );
     }
 }

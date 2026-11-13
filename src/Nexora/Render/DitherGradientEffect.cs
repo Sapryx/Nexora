@@ -22,7 +22,7 @@ public class DitherGradientEffect : ICustomDrawOperation
         using var reader = new StreamReader(asset);
         string shaderSource = reader.ReadToEnd();
 
-        Effect = SKRuntimeEffect.CreateShader(shaderSource, out var errors);
+        Effect = SKRuntimeEffect.CreateShader(shaderSource, out string? errors);
 
         if(Effect == null)
         {

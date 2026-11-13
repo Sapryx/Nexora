@@ -6,8 +6,7 @@ public class SupportedAudioFormatsProvider : ISupportedAudioFormatsProvider
 {
     public ImmutableHashSet<string> GetFormats()
     {
-        return
-        [
+        return [
             ".mp3",
             ".flac",
             ".wav",

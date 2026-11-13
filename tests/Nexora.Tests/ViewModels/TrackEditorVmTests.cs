@@ -332,7 +332,8 @@ public class TrackEditorVmTests
             tagWriter,
             vm,
             Mock.Of<ICoverCache>(),
-            uiDispatcherMock.Object);
+            uiDispatcherMock.Object
+        );
 
         return registry.Create(playlistItem);
     }

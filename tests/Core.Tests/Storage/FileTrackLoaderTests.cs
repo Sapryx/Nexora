@@ -41,7 +41,8 @@ public class FileTrackLoaderTests
             metadataLoaderMock.Object,
             supportedAudioFormatsProviderMock.Object,
             degreeOfParallelismProviderMock.Object,
-            musicDirectoryProviderMock.Object);
+            musicDirectoryProviderMock.Object
+        );
     }
 
     [Fact]
@@ -186,7 +187,8 @@ public class FileTrackLoaderTests
             metadataLoaderMock.Object,
             supportedAudioFormatsProviderMock.Object,
             degreeOfParallelismProviderMock.Object,
-            musicDirectoryProviderMock.Object);
+            musicDirectoryProviderMock.Object
+        );
         metadataLoaderMock.Setup(it => it.Load("/music/broken.mp3")).Throws(exception);
         musicDirectoryProviderMock.Setup(it => it.GetFiles()).Returns(["/music/broken.mp3"]);
 

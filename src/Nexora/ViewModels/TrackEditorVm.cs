@@ -52,8 +52,7 @@ public partial class TrackEditorVm : ViewModelBase
         TrackTagWriter tagWriter,
         IAudioPlayer audioPlayer,
         ICoverCache coverCache,
-        IUiDispatcher uiDispatcher
-    )
+        IUiDispatcher uiDispatcher)
     {
         this.musicLibrary = musicLibrary;
         this.tagWriter = tagWriter;

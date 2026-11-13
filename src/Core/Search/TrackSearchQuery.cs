@@ -8,12 +8,14 @@ public class TrackSearchQuery
 {
     private const int CharactersPerAllowedMismatch = 5;
     private const int MaxStackBufferLength = 512;
+
     private static readonly MatchKind[] BoundedKinds = [
         MatchKind.Exact,
         MatchKind.WholeWords,
         MatchKind.FieldPrefix,
         MatchKind.WordPrefix
     ];
+
     private readonly QueryVariant[] variants;
 
     public TrackSearchQuery(string rawQuery, KeyboardLayoutTranslator layoutTranslator)

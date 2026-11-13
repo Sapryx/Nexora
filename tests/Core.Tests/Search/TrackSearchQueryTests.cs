@@ -12,6 +12,7 @@ public class TrackSearchQueryTests
     private readonly IAudioTrack complicated = CreateTrack("Complicated", "Avril Lavigne");
     private readonly IAudioTrack kukushka = CreateTrack("Кукушка", "Кино");
     private readonly KeyboardLayoutTranslator noLayoutsTranslator = TestKeyboardLayouts.CreateTranslator();
+
     private readonly KeyboardLayoutTranslator englishRussianTranslator = TestKeyboardLayouts.CreateTranslator(
         TestKeyboardLayouts.English,
         TestKeyboardLayouts.Russian

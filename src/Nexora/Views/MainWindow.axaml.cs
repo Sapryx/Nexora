@@ -9,6 +9,8 @@ namespace Nexora.Views;
 
 public partial class MainWindow : Window
 {
+    private bool IsPopupOpen => DataContext is MainWindowVm vm && vm.IsPopupOpen;
+
     private readonly Dictionary<Key, Action<MainWindowVm>> keyActions = new Dictionary<Key, Action<MainWindowVm>>()
     {
         {
@@ -21,8 +23,6 @@ public partial class MainWindow : Window
             Key.Right, vm => vm.PlaybackVm.SkipForward()
         }
     };
-
-    private bool IsPopupOpen => DataContext is MainWindowVm vm && vm.IsPopupOpen;
 
     public MainWindow()
     {

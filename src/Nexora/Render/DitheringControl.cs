@@ -8,16 +8,19 @@ namespace Nexora.Render;
 public class DitheringControl : Control
 {
     public static readonly StyledProperty<RelativePoint> StartPointProperty =
-        AvaloniaProperty.Register<DitheringControl, RelativePoint>(nameof(StartPoint), RelativePoint.TopLeft
-    );
+        AvaloniaProperty.Register<DitheringControl, RelativePoint>(
+            nameof(StartPoint),
+            RelativePoint.TopLeft
+        );
 
     public static readonly StyledProperty<RelativePoint> EndPointProperty =
-        AvaloniaProperty.Register<DitheringControl, RelativePoint>(nameof(EndPoint), RelativePoint.BottomRight
-    );
+        AvaloniaProperty.Register<DitheringControl, RelativePoint>(
+            nameof(EndPoint),
+            RelativePoint.BottomRight
+        );
 
     public static readonly StyledProperty<GradientStops> GradientStopsProperty =
-        AvaloniaProperty.Register<DitheringControl, GradientStops>(nameof(GradientStops)
-    );
+        AvaloniaProperty.Register<DitheringControl, GradientStops>(nameof(GradientStops));
 
     public RelativePoint StartPoint
     {

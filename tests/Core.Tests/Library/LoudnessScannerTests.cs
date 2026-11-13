@@ -16,8 +16,10 @@ public class LoudnessScannerTests
     private readonly Mock<ILoudnessAnalyzer> loudnessAnalyzerMock = new Mock<ILoudnessAnalyzer>();
     private readonly Mock<IMetadataSaver> metadataSaverMock = new Mock<IMetadataSaver>();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
+
     private readonly Mock<IDegreeOfParallelismProvider<LoudnessScanner>> degreeOfParallelismProviderMock =
         new Mock<IDegreeOfParallelismProvider<LoudnessScanner>>();
+
     private readonly LoudnessScanner scanner;
 
     public LoudnessScannerTests()

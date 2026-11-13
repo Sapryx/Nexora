@@ -12,8 +12,7 @@ namespace Nexora.Views;
 public partial class TrackArea : UserControl
 {
     public static readonly StyledProperty<ObservableCollection<TrackControlVm>> TrackVmsProperty =
-        AvaloniaProperty.Register<TrackArea, ObservableCollection<TrackControlVm>>(nameof(TrackVms)
-    );
+        AvaloniaProperty.Register<TrackArea, ObservableCollection<TrackControlVm>>(nameof(TrackVms));
 
     public ObservableCollection<TrackControlVm> TrackVms
     {

@@ -8,6 +8,7 @@ public class TagLibMetadataLoader : IMetadataLoader
 {
     private const StringSplitOptions ArtistSplitOptions =
         StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
+
     private static readonly char[] ArtistSeparators = [',', '&'];
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Mpeg.AudioFile))]

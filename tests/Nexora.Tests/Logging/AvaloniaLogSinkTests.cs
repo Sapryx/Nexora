@@ -52,7 +52,10 @@ public class AvaloniaLogSinkTests
             LogEventLevel.Warning,
             LogArea.Binding,
             null,
-            "Error in binding to {Target}.{Property}: {Message}", "TextBlock", "Text", "Null value"
+            "Error in binding to {Target}.{Property}: {Message}",
+            "TextBlock",
+            "Text",
+            "Null value"
         );
         Assert.Equal(
             "(Avalonia) Binding: Error in binding to TextBlock.Text: Null value",

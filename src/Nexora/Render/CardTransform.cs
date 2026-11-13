@@ -7,8 +7,10 @@ public class CardTransform
 {
     public bool IsBackFacing => Matrix4x4.CreateFromQuaternion(rotation).M33 < 0;
     public bool IsSpinning => velocity != Vector2.Zero;
+
     public bool IsAnimating =>
         IsSpinning || rotation != target || scale != targetScale || (!isDragging && !IsSettled);
+
     private bool IsSettled => GetAngle(target, GetSettledRotation()) < MinSettleAngle;
     private const float RadiansPerPixel = 0.01f;
     private const double VelocityWindow = 0.1;
@@ -123,9 +125,15 @@ public class CardTransform
         var matrix = scaling * Matrix4x4.CreateFromQuaternion(rotation) * perspective;
 
         return new Matrix(
-            matrix.M11, matrix.M12, matrix.M14,
-            matrix.M21, matrix.M22, matrix.M24,
-            matrix.M41, matrix.M42, matrix.M44
+            matrix.M11,
+            matrix.M12,
+            matrix.M14,
+            matrix.M21,
+            matrix.M22,
+            matrix.M24,
+            matrix.M41,
+            matrix.M42,
+            matrix.M44
         );
     }
 

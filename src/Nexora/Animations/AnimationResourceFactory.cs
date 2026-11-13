@@ -43,6 +43,7 @@ public class AnimationResourceFactory
         ["BounceEaseOut"] = () => new BounceEaseOut(),
         ["BounceEaseInOut"] = () => new BounceEaseInOut()
     };
+
     private readonly ILogger logger;
 
     public AnimationResourceFactory(ILogger<AnimationResourceFactory> logger)

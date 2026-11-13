@@ -21,7 +21,6 @@ public static class LoggingExtensions
         logger.ZLogTrace(exception, ref message);
     }
 
-
     public static void Debug(
         this ILogger logger,
         [InterpolatedStringHandlerArgument("logger")] ref ZLoggerDebugInterpolatedStringHandler message)
@@ -36,7 +35,6 @@ public static class LoggingExtensions
     {
         logger.ZLogDebug(exception, ref message);
     }
-
 
     public static void Info(
         this ILogger logger,
@@ -53,7 +51,6 @@ public static class LoggingExtensions
         logger.ZLogInformation(exception, ref message);
     }
 
-
     public static void Warn(
         this ILogger logger,
         [InterpolatedStringHandlerArgument("logger")] ref ZLoggerWarningInterpolatedStringHandler message)
@@ -69,7 +66,6 @@ public static class LoggingExtensions
         logger.ZLogWarning(exception, ref message);
     }
 
-
     public static void Error(
         this ILogger logger,
         [InterpolatedStringHandlerArgument("logger")] ref ZLoggerErrorInterpolatedStringHandler message)
@@ -84,7 +80,6 @@ public static class LoggingExtensions
     {
         logger.ZLogError(exception, ref message);
     }
-
 
     public static void Crit(
         this ILogger logger,

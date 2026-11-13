@@ -14,33 +14,39 @@ public partial class PlaybackControl : UserControl
         VolumeSlider.AddHandler(
             PointerPressedEvent,
             VolumeSlider_OnPointerPressed,
-            RoutingStrategies.Tunnel);
+            RoutingStrategies.Tunnel
+        );
 
         VolumeSlider.AddHandler(
             PointerReleasedEvent,
             VolumeSlider_OnPointerReleased,
-            RoutingStrategies.Tunnel);
+            RoutingStrategies.Tunnel
+        );
 
         VolumeSlider.AddHandler(
             PointerCaptureLostEvent,
             VolumeSlider_OnPointerReleased,
-            RoutingStrategies.Bubble);
+            RoutingStrategies.Bubble
+        );
 
 
         PlaybackPositionSlider.AddHandler(
             PointerPressedEvent,
             PlaybackPositionSlider_OnPointerPressed,
-            RoutingStrategies.Tunnel);
+            RoutingStrategies.Tunnel
+        );
 
         PlaybackPositionSlider.AddHandler(
             PointerReleasedEvent,
             PlaybackPositionSlider_OnPointerReleased,
-            RoutingStrategies.Tunnel);
+            RoutingStrategies.Tunnel
+        );
 
         PlaybackPositionSlider.AddHandler(
             PointerCaptureLostEvent,
             PlaybackPositionSlider_OnPointerReleased,
-            RoutingStrategies.Bubble);
+            RoutingStrategies.Bubble
+        );
 
         PlaybackPositionSlider.PointerMoved += PlaybackPositionSlider_OnPointerMoved;
     }

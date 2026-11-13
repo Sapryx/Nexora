@@ -23,8 +23,7 @@ public class CoverCache : ICoverCache
     public CoverCache(
         ILogger<CoverCache> logger,
         ITrackCoverLoader coverLoader,
-        RenderScaleProvider renderScaleProvider
-    )
+        RenderScaleProvider renderScaleProvider)
     {
         this.logger = logger;
         this.coverLoader = coverLoader;

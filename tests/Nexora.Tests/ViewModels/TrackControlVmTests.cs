@@ -17,11 +17,13 @@ public class TrackControlVmTests
     private readonly Playlist libraryPlaylist = new Playlist();
     private readonly Mock<IAudioPlayer> audioPlayerMock = AudioPlayerMock.Create();
     private readonly Mock<IUiDispatcher> uiDispatcherMock = new Mock<IUiDispatcher>();
+
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
         NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
+
     private readonly PlaybackQueue playbackQueue;
 
     public TrackControlVmTests()
@@ -149,7 +151,8 @@ public class TrackControlVmTests
                 uiDispatcherMock.Object
             ),
             Mock.Of<ICoverCache>(),
-            uiDispatcherMock.Object);
+            uiDispatcherMock.Object
+        );
 
         return registry.Create(playlistItem);
     }

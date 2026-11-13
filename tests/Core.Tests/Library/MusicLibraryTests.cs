@@ -15,11 +15,13 @@ public class MusicLibraryTests
     private readonly Mock<ITrackLoader> trackLoaderMock = new Mock<ITrackLoader>();
     private readonly Mock<ILoudnessAnalyzer> loudnessAnalyzerMock = new Mock<ILoudnessAnalyzer>();
     private readonly TestLogger<MusicLibrary> logger = new TestLogger<MusicLibrary>();
+
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
         NullLogger<TrackTagWriter>.Instance,
         Mock.Of<IMetadataSaver>(),
         AudioPlayerMock.Create().Object
     );
+
     private readonly MusicLibrary library;
 
     public MusicLibraryTests()
