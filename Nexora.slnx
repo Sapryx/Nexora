@@ -1,7 +1,9 @@
 <Solution>
+    <Project Path="src/Analyzers/Analyzers.csproj" />
     <Project Path="src/Core/Core.csproj" />
     <Project Path="src/Nexora.Theme/Nexora.Theme.csproj" />
     <Project Path="src/Nexora/Nexora.csproj" />
+    <Project Path="tests/Analyzers.Tests/Analyzers.Tests.csproj" />
     <Project Path="tests/Core.Tests/Core.Tests.csproj" />
     <Project Path="tests/Nexora.Tests/Nexora.Tests.csproj" />
     <Project Path="tests/Tests.Shared/Tests.Shared.csproj" />

@@ -3,9 +3,15 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <AnalyzersProject>$(MSBuildThisFileDirectory)src\Analyzers\Analyzers.csproj</AnalyzersProject>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
+
+    <ItemGroup Condition="'$(MSBuildProjectName)' != 'Analyzers'">
+        <ProjectReference Include="$(AnalyzersProject)" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
 </Project>
