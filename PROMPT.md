@@ -4,12 +4,13 @@ You work autonomously. Nobody will answer your questions: use your own judgment 
    If the tree is dirty or the build or tests fail, fixing that becomes your task.
 2. Read `feature-list.json` and pick one entry with `"state": "todo"`
    that has the biggest priority (it's not necessarily the first one).
-3. Implement the task using the `/implement` skill. Work on one task only.
-4. Run the application in Debug mode and test the behavior end-to-end.
-5. Mark the task as `"state": "done"` in `feature-list.json`.
-6. Append the progress you've made to the `progress.txt` file.
+3. State what you are going to be working on.
+4. Implement the task using the `/implement` skill. Work on one task only.
+5. Run the application in Debug mode and test the behavior end-to-end.
+6. Mark the task as `"state": "done"` in `feature-list.json`.
+7. Append the progress you've made to the `progress.txt` file.
    State what the task was and what you did to complete it. Be concise.
-7. Make a commit with a descriptive name to the current branch.
+8. Make a commit with a descriptive name to the current branch.
 
 If you encounter any blockers that prevent you from completing the task, mark it with `"state": "blocked"`
 and describe the problem in `progress.txt`.
@@ -24,3 +25,5 @@ Task: <Task description>
 Result: <What was done>
 Verification: <How the work was verified>
 ```
+
+Get the date and time by running `date '+%Y-%m-%d | %H:%M:%S'`, never write them yourself.

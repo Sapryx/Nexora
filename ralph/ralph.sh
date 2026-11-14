@@ -6,6 +6,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 logs="$root/ralph/logs"
 image="nexora-ralph"
 container="nexora-ralph-$$"
+timezone="$(pwsh -NoProfile -Command '$iana = $null; [TimeZoneInfo]::TryConvertWindowsIdToIanaId([TimeZoneInfo]::Local.Id, [ref]$iana) | Out-Null; $iana' | tr -d '\r')"
 mkdir -p "$logs"
 cd "$root"
 
@@ -80,6 +81,7 @@ for ((i = 1; i <= iterations; i++)); do
     -v nexora-ralph-nuget:/home/agent/.nuget/packages \
     -v nexora-ralph-artifacts:/home/agent/artifacts \
     -e CLAUDE_CODE_OAUTH_TOKEN \
+    -e TZ="$timezone" \
     -e GIT_AUTHOR_NAME="$(git config user.name)" \
     -e GIT_AUTHOR_EMAIL="$(git config user.email)" \
     -e GIT_COMMITTER_NAME="$(git config user.name)" \
