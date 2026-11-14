@@ -42,12 +42,12 @@
                     <controls:SegmentedControl DockPanel.Dock="Top"
                                                Margin="0 0 16 0"
                                                SelectedIndex="{Binding SidebarTabIndex}">
-                        <ListBoxItem Padding="10"
+                        <ListBoxItem Padding="4"
                                      ToolTip.Tip="Library">
                             <controls:Icon IconName="library" />
                         </ListBoxItem>
 
-                        <ListBoxItem Padding="10"
+                        <ListBoxItem Padding="4"
                                      ToolTip.Tip="Settings">
                             <controls:Icon IconName="settings" />
                         </ListBoxItem>
