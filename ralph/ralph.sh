@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+wait_for_enter() {
+  read -rp "=== Press Enter to close." _ || true
+}
+
+trap wait_for_enter EXIT
+
 iterations="${1:-10}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 logs="$root/ralph/logs"
