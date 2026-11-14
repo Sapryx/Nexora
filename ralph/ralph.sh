@@ -9,10 +9,30 @@ container="nexora-ralph-$$"
 mkdir -p "$logs"
 cd "$root"
 
-stream='select(.type == "assistant").message.content[]?
-  | if .type == "text" then .text + "\n\n"
-    elif .type == "tool_use" then "> \(.name) \(.input.command // .input.file_path // .input.pattern // .input.skill // "")\n"
-    else empty end'
+stream='
+def color($code): "\u001b[\($code)m";
+def reset: color("0");
+def clip: if length > 160 then .[:160] + "..." else . end;
+def nonblank_lines: gsub("\r"; "") | split("\n") | map(select(test("\\S")));
+def call_summary: .input.command // .input.file_path // .input.pattern // .input.skill // .input.description // "" | tostring;
+def result_text: if (.content | type) == "string" then .content else [.content[]? | select(.type == "text").text] | join("\n") end;
+
+if .type == "assistant" then
+  .message.content[]?
+  | if .type == "text" then "\n" + .text + "\n\n"
+    elif .type == "tool_use" then
+      (call_summary | nonblank_lines) as $lines
+      | color("1;36") + "> " + .name + reset + " " + color("36") + ($lines[0] // "" | clip)
+        + (if ($lines | length) > 1 then color("2") + " (+\($lines | length - 1) lines)" else "" end) + reset + "\n"
+    else empty end
+elif .type == "user" then
+  .message.content[]?
+  | select(.type == "tool_result")
+  | (if .is_error then color("31") else color("2") end) as $style
+  | (result_text | nonblank_lines) as $lines
+  | ($lines[:3] | map($style + "  " + clip + reset + "\n") | join(""))
+    + (if ($lines | length) > 3 then color("2") + "  ... \($lines | length - 3) more lines" + reset + "\n" else "" end)
+else empty end'
 todo_count='[.[] | select(.state == "todo")] | length'
 
 jq() {
