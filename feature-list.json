@@ -29,7 +29,7 @@
             "Verify the switch does not overlap the minimize, maximize and close buttons",
             "Resize the window to its minimum width and verify they still do not overlap"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Clicking the minimize button minimizes the window",

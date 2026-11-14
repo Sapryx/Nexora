@@ -85,16 +85,22 @@
                            Margin="32 0 0 0"
                            IsVisible="{Binding IsSettingsOpen}" />
 
-                <Panel Grid.Row="0"
-                       IsVisible="{Binding !IsSettingsOpen}">
-                    <views:SearchBar DataContext="{Binding SearchBarVm}"
-                                        HorizontalAlignment="Stretch"
-                                        MaxWidth="480"
-                                        Margin="136 0" />
+                <Grid Grid.Row="0"
+                      Margin="32 0 170 0"
+                      IsVisible="{Binding !IsSettingsOpen}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" MaxWidth="480" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-                    <controls:SegmentedControl HorizontalAlignment="Right"
+                    <views:SearchBar Grid.Column="0"
+                                     DataContext="{Binding SearchBarVm}"
+                                     HorizontalAlignment="Stretch" />
+
+                    <controls:SegmentedControl x:Name="LibraryViewSwitch"
+                                               Grid.Column="1"
                                                VerticalAlignment="Center"
-                                               Margin="0 0 32 0"
+                                               Margin="16 0 0 0"
                                                SelectedIndex="{Binding LibraryViewIndex}">
                         <ListBoxItem ToolTip.Tip="Grid">
                             <controls:Icon IconName="grid" />
@@ -104,7 +110,7 @@
                             <controls:Icon IconName="list" />
                         </ListBoxItem>
                     </controls:SegmentedControl>
-                </Panel>
+                </Grid>
 
                 <Panel Grid.Row="1"
                        IsVisible="{Binding !IsSettingsOpen}">

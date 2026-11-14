@@ -42,3 +42,8 @@ Date: 2026-11-14 | 22:45:02
 Task: Maximizing or restoring the window by other means also updates the maximize/restore icon
 Result: The icon already follows Window.WindowState via PropertyChanged, so no production change was needed; added a headless UI test that changes WindowState directly (Win+Up/Down cannot be simulated headlessly).
 Verification: Debug build clean; all tests pass (UI tests 5); checked the screenshot, which shows the maximize icon after returning to Normal.
+
+Date: 2026-11-14 | 22:47:43
+Task: The grid/list view switch is placed next to the search bar and does not overlap the window buttons
+Result: Replaced the right-aligned switch with a two-column grid (search bar up to 480 wide, switch 16px after it) with a right margin reserving the window buttons area.
+Verification: Debug build clean; all tests pass, including new headless UI tests for adjacency and no overlap with the window buttons at 1280 and 640 width; checked the 640 screenshot.
