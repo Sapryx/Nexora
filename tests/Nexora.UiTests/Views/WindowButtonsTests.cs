@@ -39,11 +39,15 @@ public class WindowButtonsTests
     public void RestoreButton_Click_RestoresWindowAndShowsMaximizeIcon()
     {
         using var app = new TestMainWindow();
+        var size = app.Window.ClientSize;
+        var position = app.Window.Position;
         app.Click(FindButton(app, "window_maximize"));
 
         app.Click(FindButton(app, "window_restore"));
 
         Assert.Equal(WindowState.Normal, app.Window.WindowState);
+        Assert.Equal(size, app.Window.ClientSize);
+        Assert.Equal(position, app.Window.Position);
         Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_maximize");
     }
 

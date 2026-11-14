@@ -59,7 +59,7 @@
             "Verify the window returns to the noted size and position",
             "Verify the button icon changes back to the maximize icon"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Maximizing or restoring the window by other means also updates the maximize/restore icon",

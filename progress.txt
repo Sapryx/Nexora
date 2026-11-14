@@ -32,3 +32,8 @@ Date: 2026-11-14 | 22:40:55
 Task: Clicking the close button closes the app
 Result: Added a close click handler in WindowButtons that closes the owning window. TestMainWindow now skips the screenshot and Close when the test already closed the window.
 Verification: Debug build clean; all test projects pass, including a new headless UI test that clicks the close button and asserts the window Closed event. No screenshot exists for this test because the window is closed by the click.
+
+Date: 2026-11-14 | 22:43:25
+Task: Clicking the restore button on a maximized window restores its previous size and switches the icon back to maximize
+Result: The restore behavior already existed from the maximize task; extended the headless UI test to assert the restored client size and position match the originals.
+Verification: Debug build clean; all tests pass; checked the screenshot, which shows the maximize icon after restoring.
