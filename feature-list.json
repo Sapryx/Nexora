@@ -38,7 +38,7 @@
             "Click the minimize button",
             "Verify the window is minimized to the taskbar"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Clicking the maximize button maximizes the window and switches its icon to restore",

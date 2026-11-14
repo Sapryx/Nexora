@@ -20,7 +20,7 @@
     </UserControl.Styles>
 
     <StackPanel Orientation="Horizontal">
-        <Button Classes="Caption">
+        <Button Classes="Caption" Click="OnMinimizeClick">
             <controls:Icon IconName="window_minimize" />
         </Button>
 

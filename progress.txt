@@ -17,3 +17,8 @@ Date: 2026-11-14 | 19:30:00
 Task: Custom minimize, maximize and close buttons with Segoe-style vector icons are shown in the top-right corner over the content
 Result: Added thin-stroke window_minimize, window_maximize and window_close SVGs and a WindowButtons view (three 46x32 transparent buttons) overlaid at the top-right of MainWindow. Click behavior, hover and the grid/list switch placement are left to the following tasks.
 Verification: Debug build clean (0 warnings, 0 errors); no new logic to unit test. GUI could not be launched (no X server in sandbox), so the visual result was not checked on screen.
+
+Date: 2026-11-14 | 22:13:46
+Task: Clicking the minimize button minimizes the window
+Result: Added a Click handler on the minimize button in WindowButtons that sets the owning window state to Minimized.
+Verification: Debug build clean (0 warnings, 0 errors); all test projects pass. The handler is thin UI glue with no headless test setup in the repo, and the GUI could not be launched (no X server in sandbox), so the click was not checked on screen.
