@@ -11,6 +11,8 @@ You work autonomously. Nobody will answer your questions: use your own judgment 
 7. Append the progress you've made to the `progress.txt` file.
    State what the task was and what you did to complete it. Be concise.
 8. Make a commit with a descriptive name to the current branch.
+9. Provide feedback: what took you a lot of time, tokens or tool calls and how it could be improved,
+   for examples, by creating a skill, a script/tool and. What information would be good having at the start (if any).
 
 If you encounter any blockers that prevent you from completing the task, mark it with `"state": "blocked"`
 and describe the problem in `progress.txt`.
