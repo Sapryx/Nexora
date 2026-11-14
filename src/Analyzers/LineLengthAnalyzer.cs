@@ -6,7 +6,7 @@ namespace Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class LineLengthAnalyzer : StyleAnalyzer
 {
-    private const int MaxLength = 150;
+    private const int MaxLength = 120;
 
     public LineLengthAnalyzer()
         : base("NX0001", "Line too long", "Line is {0} characters long; the limit is 120")

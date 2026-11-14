@@ -1,0 +1,4 @@
+Date: 2026-11-14 | 00:00:00
+Task: Fix failing build-health check (Analyzers.Tests line length test)
+Result: Aligned LineLengthAnalyzer limit with its message and tests (120) and wrapped the one overlong line in LoggingInitializerTests.
+Verification: Debug build clean; all test projects pass (Analyzers 20, Core 231, Nexora 219).
