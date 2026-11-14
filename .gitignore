@@ -12,3 +12,6 @@ Test Results/
 Report/
 
 /agents/
+
+# Ralph loop logs
+/ralph/logs/
