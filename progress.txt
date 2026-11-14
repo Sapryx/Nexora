@@ -12,3 +12,8 @@ Date: 2026-11-14 | 19:04:14
 Task: Fix broken debug build (AVLN2000 ExtendClientAreaChromeHints unknown on MainWindow)
 Result: Replaced the property removed in Avalonia 12 with WindowDecorations="BorderOnly" (no title bar, resize border kept).
 Verification: Debug build clean (0 warnings, 0 errors); all test projects pass. GUI not run (no X server in sandbox).
+
+Date: 2026-11-14 | 19:30:00
+Task: Custom minimize, maximize and close buttons with Segoe-style vector icons are shown in the top-right corner over the content
+Result: Added thin-stroke window_minimize, window_maximize and window_close SVGs and a WindowButtons view (three 46x32 transparent buttons) overlaid at the top-right of MainWindow. Click behavior, hover and the grid/list switch placement are left to the following tasks.
+Verification: Debug build clean (0 warnings, 0 errors); no new logic to unit test. GUI could not be launched (no X server in sandbox), so the visual result was not checked on screen.

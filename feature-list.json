@@ -19,7 +19,7 @@
             "Verify the icons are the same on Windows and Linux",
             "Verify no window title or app icon is shown inside the window"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "The grid/list view switch is placed next to the search bar and does not overlap the window buttons",

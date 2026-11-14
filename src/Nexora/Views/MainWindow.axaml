@@ -133,6 +133,9 @@
             </Grid>
         </DockPanel>
 
+        <views:WindowButtons HorizontalAlignment="Right"
+                             VerticalAlignment="Top" />
+
         <views:TrackEditor DataContext="{Binding TrackEditorVm}" />
 
         <views:CoverViewer DataContext="{Binding CoverViewerVm}" />
