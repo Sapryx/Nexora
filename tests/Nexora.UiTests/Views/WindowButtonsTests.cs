@@ -47,6 +47,18 @@ public class WindowButtonsTests
         Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_maximize");
     }
 
+    [AvaloniaFact]
+    public void CloseButton_Click_ClosesWindow()
+    {
+        using var app = new TestMainWindow();
+        bool closed = false;
+        app.Window.Closed += (_, _) => closed = true;
+
+        app.Click(FindButton(app, "window_close"));
+
+        Assert.True(closed);
+    }
+
     private static Button FindButton(TestMainWindow app, string iconName)
     {
         var button = app.Window

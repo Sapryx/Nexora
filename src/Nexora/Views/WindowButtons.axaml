@@ -28,7 +28,7 @@
             <controls:Icon x:Name="MaximizeIcon" IconName="window_maximize" />
         </Button>
 
-        <Button Classes="Caption">
+        <Button Classes="Caption" Click="OnCloseClick">
             <controls:Icon IconName="window_close" />
         </Button>
     </StackPanel>

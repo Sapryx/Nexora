@@ -57,9 +57,13 @@ public sealed class TestMainWindow : IDisposable
 
     public void Dispose()
     {
-        Directory.CreateDirectory(screenshotDirectory);
-        Window.CaptureRenderedFrame()?.Save(screenshotPath, PngBitmapEncoderOptions.Default);
-        Window.Close();
+        if(Window.IsVisible)
+        {
+            Directory.CreateDirectory(screenshotDirectory);
+            Window.CaptureRenderedFrame()?.Save(screenshotPath, PngBitmapEncoderOptions.Default);
+            Window.Close();
+        }
+
         provider.Dispose();
     }
 }

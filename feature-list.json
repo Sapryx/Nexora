@@ -79,7 +79,7 @@
             "Click the close button",
             "Verify the window closes and the app process exits"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Window buttons are highlighted on hover like Windows caption buttons, with a red background for close",

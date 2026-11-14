@@ -69,4 +69,12 @@ public partial class WindowButtons : UserControl
                 : WindowState.Maximized;
         }
     }
+
+    private void OnCloseClick(object? sender, RoutedEventArgs e)
+    {
+        if(TopLevel.GetTopLevel(this) is Window window)
+        {
+            window.Close();
+        }
+    }
 }
