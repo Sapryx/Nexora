@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Nexora.Controls;
 
@@ -49,6 +50,22 @@ public class WindowButtonsTests
         Assert.Equal(size, app.Window.ClientSize);
         Assert.Equal(position, app.Window.Position);
         Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_maximize");
+    }
+
+    [AvaloniaFact]
+    public void WindowState_ChangedExternally_UpdatesMaximizeIcon()
+    {
+        using var app = new TestMainWindow();
+
+        app.Window.WindowState = WindowState.Maximized;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_restore");
+        Assert.DoesNotContain(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_maximize");
+
+        app.Window.WindowState = WindowState.Normal;
+        Dispatcher.UIThread.RunJobs();
+        Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_maximize");
+        Assert.DoesNotContain(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_restore");
     }
 
     [AvaloniaFact]

@@ -70,7 +70,7 @@
             "Press Win+Down",
             "Verify the window is restored and the button shows the maximize icon"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Clicking the close button closes the app",
