@@ -5,6 +5,7 @@ iterations="${1:-10}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 logs="$root/ralph/logs"
 image="nexora-ralph"
+container="nexora-ralph-$$"
 mkdir -p "$logs"
 cd "$root"
 
@@ -31,6 +32,16 @@ if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
   exit 1
 fi
 
+stop() {
+  trap - INT TERM
+  echo
+  echo "=== Interrupted, stopping $container."
+  docker stop "$container" > /dev/null 2>&1 || true
+  exit 130
+}
+
+trap stop INT TERM
+
 docker build -q -t "$image" - < ralph/Dockerfile > /dev/null
 
 for ((i = 1; i <= iterations; i++)); do
@@ -43,7 +54,7 @@ for ((i = 1; i <= iterations; i++)); do
   log="$logs/$(date +%Y%m%d-%H%M%S)-$i.log"
   echo "=== Ralph iteration $i/$iterations, $todo todo entries (log: $log)"
 
-  MSYS_NO_PATHCONV=1 docker run --rm -i \
+  MSYS_NO_PATHCONV=1 docker run --rm -i --init --name "$container" \
     -v "$(pwd -W):/work" \
     -v "$HOME/.claude/CLAUDE.md:/home/agent/.claude/CLAUDE.md:ro" \
     -v nexora-ralph-nuget:/home/agent/.nuget/packages \
