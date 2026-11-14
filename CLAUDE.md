@@ -31,6 +31,15 @@ pwsh scripts/Crap.ps1 -Method "LruCache.TryGet"
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
 Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 
+## UI tests
+
+`tests/Nexora.UiTests` runs the real `MainWindow` on Avalonia's headless platform (xUnit v3), so no display is needed.
+- Mark tests with `[AvaloniaFact]` and open the window with `using var app = new TestMainWindow();`.
+  It wires services through `CompositionRoot` with a mocked audio player and loudness analyzer.
+- Interact with `app.Click(control)` or Avalonia.Headless input methods on `app.Window` (`KeyPress`, `MouseMove`, ...).
+- When a test ends, the last rendered frame is saved to `screenshots/<test method>.png` next to the test assembly;
+  open it to check how the UI looks.
+
 ## Null safety
 
 - Annotate types precisely: `T?` only where `null` is a valid value, non-nullable otherwise.
