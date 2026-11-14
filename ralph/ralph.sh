@@ -7,12 +7,17 @@ wait_for_enter() {
 
 trap wait_for_enter EXIT
 
+mode="docker"
+if [ "${1:-}" = "--local" ]; then
+  mode="local"
+  shift
+fi
+
 iterations="${1:-10}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 logs="$root/ralph/logs"
 image="nexora-ralph"
 container="nexora-ralph-$$"
-timezone="$(pwsh -NoProfile -Command '$iana = $null; [TimeZoneInfo]::TryConvertWindowsIdToIanaId([TimeZoneInfo]::Local.Id, [ref]$iana) | Out-Null; $iana' | tr -d '\r')"
 mkdir -p "$logs"
 cd "$root"
 
@@ -42,10 +47,6 @@ elif .type == "user" then
 else empty end'
 todo_count='[.[] | select(.state == "todo")] | length'
 
-jq() {
-  docker run --rm -i "$image" jq "$@"
-}
-
 remaining() {
   if [ -f feature-list.json ]; then
     jq "$todo_count" < feature-list.json
@@ -54,33 +55,7 @@ remaining() {
   fi
 }
 
-if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
-  echo "Set CLAUDE_CODE_OAUTH_TOKEN first (get one with: claude setup-token)."
-  exit 1
-fi
-
-stop() {
-  trap - INT TERM
-  echo
-  echo "=== Interrupted, stopping $container."
-  docker stop "$container" > /dev/null 2>&1 || true
-  exit 130
-}
-
-trap stop INT TERM
-
-docker build -q -t "$image" - < ralph/Dockerfile > /dev/null
-
-for ((i = 1; i <= iterations; i++)); do
-  todo="$(remaining)"
-  if [ "$todo" -eq 0 ]; then
-    echo "=== No todo entries left after $((i - 1)) iterations."
-    exit 0
-  fi
-
-  log="$logs/$(date +%Y%m%d-%H%M%S)-$i.log"
-  echo "=== Ralph iteration $i/$iterations, $todo todo entries (log: $log)"
-
+run_docker() {
   MSYS_NO_PATHCONV=1 docker run --rm -i --init --name "$container" \
     -v "$(pwd -W):/work" \
     -v "$HOME/.claude/CLAUDE.md:/home/agent/.claude/CLAUDE.md:ro" \
@@ -93,8 +68,54 @@ for ((i = 1; i <= iterations; i++)); do
     -e GIT_COMMITTER_NAME="$(git config user.name)" \
     -e GIT_COMMITTER_EMAIL="$(git config user.email)" \
     "$image" \
-    claude -p "$(cat PROMPT.md)" \
-      --dangerously-skip-permissions \
+    claude "$@" --dangerously-skip-permissions
+}
+
+run_local() {
+  claude "$@" --permission-mode auto
+}
+
+stop() {
+  trap - INT TERM
+  echo
+  echo "=== Interrupted."
+  if [ "$mode" = "docker" ]; then
+    docker stop "$container" > /dev/null 2>&1 || true
+  fi
+  exit 130
+}
+
+if [ "$mode" = "docker" ]; then
+  if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+    echo "Set CLAUDE_CODE_OAUTH_TOKEN first (get one with: claude setup-token)."
+    exit 1
+  fi
+
+  timezone="$(pwsh -NoProfile -Command '$iana = $null; [TimeZoneInfo]::TryConvertWindowsIdToIanaId([TimeZoneInfo]::Local.Id, [ref]$iana) | Out-Null; $iana' | tr -d '\r')"
+
+  jq() {
+    docker run --rm -i "$image" jq "$@"
+  }
+
+  docker build -q -t "$image" - < ralph/Dockerfile > /dev/null
+elif ! command -v jq > /dev/null; then
+  echo "Install jq first (winget install jqlang.jq)."
+  exit 1
+fi
+
+trap stop INT TERM
+
+for ((i = 1; i <= iterations; i++)); do
+  todo="$(remaining)"
+  if [ "$todo" -eq 0 ]; then
+    echo "=== No todo entries left after $((i - 1)) iterations."
+    exit 0
+  fi
+
+  log="$logs/$(date +%Y%m%d-%H%M%S)-$i.log"
+  echo "=== Ralph iteration $i/$iterations ($mode), $todo todo entries (log: $log)"
+
+  "run_$mode" -p "$(cat PROMPT.md)" \
       --disallowedTools "Bash(git push:*)" \
       --no-session-persistence \
       --verbose \
