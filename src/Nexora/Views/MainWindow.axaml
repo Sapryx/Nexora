@@ -14,7 +14,7 @@
         MinWidth="640"
         MinHeight="480"
         ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
+        WindowDecorations="BorderOnly"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowStartupLocation="CenterScreen"
         Focusable="True"
