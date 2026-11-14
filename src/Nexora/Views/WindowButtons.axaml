@@ -24,8 +24,8 @@
             <controls:Icon IconName="window_minimize" />
         </Button>
 
-        <Button Classes="Caption">
-            <controls:Icon IconName="window_maximize" />
+        <Button Classes="Caption" Click="OnMaximizeClick">
+            <controls:Icon x:Name="MaximizeIcon" IconName="window_maximize" />
         </Button>
 
         <Button Classes="Caption">

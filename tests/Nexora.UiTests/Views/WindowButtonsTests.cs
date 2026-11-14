@@ -22,4 +22,39 @@ public class WindowButtonsTests
 
         Assert.Equal(WindowState.Minimized, app.Window.WindowState);
     }
+
+    [AvaloniaFact]
+    public void MaximizeButton_Click_MaximizesWindowAndShowsRestoreIcon()
+    {
+        using var app = new TestMainWindow();
+        var button = FindButton(app, "window_maximize");
+
+        app.Click(button);
+
+        Assert.Equal(WindowState.Maximized, app.Window.WindowState);
+        Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_restore");
+    }
+
+    [AvaloniaFact]
+    public void RestoreButton_Click_RestoresWindowAndShowsMaximizeIcon()
+    {
+        using var app = new TestMainWindow();
+        app.Click(FindButton(app, "window_maximize"));
+
+        app.Click(FindButton(app, "window_restore"));
+
+        Assert.Equal(WindowState.Normal, app.Window.WindowState);
+        Assert.Contains(app.Window.GetVisualDescendants().OfType<Icon>(), it => it.IconName == "window_maximize");
+    }
+
+    private static Button FindButton(TestMainWindow app, string iconName)
+    {
+        var button = app.Window
+            .GetVisualDescendants()
+            .OfType<Icon>()
+            .Single(it => it.IconName == iconName)
+            .FindAncestorOfType<Button>();
+        Assert.NotNull(button);
+        return button;
+    }
 }

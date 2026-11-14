@@ -22,3 +22,8 @@ Date: 2026-11-14 | 22:13:46
 Task: Clicking the minimize button minimizes the window
 Result: Added a Click handler on the minimize button in WindowButtons that sets the owning window state to Minimized.
 Verification: Debug build clean (0 warnings, 0 errors); all test projects pass. The handler is thin UI glue with no headless test setup in the repo, and the GUI could not be launched (no X server in sandbox), so the click was not checked on screen.
+
+Date: 2026-11-14 | 22:36:19
+Task: Clicking the maximize button maximizes the window and switches its icon to restore
+Result: Added a window_restore icon and a maximize click handler in WindowButtons that toggles Maximized/Normal; the button icon follows the window state via its PropertyChanged event.
+Verification: Debug build clean (0 warnings); all tests pass, including new headless UI tests for maximize and restore clicks; checked the screenshot, which shows the restore icon after maximizing.

@@ -48,7 +48,7 @@
             "Verify the window is maximized",
             "Verify the button icon changes to the restore icon"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Clicking the restore button on a maximized window restores its previous size and switches the icon back to maximize",
