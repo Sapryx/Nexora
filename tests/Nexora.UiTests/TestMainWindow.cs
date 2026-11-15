@@ -18,10 +18,16 @@ namespace Nexora.UiTests;
 public sealed class RecordingMainWindow : MainWindow
 {
     public int MoveDragCount { get; private set; }
+    public List<WindowEdge> ResizeDragEdges { get; } = [];
 
     protected override void StartMoveDrag(PointerPressedEventArgs e)
     {
         MoveDragCount++;
+    }
+
+    protected override void StartResizeDrag(WindowEdge edge, PointerPressedEventArgs e)
+    {
+        ResizeDragEdges.Add(edge);
     }
 }
 

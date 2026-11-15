@@ -72,3 +72,8 @@ Date: 2026-11-15 | 11:50:34
 Task: Dragging a maximized window by the top strip restores it and moves it with the pointer
 Result: No production change; the strip press already calls the native BeginMoveDrag, which restores a maximized window on Windows. Added a UI test for the maximized case.
 Verification: Debug build clean; all tests pass. The test asserts the drag starts while maximized and the state ends Normal; the native restore itself cannot be observed headlessly.
+
+Date: 2026-11-15 | 11:58:24
+Task: Dragging a window edge or corner resizes the window
+Result: MainWindow starts a native resize drag (BeginResizeDrag through a virtual StartResizeDrag) on a left press within 6px of any edge or corner while not maximized, handled in the tunnel phase so it wins over controls at the edges (e.g. the close button corner); hovering the border shows the matching resize cursor. Edge/cursor mapping lives in a new ResizeEdges helper. The text box unfocus logic moved into its own method to keep CRAP <= 8.
+Verification: Debug build clean; all tests pass, including ResizeEdges unit tests and new UI tests for right, bottom, bottom-right and top edge presses, the window buttons corner, interior presses, the maximized state, the hover cursor, and search box focus. Actual size change is native and cannot be observed headlessly.

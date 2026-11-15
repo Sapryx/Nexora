@@ -133,7 +133,7 @@
             "Drag the bottom-right corner and verify both change",
             "Drag the top edge and verify the height changes"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Dragging the window by the top strip to the left or right screen edge snaps it to that half of the screen",
