@@ -144,7 +144,7 @@
             "Drag it to the right screen edge and release",
             "Verify the window occupies the right half of the screen"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Dragging a maximized window by the top strip restores it and moves it with the pointer",

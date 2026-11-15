@@ -38,6 +38,19 @@ public class WindowDragTests
     }
 
     [AvaloniaFact]
+    public void NormalTopStrip_PressOnEmptySpot_StartsSnappableMoveDrag()
+    {
+        using var app = new TestMainWindow();
+
+        Press(app, new Point(900, 10));
+
+        Assert.Equal(WindowState.Normal, app.Window.WindowState);
+        Assert.True(app.Window.CanResize);
+        Assert.Equal(WindowDecorations.BorderOnly, app.Window.WindowDecorations);
+        Assert.Equal(1, app.Window.MoveDragCount);
+    }
+
+    [AvaloniaFact]
     public void BelowTopStrip_PressOnEmptySpot_DoesNotStartMoveDrag()
     {
         using var app = new TestMainWindow();
