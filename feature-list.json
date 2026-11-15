@@ -111,7 +111,7 @@
             "Press and drag on the sidebar tabs and verify the window does not move",
             "Press and drag on the window buttons and verify the window does not move"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Double-clicking the top strip toggles between maximized and restored",

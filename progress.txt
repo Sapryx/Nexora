@@ -62,3 +62,8 @@ Date: 2026-11-15 | 11:37:44
 Task: Double-clicking the top strip toggles between maximized and restored
 Result: MainWindow toggles the window state on a double press in the top strip instead of starting a drag; the toggle moved to a shared Window.ToggleMaximize extension also used by the maximize button.
 Verification: Debug build clean; all tests pass, including a new UI test that double-clicks the strip twice and asserts Maximized then Normal; checked the screenshot.
+
+Date: 2026-11-15 | 11:49:13
+Task: Pressing on interactive controls inside the top strip does not drag the window
+Result: MainWindow no longer starts a move drag or toggles maximize when the press lands inside SearchBar, SegmentedControl or WindowButtons.
+Verification: Debug build clean; all tests pass, including a new theory that presses the top part of each of those controls inside the strip and asserts no drag started. Pressing exactly on the gap between the two switch items hits the background in headless, so the test presses off-center.

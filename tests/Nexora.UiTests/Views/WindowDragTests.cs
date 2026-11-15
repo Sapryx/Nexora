@@ -4,6 +4,9 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
+using Nexora.Controls;
+using Nexora.Views;
 
 namespace Nexora.UiTests.Views;
 
@@ -51,6 +54,32 @@ public class WindowDragTests
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(WindowState.Normal, app.Window.WindowState);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(typeof(SearchBar))]
+    [InlineData(typeof(WindowButtons))]
+    [InlineData(typeof(SegmentedControl))]
+    public void TopStrip_PressOnInteractiveControl_DoesNotStartMoveDrag(Type controlType)
+    {
+        using var app = new TestMainWindow();
+
+        var controls = app.Window.GetVisualDescendants()
+            .Where(c => c.GetType() == controlType)
+            .OfType<Control>()
+            .Where(c => c.IsEffectivelyVisible)
+            .ToList();
+
+        foreach(var control in controls)
+        {
+            var center = new Point(control.Bounds.Width / 4, 6);
+            var point = control.TranslatePoint(center, app.Window);
+            Assert.NotNull(point);
+            Assert.InRange(point.Value.Y, 0, 31);
+            Press(app, point.Value);
+        }
+
+        Assert.Equal(0, app.Window.MoveDragCount);
     }
 
     private static void Press(TestMainWindow app, Point point)

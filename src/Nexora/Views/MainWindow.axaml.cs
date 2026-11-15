@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
+using Nexora.Controls;
 using Nexora.ViewModels;
 
 namespace Nexora.Views;
@@ -40,7 +41,7 @@ public partial class MainWindow : Window
 
         bool isLeftPress = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
 
-        if(e.Handled || !isLeftPress || e.GetPosition(this).Y >= DragStripHeight)
+        if(e.Handled || !isLeftPress || e.GetPosition(this).Y >= DragStripHeight || IsOnInteractiveControl(e))
         {
             return;
         }
@@ -52,6 +53,13 @@ public partial class MainWindow : Window
         }
 
         StartMoveDrag(e);
+    }
+
+    private bool IsOnInteractiveControl(PointerPressedEventArgs e)
+    {
+        return e.Source is Visual source
+            && source.GetSelfAndVisualAncestors()
+                .Any(visual => visual is SearchBar or SegmentedControl or WindowButtons);
     }
 
     protected virtual void StartMoveDrag(PointerPressedEventArgs e)
