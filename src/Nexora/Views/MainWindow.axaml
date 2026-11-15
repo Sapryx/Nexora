@@ -13,6 +13,9 @@
         Title="Nexora"
         MinWidth="640"
         MinHeight="480"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="BorderOnly"
+        ExtendClientAreaTitleBarHeightHint="-1"
         WindowStartupLocation="CenterScreen"
         Focusable="True"
         Container.Name="main"
@@ -82,16 +85,24 @@
                            Margin="32 0 0 0"
                            IsVisible="{Binding IsSettingsOpen}" />
 
-                <Panel Grid.Row="0"
-                       IsVisible="{Binding !IsSettingsOpen}">
-                    <views:SearchBar DataContext="{Binding SearchBarVm}"
-                                        HorizontalAlignment="Stretch"
-                                        MaxWidth="480"
-                                        Margin="136 0" />
+                <Grid Grid.Row="0"
+                      Margin="245 0 146 0"
+                      MaxWidth="579"
+                      IsVisible="{Binding !IsSettingsOpen}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="99" />
+                    </Grid.ColumnDefinitions>
 
-                    <controls:SegmentedControl HorizontalAlignment="Right"
+                    <views:SearchBar Grid.Column="0"
+                                     DataContext="{Binding SearchBarVm}"
+                                     HorizontalAlignment="Stretch" />
+
+                    <controls:SegmentedControl x:Name="LibraryViewSwitch"
+                                               Grid.Column="1"
+                                               HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
-                                               Margin="0 0 32 0"
+                                               Margin="16 0 0 0"
                                                SelectedIndex="{Binding LibraryViewIndex}">
                         <ListBoxItem ToolTip.Tip="Grid">
                             <controls:Icon IconName="grid" />
@@ -101,7 +112,7 @@
                             <controls:Icon IconName="list" />
                         </ListBoxItem>
                     </controls:SegmentedControl>
-                </Panel>
+                </Grid>
 
                 <Panel Grid.Row="1"
                        IsVisible="{Binding !IsSettingsOpen}">
@@ -129,6 +140,9 @@
                                           Margin="48 0"/>
             </Grid>
         </DockPanel>
+
+        <views:WindowButtons HorizontalAlignment="Right"
+                             VerticalAlignment="Top" />
 
         <views:TrackEditor DataContext="{Binding TrackEditorVm}" />
 

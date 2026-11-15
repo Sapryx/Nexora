@@ -31,6 +31,31 @@ pwsh scripts/Crap.ps1 -Method "LruCache.TryGet"
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
 Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 
+## UI tests
+
+`tests/Nexora.UiTests` runs the real `MainWindow` on Avalonia's headless platform (xUnit v3), so no display is needed.
+- Mark tests with `[AvaloniaFact]` and open the window with `using var app = new TestMainWindow();`.
+  It wires services through `CompositionRoot` with a mocked audio player and loudness analyzer.
+- Interact with `app.Click(control)` or Avalonia.Headless input methods on `app.Window` (`KeyPress`, `MouseMove`, ...).
+- When a test ends, the last rendered frame is saved to `tests/Nexora.UiTests/screenshots/<test method>.png`
+  (ignored by git); open it to check how the UI looks.
+
+## Style analyzers
+
+`src/Analyzers` reports these on every build:
+- `NX0001` lines are at most 120 characters.
+- `NX0002` no trailing whitespace.
+- `NX0003` members go in order: properties, fields, events, constructors, then methods.
+- `NX0004` one blank line between members; none between consecutive single-line fields/properties, events
+  or bodiless methods.
+- `NX0005` an `if` that is not the first statement in its block is preceded by a blank line.
+- `NX0006` use `== null` / `!= null`, not `is null` / `is not null`.
+- `NX0007` no local functions; use a lambda or a method.
+- `NX0008` no tuples; declare a small class with named properties.
+- `NX0009` no range or spread `..` syntax.
+- `NX0010` wrapped parameters, arguments and collections go one per line.
+- `NX0011` spell out built-in types (`int`, `string`, ...) instead of `var`.
+
 ## Null safety
 
 - Annotate types precisely: `T?` only where `null` is a valid value, non-nullable otherwise.

@@ -20,6 +20,7 @@ If no feature is given, ask for it first.
    Show conflicts with existing entries to the user. Show the list and adjust it until the user approves.
 5. Append the entries to the JSON array in `feature-list.json` (create it if missing), 4-space indent.
    Don’t change or remove existing entries.
+6. Commit the changes to the current branch.
 
 Entry format:
 

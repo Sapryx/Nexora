@@ -1,0 +1,89 @@
+Date: 2026-11-14 | 00:00:00
+Task: Fix failing build-health check (Analyzers.Tests line length test)
+Result: Aligned LineLengthAnalyzer limit with its message and tests (120) and wrapped the one overlong line in LoggingInitializerTests.
+Verification: Debug build clean; all test projects pass (Analyzers 20, Core 231, Nexora 219).
+
+Date: 2026-11-14 | 18:55:00
+Task: The native window title bar is removed on Windows and Linux and the app content extends to the top edge of the window
+Result: Enabled ExtendClientAreaToDecorationsHint with NoChrome and title bar height -1 on MainWindow so content reaches the top edge.
+Verification: Debug build clean (0 warnings); all tests pass. The GUI could not be displayed in this sandbox (no X server), so the visual result was not checked on screen.
+
+Date: 2026-11-14 | 19:04:14
+Task: Fix broken debug build (AVLN2000 ExtendClientAreaChromeHints unknown on MainWindow)
+Result: Replaced the property removed in Avalonia 12 with WindowDecorations="BorderOnly" (no title bar, resize border kept).
+Verification: Debug build clean (0 warnings, 0 errors); all test projects pass. GUI not run (no X server in sandbox).
+
+Date: 2026-11-14 | 19:30:00
+Task: Custom minimize, maximize and close buttons with Segoe-style vector icons are shown in the top-right corner over the content
+Result: Added thin-stroke window_minimize, window_maximize and window_close SVGs and a WindowButtons view (three 46x32 transparent buttons) overlaid at the top-right of MainWindow. Click behavior, hover and the grid/list switch placement are left to the following tasks.
+Verification: Debug build clean (0 warnings, 0 errors); no new logic to unit test. GUI could not be launched (no X server in sandbox), so the visual result was not checked on screen.
+
+Date: 2026-11-14 | 22:13:46
+Task: Clicking the minimize button minimizes the window
+Result: Added a Click handler on the minimize button in WindowButtons that sets the owning window state to Minimized.
+Verification: Debug build clean (0 warnings, 0 errors); all test projects pass. The handler is thin UI glue with no headless test setup in the repo, and the GUI could not be launched (no X server in sandbox), so the click was not checked on screen.
+
+Date: 2026-11-14 | 22:36:19
+Task: Clicking the maximize button maximizes the window and switches its icon to restore
+Result: Added a window_restore icon and a maximize click handler in WindowButtons that toggles Maximized/Normal; the button icon follows the window state via its PropertyChanged event.
+Verification: Debug build clean (0 warnings); all tests pass, including new headless UI tests for maximize and restore clicks; checked the screenshot, which shows the restore icon after maximizing.
+
+Date: 2026-11-14 | 22:40:55
+Task: Clicking the close button closes the app
+Result: Added a close click handler in WindowButtons that closes the owning window. TestMainWindow now skips the screenshot and Close when the test already closed the window.
+Verification: Debug build clean; all test projects pass, including a new headless UI test that clicks the close button and asserts the window Closed event. No screenshot exists for this test because the window is closed by the click.
+
+Date: 2026-11-14 | 22:43:25
+Task: Clicking the restore button on a maximized window restores its previous size and switches the icon back to maximize
+Result: The restore behavior already existed from the maximize task; extended the headless UI test to assert the restored client size and position match the originals.
+Verification: Debug build clean; all tests pass; checked the screenshot, which shows the maximize icon after restoring.
+
+Date: 2026-11-14 | 22:45:02
+Task: Maximizing or restoring the window by other means also updates the maximize/restore icon
+Result: The icon already follows Window.WindowState via PropertyChanged, so no production change was needed; added a headless UI test that changes WindowState directly (Win+Up/Down cannot be simulated headlessly).
+Verification: Debug build clean; all tests pass (UI tests 5); checked the screenshot, which shows the maximize icon after returning to Normal.
+
+Date: 2026-11-14 | 22:47:43
+Task: The grid/list view switch is placed next to the search bar and does not overlap the window buttons
+Result: Replaced the right-aligned switch with a two-column grid (search bar up to 480 wide, switch 16px after it) with a right margin reserving the window buttons area.
+Verification: Debug build clean; all tests pass, including new headless UI tests for adjacency and no overlap with the window buttons at 1280 and 640 width; checked the 640 screenshot.
+
+Date: 2026-11-15 | 11:22:43
+Task: Window buttons are highlighted on hover like Windows caption buttons, with a red background for close
+Result: Added pointerover styles in WindowButtons (light #1AFFFFFF highlight, #E81123 for the Close-class button); added Hover helper to TestMainWindow.
+Verification: Debug build clean; all tests pass; new headless UI test hovers each button and asserts presenter background, then moves away and asserts it resets (screenshot shows the post-leave state).
+
+Date: 2026-11-15 | 11:33:01
+Task: Dragging the top strip of the window moves the window
+Result: MainWindow starts a native move drag on an unhandled left press in the top 32px strip; the call goes through a virtual StartMoveDrag so tests can observe it.
+Verification: Debug build clean (0 warnings); all tests pass, including new UI tests for a press in the strip (drag starts) and below it (no drag). The actual window movement is native and cannot be observed headlessly.
+
+Date: 2026-11-15 | 11:37:44
+Task: Double-clicking the top strip toggles between maximized and restored
+Result: MainWindow toggles the window state on a double press in the top strip instead of starting a drag; the toggle moved to a shared Window.ToggleMaximize extension also used by the maximize button.
+Verification: Debug build clean; all tests pass, including a new UI test that double-clicks the strip twice and asserts Maximized then Normal; checked the screenshot.
+
+Date: 2026-11-15 | 11:49:13
+Task: Pressing on interactive controls inside the top strip does not drag the window
+Result: MainWindow no longer starts a move drag or toggles maximize when the press lands inside SearchBar, SegmentedControl or WindowButtons.
+Verification: Debug build clean; all tests pass, including a new theory that presses the top part of each of those controls inside the strip and asserts no drag started. Pressing exactly on the gap between the two switch items hits the background in headless, so the test presses off-center.
+
+Date: 2026-11-15 | 11:50:34
+Task: Dragging a maximized window by the top strip restores it and moves it with the pointer
+Result: No production change; the strip press already calls the native BeginMoveDrag, which restores a maximized window on Windows. Added a UI test for the maximized case.
+Verification: Debug build clean; all tests pass. The test asserts the drag starts while maximized and the state ends Normal; the native restore itself cannot be observed headlessly.
+
+Date: 2026-11-15 | 11:58:24
+Task: Dragging a window edge or corner resizes the window
+Result: MainWindow starts a native resize drag (BeginResizeDrag through a virtual StartResizeDrag) on a left press within 6px of any edge or corner while not maximized, handled in the tunnel phase so it wins over controls at the edges (e.g. the close button corner); hovering the border shows the matching resize cursor. Edge/cursor mapping lives in a new ResizeEdges helper. The text box unfocus logic moved into its own method to keep CRAP <= 8.
+Verification: Debug build clean; all tests pass, including ResizeEdges unit tests and new UI tests for right, bottom, bottom-right and top edge presses, the window buttons corner, interior presses, the maximized state, the hover cursor, and search box focus. Actual size change is native and cannot be observed headlessly.
+
+Date: 2026-11-15 | 12:01:14
+Task: Dragging the window by the top strip to the left or right screen edge snaps it to that half of the screen
+Result: No production change; snapping is native Windows Aero Snap, which already works because the strip press calls BeginMoveDrag on a resizable window whose BorderOnly decorations keep the thick frame. Added a UI test pinning those preconditions.
+Verification: Debug build clean; all tests pass. New UI test asserts a press on the strip of a normal window starts a move drag while CanResize is true and WindowDecorations is BorderOnly; checked the screenshot. The snap itself is native and cannot be observed headlessly.
+
+Date: 2026-11-15 | 12:11:14
+Task: The grid/list view switch is placed next to the search bar and does not overlap the window buttons (reopened with a new step: the search bar keeps its position from commit d996d81)
+Result: Restored the centered search bar (max 480, same spot as d996d81 at default size) with the switch 16px to its right: the search bar and a fixed 99px switch column share a grid whose left margin exceeds the right one by that column width, so the search bar stays centered while the switch stays clear of the caption buttons down to the minimum width.
+Verification: Debug build clean; all tests pass, including new UI tests for the d996d81 bounds at 1280 (550,16 480 wide), centering at 800 and 640, and no overlap with the window buttons at 1280, 960, 800 and 640; checked the 1280 and 640 screenshots.

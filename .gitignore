@@ -10,7 +10,7 @@ bin/
 # Unit test results
 Test Results/
 
-/agents/
+# UI test screenshots
+/tests/Nexora.UiTests/screenshots/
 
-# Ralph loop logs
-/ralph/logs/
+/agents/

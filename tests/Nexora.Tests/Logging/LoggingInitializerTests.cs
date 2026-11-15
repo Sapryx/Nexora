@@ -42,7 +42,12 @@ public class LoggingInitializerTests : IDisposable
 
         loggerFactory.CreateLogger("Test").Info($"Running");
 
-        Assert.True(SpinWait.SpinUntil(() => ReadShared(logPath).Contains("[Info ] Running"), TimeSpan.FromSeconds(5)));
+        bool logged = SpinWait.SpinUntil(
+            () => ReadShared(logPath).Contains("[Info ] Running"),
+            TimeSpan.FromSeconds(5)
+        );
+
+        Assert.True(logged);
     }
 
     [Fact]
