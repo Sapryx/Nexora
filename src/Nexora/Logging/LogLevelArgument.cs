@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 
 namespace Nexora.Logging;
 
 public static class LogLevelArgument
 {
+    public static string KnownNames => string.Join(", ", Levels.Keys);
     public const string Name = "--log-level";
 
-    private static readonly Dictionary<string, LogLevel> Levels = new Dictionary<string, LogLevel>(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, LogLevel> Levels =
+        new Dictionary<string, LogLevel>(StringComparer.OrdinalIgnoreCase)
     {
         { "trace", LogLevel.Trace },
         { "debug", LogLevel.Debug },
@@ -17,8 +17,6 @@ public static class LogLevelArgument
         { "error", LogLevel.Error },
         { "crit", LogLevel.Critical }
     };
-
-    public static string KnownNames => string.Join(", ", Levels.Keys);
 
     public static string? FindValue(string[] args)
     {

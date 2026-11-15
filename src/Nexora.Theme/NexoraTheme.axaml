@@ -1,13 +1,58 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:resources="clr-namespace:Nexora.Theme.Resources"
         x:Class="Nexora.Theme.NexoraTheme">
 
     <FluentTheme />
-    
+
     <StyleInclude Source="avares://Nexora.Theme/Styles/Typography.axaml" />
 
     <Style Selector="Button">
         <Setter Property="Cursor" Value="Hand" />
+    </Style>
+
+    <Style Selector="Button.Primary">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+    </Style>
+
+    <Style Selector="Button.Primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryPointerOverBrush}" />
+    </Style>
+
+    <Style Selector="Button.Primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryPressedBrush}" />
+    </Style>
+
+    <Style Selector="ToolTip">
+        <Setter Property="Transitions" Value="{x:Null}" />
+    </Style>
+
+    <!-- The popup is sized to the presenter, so the margin leaves room in it for the shadow. -->
+    <Style Selector="MenuFlyoutPresenter">
+        <Setter Property="Margin" Value="12 8 12 16" />
+        <Setter Property="ClipToBounds" Value="False" />
+        <!-- On open the flyout focuses its first focusable element, and a focused item is shown as selected. -->
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="RenderTransformOrigin" Value="50%, 0%" />
+        <Style.Animations>
+            <Animation Duration="{StaticResource FlyoutOpenDuration}" Easing="{StaticResource DefaultEaseOut}">
+                <KeyFrame Cue="0%">
+                    <Setter Property="ScaleTransform.ScaleY" Value="0" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="ScaleTransform.ScaleY" Value="1" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <Style Selector="MenuFlyoutPresenter /template/ Border#LayoutRoot">
+        <Setter Property="BoxShadow" Value="0 4 12 0 #80000000" />
+    </Style>
+
+    <Style Selector="MenuItem">
+        <Setter Property="Margin" Value="4 0" />
+        <Setter Property="CornerRadius" Value="4" />
     </Style>
 
     <Styles.Resources>
@@ -15,8 +60,9 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://Nexora.Theme/Controls/Slider.axaml" />
                 <ResourceInclude Source="avares://Nexora.Theme/Controls/TextBox.axaml" />
-                
+
                 <ResourceInclude Source="avares://Nexora.Theme/Resources/Colors.axaml"/>
+                <resources:AnimationResources />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Styles.Resources>

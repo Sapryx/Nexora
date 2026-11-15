@@ -1,0 +1,1 @@
+P:Avalonia.Threading.Dispatcher.UIThread;Use the injected IUiDispatcher (Nexora.Threading)

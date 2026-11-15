@@ -1,28 +1,33 @@
-using System;
 using System.Collections.Concurrent;
-using System.IO;
-using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using Core.Collections;
 using Core.Logging;
-using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
+using Nexora.Render;
 
 namespace Nexora.Media;
 
 public class CoverCache : ICoverCache
 {
     private const int Capacity = 256;
-    private const int DecodeWidth = 128;
+    private const int PreviewWidth = 256;
+    private const int LargeMaxSide = 1024;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
+    private readonly RenderScaleProvider renderScaleProvider;
     private readonly LruCache<string, Bitmap?> cache = new LruCache<string, Bitmap?>(Capacity);
     private readonly ConcurrentDictionary<string, Task<Bitmap?>> inFlight = [];
 
-    public CoverCache(ILogger<CoverCache> logger, ITrackCoverLoader coverLoader)
+    public CoverCache(
+        ILogger<CoverCache> logger,
+        ITrackCoverLoader coverLoader,
+        RenderScaleProvider renderScaleProvider)
     {
         this.logger = logger;
         this.coverLoader = coverLoader;
+        this.renderScaleProvider = renderScaleProvider;
     }
 
     public Bitmap? Get(string audioPath)
@@ -38,7 +43,7 @@ public class CoverCache : ICoverCache
             return cached;
         }
 
-        var decodeTask = inFlight.GetOrAdd(audioPath, path => Task.Run(() => LoadCover(path)));
+        var decodeTask = inFlight.GetOrAdd(audioPath, path => Task.Run(() => LoadCover(path, DecodePreview)));
 
         try
         {
@@ -52,11 +57,51 @@ public class CoverCache : ICoverCache
         }
     }
 
-    private Bitmap? LoadCover(string audioPath)
+    public Task<Bitmap?> LoadLargeAsync(string audioPath)
+    {
+        return Task.Run(() => LoadCover(audioPath, DecodeLarge));
+    }
+
+    public Task<Bitmap?> LoadOriginalAsync(string audioPath)
+    {
+        return Task.Run(() => LoadCover(audioPath, stream => new Bitmap(stream)));
+    }
+
+    public static PixelSize FitToMaxSide(PixelSize size, int maxSide)
+    {
+        int largestSide = Math.Max(size.Width, size.Height);
+
+        if(largestSide <= maxSide)
+        {
+            return size;
+        }
+
+        double scale = (double)maxSide / largestSide;
+
+        return new PixelSize(
+            Math.Max(1, (int)Math.Round(size.Width * scale)),
+            Math.Max(1, (int)Math.Round(size.Height * scale))
+        );
+    }
+
+    private int ScaleToScreen(int size)
+    {
+        return (int)Math.Ceiling(size * renderScaleProvider.RenderScaling);
+    }
+
+    private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)
     {
         try
         {
-            return Decode(coverLoader.LoadCover(audioPath));
+            var coverRaw = coverLoader.LoadCover(audioPath);
+
+            if(coverRaw == null)
+            {
+                return null;
+            }
+
+            using var stream = new MemoryStream(coverRaw);
+            return decode(stream);
         }
         catch(Exception ex)
         {
@@ -65,14 +110,24 @@ public class CoverCache : ICoverCache
         }
     }
 
-    private static Bitmap? Decode(byte[]? coverRaw)
+    private Bitmap DecodePreview(Stream stream)
     {
-        if(coverRaw == null)
+        return Bitmap.DecodeToWidth(stream, ScaleToScreen(PreviewWidth), BitmapInterpolationMode.HighQuality);
+    }
+
+    private Bitmap DecodeLarge(Stream stream)
+    {
+        var bitmap = new Bitmap(stream);
+        var size = FitToMaxSide(bitmap.PixelSize, ScaleToScreen(LargeMaxSide));
+
+        if(size == bitmap.PixelSize)
         {
-            return null;
+            return bitmap;
         }
 
-        using var stream = new MemoryStream(coverRaw);
-        return Bitmap.DecodeToWidth(stream, DecodeWidth, BitmapInterpolationMode.HighQuality);
+        using(bitmap)
+        {
+            return bitmap.CreateScaledBitmap(size, BitmapInterpolationMode.HighQuality);
+        }
     }
 }

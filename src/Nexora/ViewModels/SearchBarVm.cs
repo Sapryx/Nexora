@@ -1,51 +1,46 @@
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Core.Playback;
+using Core.Input;
+using Core.Library;
 using Core.Playlists;
 using Core.Search;
 using Nexora.Threading;
-using Nexora.ViewModels.Factories;
 
 namespace Nexora.ViewModels;
 
 public partial class SearchBarVm : ViewModelBase
 {
-    private readonly ITrackControlVmFactory trackControlVmFactory;
-    private readonly KeyboardLayoutTranslator layoutTranslator;
-    private TrackSearchQuery searchQuery;
-
     [ObservableProperty]
     public partial string SearchQuery { get; set; } = "";
 
     public Dictionary<IAudioTrack, TrackControlVm> AudioTrackVms { get; } = [];
     public ObservableCollection<TrackControlVm> DisplayedAudioTrackVms { get; } = [];
+    private readonly TrackControlVmRegistry trackControlVmRegistry;
+    private readonly KeyboardLayoutTranslator layoutTranslator;
+    private readonly List<TrackMatch> displayedMatches = [];
+    private TrackSearchQuery searchQuery;
 
     public SearchBarVm(
-        PlaylistRegistry playlistRegistry,
-        ITrackControlVmFactory trackControlVmFactory,
+        MusicLibrary musicLibrary,
+        TrackControlVmRegistry trackControlVmRegistry,
         KeyboardLayoutTranslator layoutTranslator,
         IUiDispatcher uiDispatcher)
     {
-        this.trackControlVmFactory = trackControlVmFactory;
+        this.trackControlVmRegistry = trackControlVmRegistry;
         this.layoutTranslator = layoutTranslator;
         searchQuery = new TrackSearchQuery("", layoutTranslator);
 
-        playlistRegistry.GlobalPlaylist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
+        musicLibrary.Playlist.ItemAdded += playlistItem => uiDispatcher.Post(() =>
         {
             var trackVm = AddAudioTrackVm(playlistItem);
-
-            if(searchQuery.Matches(playlistItem.AudioTrack))
-            {
-                DisplayedAudioTrackVms.Add(trackVm);
-            }
+            DisplayIfMatches(playlistItem.AudioTrack, trackVm);
         });
     }
-    
+
     private TrackControlVm AddAudioTrackVm(IPlaylistItem playlistItem)
     {
-        var audioTrackVm = trackControlVmFactory.Create(playlistItem);
+        var audioTrackVm = trackControlVmRegistry.Create(playlistItem);
         AudioTrackVms[playlistItem.AudioTrack] = audioTrackVm;
 
         return audioTrackVm;
@@ -61,13 +56,47 @@ public partial class SearchBarVm : ViewModelBase
     {
         searchQuery = new TrackSearchQuery(value, layoutTranslator);
         DisplayedAudioTrackVms.Clear();
+        displayedMatches.Clear();
 
-        foreach(var (audioTrack, audioTrackVm) in AudioTrackVms)
+        foreach(var pair in AudioTrackVms)
         {
-            if(searchQuery.Matches(audioTrack))
+            DisplayIfMatches(pair.Key, pair.Value);
+        }
+    }
+
+    private void DisplayIfMatches(IAudioTrack audioTrack, TrackControlVm audioTrackVm)
+    {
+        var match = searchQuery.Match(audioTrack);
+
+        if(match == null)
+        {
+            return;
+        }
+
+        int index = FindInsertIndex(match);
+        displayedMatches.Insert(index, match);
+        DisplayedAudioTrackVms.Insert(index, audioTrackVm);
+    }
+
+    private int FindInsertIndex(TrackMatch match)
+    {
+        int low = 0;
+        int high = displayedMatches.Count;
+
+        while(low < high)
+        {
+            int middle = (low + high) / 2;
+
+            if(displayedMatches[middle].CompareTo(match) <= 0)
             {
-                DisplayedAudioTrackVms.Add(audioTrackVm);
+                low = middle + 1;
+            }
+            else
+            {
+                high = middle;
             }
         }
+
+        return low;
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
+using Core.Library;
 using Core.Logging;
-using Core.Playback;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Storage;
@@ -59,7 +60,7 @@ public class FileTrackLoader : ITrackLoader
 
         return audioTracks
             .OrderBy(track => track.Metadata.Title, StringComparer.CurrentCultureIgnoreCase)
-            .ThenBy(track => track.Metadata.Artists, StringComparer.CurrentCultureIgnoreCase)
+            .ThenBy(track => track.Metadata.JoinedArtists, StringComparer.CurrentCultureIgnoreCase)
             .ToList();
     }
 }

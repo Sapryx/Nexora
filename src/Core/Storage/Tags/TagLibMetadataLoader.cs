@@ -1,0 +1,38 @@
+using System.Diagnostics.CodeAnalysis;
+using Core.Library;
+using File = TagLib.File;
+
+namespace Core.Storage.Tags;
+
+public class TagLibMetadataLoader : IMetadataLoader
+{
+    private const StringSplitOptions ArtistSplitOptions =
+        StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries;
+
+    private static readonly char[] ArtistSeparators = [',', '&'];
+
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Mpeg.AudioFile))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Riff.File))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Ogg.File))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(TagLib.Flac.File))]
+    public Metadata Load(string filePath)
+    {
+        using var tagFile = File.Create(filePath);
+
+        return new Metadata()
+        {
+            Title = Metadata.GetDisplayedTitle(tagFile.Tag.Title, tagFile.Name),
+            Artists = SplitArtists(tagFile.Tag.Performers),
+            Duration = tagFile.Properties.Duration,
+            Loudness = LoudnessTags.Read(tagFile)
+        };
+    }
+
+    public static IReadOnlyList<string> SplitArtists(IEnumerable<string> performers)
+    {
+        return performers
+            .SelectMany(it => it.Split(ArtistSeparators, ArtistSplitOptions))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+}

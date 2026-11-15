@@ -152,7 +152,12 @@ jobs:
         env:
           WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
-          $installerUrl = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/Nexora-win-x64.zip"
+          $releaseUrl = "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}"
+          $installerUrl = "$releaseUrl/Nexora-win-x64.zip"
 
           Invoke-WebRequest https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-          .\wingetcreate.exe update Sapryx.Nexora --version ${{ github.ref_name }} --urls "$installerUrl" --submit --token $env:WINGET_TOKEN
+          .\wingetcreate.exe update Sapryx.Nexora `
+            --version ${{ github.ref_name }} `
+            --urls "$installerUrl" `
+            --submit `
+            --token $env:WINGET_TOKEN

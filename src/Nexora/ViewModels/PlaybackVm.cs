@@ -1,6 +1,6 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Core.Library;
 using Core.Playback;
 using Nexora.Media;
 using Nexora.Threading;
@@ -11,13 +11,13 @@ public partial class PlaybackVm : ViewModelBase
 {
     [ObservableProperty]
     public partial bool IsPlaying { get; private set; }
-    
+
     [ObservableProperty]
     public partial float PlaybackPosition { get; set; }
 
     [ObservableProperty]
     public partial TrackViewVm? PlayingTrackViewVm { get; set; }
-    
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(VolumeIconName))]
     public partial int Volume { get; set; }
@@ -32,39 +32,37 @@ public partial class PlaybackVm : ViewModelBase
     public string VolumeIconName => GetVolumeIconName();
     public bool IsDraggingVolume { get; set; }
     public bool IsDraggingPosition { get; set; }
-    
     private readonly IAudioPlayer audioPlayer;
     private int volumeBeforeMute;
     private bool isUpdatingDisplay;
 
-    public PlaybackVm(IAudioPlayer audioPlayer, ICoverCache coverCache, IUiDispatcher uiDispatcher)
+    public PlaybackVm(
+        IAudioPlayer audioPlayer,
+        TrackTagWriter tagWriter,
+        ICoverCache coverCache,
+        CoverViewerVm coverViewerVm,
+        IUiDispatcher uiDispatcher)
     {
         this.audioPlayer = audioPlayer;
-        
+
         SetVolumeDisplay(audioPlayer.Volume);
 
-        audioPlayer.PlaybackStarted += () => uiDispatcher.Post(() =>
+        audioPlayer.StateChanged += state => uiDispatcher.Post(() =>
         {
-            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, uiDispatcher);
-            trackViewVm.Update(audioPlayer.NowPlaying!);
+            IsPlaying = state.Status == PlaybackStatus.Playing;
+
+            if(state.Track == null)
+            {
+                PlayingTrackViewVm = null;
+                SetPlaybackPositionDisplay(0);
+                return;
+            }
+
+            var trackViewVm = PlayingTrackViewVm ?? new TrackViewVm(coverCache, coverViewerVm, uiDispatcher);
+            trackViewVm.Update(state.Track);
             PlayingTrackViewVm = trackViewVm;
         });
 
-        audioPlayer.PlaybackPaused += () => uiDispatcher.Post(() =>
-        {
-            IsPlaying = false;
-        });
-        
-        audioPlayer.PlaybackResumed += () => uiDispatcher.Post(() =>
-        {
-            IsPlaying = true;
-        });
-
-        audioPlayer.PlaybackFinished += () => uiDispatcher.Post(() =>
-        {
-            audioPlayer.PlayNextTrack();
-        });
-        
         audioPlayer.PlaybackPositionChanged += value => uiDispatcher.Post(() =>
         {
             if(!IsDraggingPosition)
@@ -90,6 +88,16 @@ public partial class PlaybackVm : ViewModelBase
         audioPlayer.MuteChanged += isMuted => uiDispatcher.Post(() =>
         {
             ApplyMuteState(isMuted);
+        });
+
+        tagWriter.TrackChanged += audioTrack => uiDispatcher.Post(() =>
+        {
+            var playingTrack = audioPlayer.State.Track;
+
+            if(playingTrack != null && playingTrack.AudioTrack == audioTrack)
+            {
+                PlayingTrackViewVm?.Update(playingTrack);
+            }
         });
     }
 
@@ -129,18 +137,18 @@ public partial class PlaybackVm : ViewModelBase
 
     public void PreviewSeek(double position)
     {
-        var nowPlaying = audioPlayer.NowPlaying;
+        var playingTrack = audioPlayer.State.Track;
 
-        if(nowPlaying is null)
+        if(playingTrack == null)
         {
             SeekPreviewTime = null;
             return;
         }
 
-        var time = nowPlaying.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
+        var time = playingTrack.AudioTrack.Metadata.Duration * Math.Clamp(position, 0, 1);
         SeekPreviewTime = $"{(int)time.TotalMinutes:00}:{time.Seconds:00}";
     }
-    
+
     partial void OnVolumeChanged(int value)
     {
         if(isUpdatingDisplay)

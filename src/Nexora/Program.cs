@@ -1,18 +1,20 @@
 using Avalonia;
-using System;
-using System.Threading;
 using Nexora.Logging;
+using Nexora.Threading;
 
 namespace Nexora;
 
 sealed class Program
 {
-    public static bool IsWaylandSession => OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
+    public static bool IsWaylandSession =>
+        OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
+
     private const string InstanceMutexName = "Nexora.SingleInstance";
 
     [STAThread]
     public static void Main(string[] args)
     {
+#if !DEBUG
         var mutexOptions = new NamedWaitHandleOptions() { CurrentUserOnly = true, CurrentSessionOnly = false };
         using var instanceMutex = new Mutex(true, InstanceMutexName, mutexOptions, out bool isFirstInstance);
 
@@ -20,13 +22,14 @@ sealed class Program
         {
             return;
         }
+#endif
 
         using var loggerFactory = LoggingInitializer.Initialize(args);
         var crashLogger = new CrashLogger(loggerFactory);
         crashLogger.Register();
 
         BuildAvaloniaApp(() => new App(loggerFactory))
-            .AfterSetup(_ => crashLogger.RegisterUiThread())
+            .AfterSetup(_ => crashLogger.RegisterUiThread(new AvaloniaUiDispatcher()))
             .StartWithClassicDesktopLifetime(args);
     }
 
@@ -48,6 +51,7 @@ sealed class Program
 #if DEBUG
             .WithDeveloperTools()
 #endif
+            .With(new SkiaOptions() { UseOpacitySaveLayer = true })
             .WithInterFont();
     }
 }

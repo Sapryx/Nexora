@@ -19,7 +19,7 @@ public class LruCacheTests
 
         cache.Set("a", 1);
 
-        Assert.True(cache.TryGet("a", out var value));
+        Assert.True(cache.TryGet("a", out int value));
         Assert.Equal(1, value);
     }
 
@@ -31,7 +31,7 @@ public class LruCacheTests
         cache.Set("a", 1);
         cache.Set("a", 2);
 
-        Assert.True(cache.TryGet("a", out var value));
+        Assert.True(cache.TryGet("a", out int value));
         Assert.Equal(2, value);
         Assert.Equal(1, cache.Count);
     }

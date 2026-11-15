@@ -1,8 +1,6 @@
-using System;
-using System.Threading.Tasks;
-using Avalonia.Threading;
 using Core.Logging;
 using Microsoft.Extensions.Logging;
+using Nexora.Threading;
 
 namespace Nexora.Logging;
 
@@ -30,9 +28,9 @@ public class CrashLogger
         };
     }
 
-    public void RegisterUiThread()
+    public void RegisterUiThread(IUiDispatcher uiDispatcher)
     {
-        Dispatcher.UIThread.UnhandledException += (_, e) => LogUiThreadException(e.Exception);
+        uiDispatcher.AddUnhandledExceptionHandler(LogUiThreadException);
     }
 
     public void LogUnhandledException(Exception exception)

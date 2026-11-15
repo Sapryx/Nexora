@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -14,6 +15,7 @@
 
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
+        <AdditionalFiles Include="BannedSymbols.txt" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,6 +29,7 @@
         </PackageReference>
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="LibVLCSharp" />
+        <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
         <PackageReference Include="Microsoft.Extensions.Logging" />
         <PackageReference Include="Svg.Controls.Skia.Avalonia" />
@@ -42,4 +45,5 @@
     <ItemGroup>
         <TrimmerRootAssembly Include="DiscordRPC" />
     </ItemGroup>
+
 </Project>

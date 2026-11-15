@@ -7,9 +7,8 @@ namespace Core.Logging;
 
 public class DiscordRpcLogger : IDiscordLogger
 {
-    private readonly ILogger<DiscordRpcLogger> logger;
-
     public DiscordLogLevel Level { get; set; } = DiscordLogLevel.Info;
+    private readonly ILogger<DiscordRpcLogger> logger;
 
     public DiscordRpcLogger(ILogger<DiscordRpcLogger> logger)
     {

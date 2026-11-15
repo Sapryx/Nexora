@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:Nexora.Controls"
+        xmlns:views="clr-namespace:Nexora.Views"
         xmlns:render="clr-namespace:Nexora.Render"
         mc:Ignorable="d" d:DesignWidth="1440" d:DesignHeight="1024"
         x:Class="Nexora.Views.MainWindow"
@@ -12,22 +13,17 @@
         Title="Nexora"
         MinWidth="640"
         MinHeight="480"
+        ExtendClientAreaToDecorationsHint="True"
+        WindowDecorations="BorderOnly"
+        ExtendClientAreaTitleBarHeightHint="-1"
         WindowStartupLocation="CenterScreen"
         Focusable="True"
         Container.Name="main"
         Container.Sizing="Width">
     <Window.Styles>
-        <Style Selector="controls|TrackArea">
-            <Setter Property="Margin" Value="256 0 0 0" />
-        </Style>
-        
         <ContainerQuery Name="main" Query="max-width:960">
             <Style Selector="Border#sidebar">
                 <Setter Property="IsVisible" Value="False" />
-            </Style>
-
-            <Style Selector="controls|TrackArea">
-                <Setter Property="Margin" Value="32 0 0 0" />
             </Style>
         </ContainerQuery>
     </Window.Styles>
@@ -40,37 +36,103 @@
         </render:DitheringControl>
 
         <DockPanel LastChildFill="True">
-            <!-- <Border -->
-            <!--     DockPanel.Dock="Top" -->
-            <!--     Height="32" -->
-            <!--     HorizontalAlignment="Stretch" -->
-            <!--     VerticalAlignment="Top" -->
-            <!--     Background="rgba(0, 0, 0, 40%)"> -->
-            <!-- -->
-            <!-- </Border> -->
+            <Border x:Name="sidebar"
+                    DockPanel.Dock="Left"
+                    Width="300"
+                    Padding="16 16 0 16"
+                    Background="rgba(0, 0, 0, 25%)">
+                <DockPanel>
+                    <controls:SegmentedControl DockPanel.Dock="Top"
+                                               Margin="0 0 16 0"
+                                               SelectedIndex="{Binding SidebarTabIndex}">
+                        <ListBoxItem Padding="4"
+                                     ToolTip.Tip="Library">
+                            <controls:Icon IconName="library" />
+                        </ListBoxItem>
 
-            <!-- <Border -->
-            <!--     x:Name="sidebar" -->
-            <!--     DockPanel.Dock="Left" -->
-            <!--     Width="240" -->
-            <!--     VerticalAlignment="Stretch" -->
-            <!--     HorizontalAlignment="Left" -->
-            <!--     Background="rgba(0, 0, 0, 25%)"> -->
-            <!-- </Border> -->
+                        <ListBoxItem Padding="4"
+                                     ToolTip.Tip="Settings">
+                            <controls:Icon IconName="settings" />
+                        </ListBoxItem>
+                    </controls:SegmentedControl>
+
+                    <TextBlock DockPanel.Dock="Top"
+                               Classes="Title"
+                               FontWeight="SemiBold"
+                               Text="Queue"
+                               Margin="8 16 0 0" />
+
+                    <Panel>
+                        <views:TrackArea TrackVms="{Binding QueueVm.TrackVms}"
+                                            HorizontalAlignment="Stretch"
+                                            VerticalAlignment="Stretch" />
+
+                        <TextBlock Classes="Subtitle"
+                                   Text="The queue is empty"
+                                   IsVisible="{Binding QueueVm.IsEmpty}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
+                    </Panel>
+                </DockPanel>
+            </Border>
 
             <Grid RowDefinitions="Auto * Auto"
                   Margin="0 16">
-                <controls:SearchBar Grid.Row="0"
-                                    DataContext="{Binding SearchBarVm}"
-                                    HorizontalAlignment="Stretch"
-                                    MaxWidth="480" />
+                <TextBlock Grid.Row="0"
+                           Classes="Title"
+                           FontWeight="SemiBold"
+                           Text="Settings"
+                           Margin="32 0 0 0"
+                           IsVisible="{Binding IsSettingsOpen}" />
 
-                <controls:TrackArea Grid.Row="1" 
-                                    TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
-                                    HorizontalAlignment="Stretch"
-                                    VerticalAlignment="Stretch"/>
+                <Grid Grid.Row="0"
+                      Margin="245 0 146 0"
+                      MaxWidth="579"
+                      IsVisible="{Binding !IsSettingsOpen}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="99" />
+                    </Grid.ColumnDefinitions>
 
-                <controls:PlaybackControl Grid.Row="2"
+                    <views:SearchBar Grid.Column="0"
+                                     DataContext="{Binding SearchBarVm}"
+                                     HorizontalAlignment="Stretch" />
+
+                    <controls:SegmentedControl x:Name="LibraryViewSwitch"
+                                               Grid.Column="1"
+                                               HorizontalAlignment="Left"
+                                               VerticalAlignment="Center"
+                                               Margin="16 0 0 0"
+                                               SelectedIndex="{Binding LibraryViewIndex}">
+                        <ListBoxItem ToolTip.Tip="Grid">
+                            <controls:Icon IconName="grid" />
+                        </ListBoxItem>
+
+                        <ListBoxItem ToolTip.Tip="List">
+                            <controls:Icon IconName="list" />
+                        </ListBoxItem>
+                    </controls:SegmentedControl>
+                </Grid>
+
+                <Panel Grid.Row="1"
+                       IsVisible="{Binding !IsSettingsOpen}">
+                    <views:TrackArea x:Name="LibraryList"
+                                        Margin="32 0 0 0"
+                                        TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                        IsVisible="{Binding !IsLibraryGridView}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"/>
+
+                    <views:TrackGrid x:Name="LibraryGrid"
+                                        Margin="32 0 0 0"
+                                        TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                        FirstVisibleTrackIndex="{Binding #LibraryList.FirstVisibleTrackIndex}"
+                                        IsVisible="{Binding IsLibraryGridView}"
+                                        HorizontalAlignment="Stretch"
+                                        VerticalAlignment="Stretch"/>
+                </Panel>
+
+                <views:PlaybackControl Grid.Row="2"
                                           DataContext="{Binding PlaybackVm}"
                                           VerticalAlignment="Bottom"
                                           HorizontalAlignment="Stretch"
@@ -78,5 +140,12 @@
                                           Margin="48 0"/>
             </Grid>
         </DockPanel>
+
+        <views:WindowButtons HorizontalAlignment="Right"
+                             VerticalAlignment="Top" />
+
+        <views:TrackEditor DataContext="{Binding TrackEditorVm}" />
+
+        <views:CoverViewer DataContext="{Binding CoverViewerVm}" />
     </Panel>
 </Window>

@@ -1,7 +1,5 @@
-using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using Core.Logging;
 using Microsoft.Extensions.Logging;
@@ -19,13 +17,32 @@ public static class LoggingInitializer
     private const string ColoredLogLevelLegendCategory = "Nexora.Logging.ColoredLogLevelLegend";
     private const string CurrentLevelMarker = "<--";
     private const string CurrentLevelMarkerColor = "\e[38;2;0;255;0m";
-    private static readonly LogLevel[] LegendLevels = [LogLevel.Trace, LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical];
     private const string ResetColor = "\e[0m";
-    private static readonly string LogsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.DoNotVerify), "Nexora/logs");
+
+    private static readonly LogLevel[] LegendLevels = [
+        LogLevel.Trace,
+        LogLevel.Debug,
+        LogLevel.Information,
+        LogLevel.Warning,
+        LogLevel.Error,
+        LogLevel.Critical
+    ];
+
+    private static readonly string LogsDirectory = Path.Combine(
+        Environment.GetFolderPath(
+            Environment.SpecialFolder.ApplicationData,
+            Environment.SpecialFolderOption.DoNotVerify
+        ),
+        "Nexora/logs"
+    );
 
     public static ILoggerFactory Initialize(string[] args)
     {
+        string? sessionLogPath = null;
+#if !DEBUG
         Directory.CreateDirectory(LogsDirectory);
+        sessionLogPath = SessionLogFiles.GetPath(LogsDirectory, DateTime.Now);
+#endif
 
         string? requestedLevel = LogLevelArgument.FindValue(args);
         var minimumLevel = DefaultMinimumLevel;
@@ -43,7 +60,6 @@ public static class LoggingInitializer
             }
         }
 
-        string sessionLogPath = SessionLogFiles.GetPath(LogsDirectory, DateTime.Now);
         var loggerFactory = CreateLoggerFactory(sessionLogPath, minimumLevel);
         var logger = loggerFactory.CreateLogger(typeof(LoggingInitializer));
 
@@ -51,12 +67,23 @@ public static class LoggingInitializer
 
         if(isRequestedLevelUnknown)
         {
-            logger.Warn($"Unknown log level '{requestedLevel}' in {LogLevelArgument.Name}, expected one of: {LogLevelArgument.KnownNames}");
+            logger.Warn(
+                $"Unknown log level '{requestedLevel}' in {LogLevelArgument.Name}, " +
+                $"expected one of: {LogLevelArgument.KnownNames}"
+            );
         }
 
         AvaloniaLogger.Sink = new AvaloniaLogSink(loggerFactory.CreateLogger<AvaloniaLogSink>());
         Trace.Listeners.Add(new DiagnosticsLogListener(loggerFactory.CreateLogger<DiagnosticsLogListener>()));
-        SessionLogFiles.DeleteOld(sessionLogPath, KeptSessionLogCount, loggerFactory.CreateLogger(typeof(SessionLogFiles)));
+
+        if(sessionLogPath != null)
+        {
+            SessionLogFiles.DeleteOld(
+                sessionLogPath,
+                KeptSessionLogCount,
+                loggerFactory.CreateLogger(typeof(SessionLogFiles))
+            );
+        }
 
         return loggerFactory;
     }
@@ -74,11 +101,12 @@ public static class LoggingInitializer
             bool isCurrent = level == minimumLevel;
 
             LogAtLevel(fileLogger, level, isCurrent ? CurrentLevelMarker : "");
-            LogAtLevel(consoleLogger, level, isCurrent ? ResetColor + CurrentLevelMarkerColor + CurrentLevelMarker : "");
+            string coloredMarker = isCurrent ? ResetColor + CurrentLevelMarkerColor + CurrentLevelMarker : "";
+            LogAtLevel(consoleLogger, level, coloredMarker);
         }
     }
 
-    public static ILoggerFactory CreateLoggerFactory(string sessionLogPath, LogLevel minimumLevel)
+    public static ILoggerFactory CreateLoggerFactory(string? sessionLogPath, LogLevel minimumLevel)
     {
         return LoggerFactory.Create(logging =>
         {
@@ -88,7 +116,11 @@ public static class LoggingInitializer
             logging.AddFilter(ColoredLogLevelLegendCategory, LogLevel.Trace);
             logging.AddFilter<ZLoggerConsoleLoggerProvider>(LogLevelLegendCategory, LogLevel.None);
             logging.AddFilter<ZLoggerFileLoggerProvider>(ColoredLogLevelLegendCategory, LogLevel.None);
-            logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
+
+            if(sessionLogPath != null)
+            {
+                logging.AddZLoggerFile(sessionLogPath, UsePlainTextFormatter);
+            }
 
             if(!OperatingSystem.IsWindows() || WindowsConsole.TryAttachStandardOutput())
             {
@@ -105,14 +137,22 @@ public static class LoggingInitializer
     {
         options.UsePlainTextFormatter(formatter =>
         {
-            formatter.SetPrefixFormatter($"{0}{1:HH:mm:ss.fff} [{2}] ",
-                (in template, in info) => template.Format(GetLevelColor(info.LogLevel), info.Timestamp, GetLevelName(info.LogLevel))
+            formatter.SetPrefixFormatter(
+                $"{0}{1:HH:mm:ss.fff} [{2}] ",
+                (in template, in info) => template.Format(
+                    GetLevelColor(info.LogLevel),
+                    info.Timestamp,
+                    GetLevelName(info.LogLevel)
+                )
             );
-            formatter.SetSuffixFormatter($"{0}",
-                (in template, in info) => template.Format(info.Exception is null ? ResetColor : "")
+            formatter.SetSuffixFormatter(
+                $"{0}",
+                (in template, in info) => template.Format(info.Exception == null ? ResetColor : "")
             );
-            formatter.SetExceptionFormatter((writer, exception) =>
-                writer.Write(Encoding.UTF8.GetBytes($"{Environment.NewLine}{exception}{ResetColor}"))
+            formatter.SetExceptionFormatter(
+                (writer, exception) => writer.Write(
+                    Encoding.UTF8.GetBytes($"{Environment.NewLine}{exception}{ResetColor}")
+                )
             );
         });
     }
@@ -122,7 +162,8 @@ public static class LoggingInitializer
         options.UsePlainTextFormatter(formatter =>
         {
             // "hh:mm:ss.fff [Info ] message"
-            formatter.SetPrefixFormatter($"{0:HH:mm:ss.fff} [{1}] ",
+            formatter.SetPrefixFormatter(
+                $"{0:HH:mm:ss.fff} [{1}] ",
                 (in template, in info) => template.Format(info.Timestamp, GetLevelName(info.LogLevel))
             );
         });

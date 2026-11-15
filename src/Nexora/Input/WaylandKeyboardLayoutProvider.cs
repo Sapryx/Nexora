@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
+using Core.Input;
 using Core.Logging;
-using Core.Search;
 using Microsoft.Extensions.Logging;
 
 namespace Nexora.Input;
@@ -106,7 +103,13 @@ public unsafe partial class WaylandKeyboardLayoutProvider : IKeyboardLayoutProvi
         return new KeyboardLayout(name, characters);
     }
 
-    private static void AddCharacter(Dictionary<KeyboardKey, char> characters, nint keymap, uint keycode, uint layout, int scanCode, bool shifted)
+    private static void AddCharacter(
+        Dictionary<KeyboardKey, char> characters,
+        nint keymap,
+        uint keycode,
+        uint layout,
+        int scanCode,
+        bool shifted)
     {
         uint* symbols;
         int count = KeymapKeyGetSymsByLevel(keymap, keycode, layout, shifted ? ShiftLevel : BaseLevel, &symbols);
@@ -146,7 +149,12 @@ public unsafe partial class WaylandKeyboardLayoutProvider : IKeyboardLayoutProvi
     private static partial nint KeymapLayoutGetName(nint keymap, uint layout);
 
     [LibraryImport(XkbLibrary, EntryPoint = "xkb_keymap_key_get_syms_by_level")]
-    private static partial int KeymapKeyGetSymsByLevel(nint keymap, uint keycode, uint layout, uint level, uint** symbols);
+    private static partial int KeymapKeyGetSymsByLevel(
+        nint keymap,
+        uint keycode,
+        uint layout,
+        uint level,
+        uint** symbols);
 
     [LibraryImport(XkbLibrary, EntryPoint = "xkb_keysym_to_utf32")]
     private static partial uint KeysymToUtf32(uint keysym);

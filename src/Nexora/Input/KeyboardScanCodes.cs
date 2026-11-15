@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace Nexora.Input;
 
 public static class KeyboardScanCodes

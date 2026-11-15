@@ -1,17 +1,17 @@
 using System.Collections;
-using Core.Playback;
+using Core.Library;
 
 namespace Core.Playlists;
 
 public class Playlist : IEnumerable<IPlaylistItem>
 {
-    public string Name = string.Empty;
+    public string Name { get; set; } = "";
     public bool IsEmpty => TrackCount == 0;
     public int TrackCount => items.Count;
-    
     private readonly List<IPlaylistItem> items = [];
 
     public event Action<IPlaylistItem>? ItemAdded;
+    public event Action<IPlaylistItem>? ItemRemoved;
 
     public IEnumerable<IPlaylistItem> GetAllItems()
     {
@@ -33,6 +33,25 @@ public class Playlist : IEnumerable<IPlaylistItem>
         var item = new PlaylistItem(audioTrack, this, items.Count);
         items.Add(item);
         ItemAdded?.Invoke(item);
+    }
+
+    public virtual void RemoveItem(IPlaylistItem item)
+    {
+        int removedIndex = items.IndexOf(item);
+
+        if(removedIndex < 0)
+        {
+            return;
+        }
+
+        items.RemoveAt(removedIndex);
+
+        for(int index = removedIndex; index < items.Count; index++)
+        {
+            items[index].Index = index;
+        }
+
+        ItemRemoved?.Invoke(item);
     }
 
     public void AddTracks(IEnumerable<IAudioTrack> audioTracks)

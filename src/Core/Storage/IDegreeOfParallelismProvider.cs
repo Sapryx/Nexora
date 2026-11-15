@@ -8,5 +8,5 @@ public interface IDegreeOfParallelismProvider
 // Type parameter is here just so you can register different providers with the DI framework
 public interface IDegreeOfParallelismProvider<T> : IDegreeOfParallelismProvider
 {
-    
+
 }

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
-using Core.Playback;
+using Core.Library;
 using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -40,7 +41,8 @@ public class FileTrackLoaderTests
             metadataLoaderMock.Object,
             supportedAudioFormatsProviderMock.Object,
             degreeOfParallelismProviderMock.Object,
-            musicDirectoryProviderMock.Object);
+            musicDirectoryProviderMock.Object
+        );
     }
 
     [Fact]
@@ -95,7 +97,7 @@ public class FileTrackLoaderTests
     [Fact]
     public void Load_SupportedFile_LoadsMetadataForThatFile()
     {
-        var metadata = new Metadata() { Title = "Title", Artists = "Artist" };
+        var metadata = new Metadata() { Title = "Title", Artists = ["Artist"] };
         metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(metadata);
         musicDirectoryProviderMock.Setup(it => it.GetFiles()).Returns(["/music/one.mp3"]);
 
@@ -147,15 +149,19 @@ public class FileTrackLoaderTests
     [Fact]
     public void Load_TracksWithSameTitle_ReturnsThemSortedByArtists()
     {
-        metadataLoaderMock.Setup(it => it.Load("/music/one.mp3")).Returns(new Metadata() { Title = "Song", Artists = "Zed" });
-        metadataLoaderMock.Setup(it => it.Load("/music/two.mp3")).Returns(new Metadata() { Title = "Song", Artists = "Abba" });
+        metadataLoaderMock
+            .Setup(it => it.Load("/music/one.mp3"))
+            .Returns(new Metadata() { Title = "Song", Artists = ["Zed"] });
+        metadataLoaderMock
+            .Setup(it => it.Load("/music/two.mp3"))
+            .Returns(new Metadata() { Title = "Song", Artists = ["Abba"] });
         musicDirectoryProviderMock
             .Setup(it => it.GetFiles())
             .Returns(["/music/one.mp3", "/music/two.mp3"]);
 
         var result = loader.Load();
 
-        Assert.Equal(["Abba", "Zed"], result.Select(it => it.Metadata.Artists));
+        Assert.Equal(["Abba", "Zed"], result.Select(it => it.Metadata.JoinedArtists));
     }
 
     [Fact]
@@ -181,7 +187,8 @@ public class FileTrackLoaderTests
             metadataLoaderMock.Object,
             supportedAudioFormatsProviderMock.Object,
             degreeOfParallelismProviderMock.Object,
-            musicDirectoryProviderMock.Object);
+            musicDirectoryProviderMock.Object
+        );
         metadataLoaderMock.Setup(it => it.Load("/music/broken.mp3")).Throws(exception);
         musicDirectoryProviderMock.Setup(it => it.GetFiles()).Returns(["/music/broken.mp3"]);
 

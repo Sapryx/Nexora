@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Nexora.Media;
@@ -14,15 +13,13 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     [ObservableProperty]
     public partial string Artists { get; set; } = "";
 
-    private string audioPath = "";
-    private readonly ICoverCache coverCache;
-    private readonly IUiDispatcher uiDispatcher;
+    public string AudioPath { get; private set; } = "";
 
     public Bitmap? Cover
     {
         get
         {
-            var cached = coverCache.Get(audioPath);
+            var cached = coverCache.Get(AudioPath);
 
             if(cached == null)
             {
@@ -32,6 +29,9 @@ public abstract partial class CoveredTrackVm : ViewModelBase
             return cached;
         }
     }
+
+    private readonly ICoverCache coverCache;
+    private readonly IUiDispatcher uiDispatcher;
 
     protected CoveredTrackVm(ICoverCache coverCache, IUiDispatcher uiDispatcher)
     {
@@ -43,8 +43,8 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     {
         Title = title;
         Artists = artists;
-        bool pathChanged = this.audioPath != audioPath;
-        this.audioPath = audioPath;
+        bool pathChanged = AudioPath != audioPath;
+        AudioPath = audioPath;
 
         if(pathChanged)
         {
@@ -54,14 +54,14 @@ public abstract partial class CoveredTrackVm : ViewModelBase
 
     private async Task LoadCoverAsync()
     {
-        string path = audioPath;
+        string path = AudioPath;
         var bitmap = await coverCache.GetOrLoadAsync(path).ConfigureAwait(false);
 
         if(bitmap != null)
         {
             uiDispatcher.Post(() =>
             {
-                if(path == audioPath)
+                if(path == AudioPath)
                 {
                     OnPropertyChanged(nameof(Cover));
                 }

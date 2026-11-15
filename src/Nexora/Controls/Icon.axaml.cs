@@ -13,7 +13,7 @@ public partial class Icon : UserControl
         get => GetValue(IconNameProperty);
         set => SetValue(IconNameProperty, value);
     }
-    
+
     public Icon()
     {
         InitializeComponent();

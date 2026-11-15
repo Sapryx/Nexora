@@ -1,9 +1,13 @@
+using Core.Library;
 using Core.Playback;
 using Core.Playlists;
+using Core.Storage.Tags;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Tests.Shared.Playback;
 
 namespace Nexora.Tests.ViewModels;
 
@@ -12,11 +16,18 @@ public class PlaybackVmTests
     private const int InitialVolume = 50;
     private readonly Mock<IAudioPlayer> audioPlayerMock;
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
+
+    private readonly TrackTagWriter tagWriter = new TrackTagWriter(
+        NullLogger<TrackTagWriter>.Instance,
+        Mock.Of<IMetadataSaver>(),
+        AudioPlayerMock.Create().Object
+    );
+
     private readonly PlaybackVm vm;
 
     public PlaybackVmTests()
     {
-        audioPlayerMock = new Mock<IAudioPlayer>();
+        audioPlayerMock = AudioPlayerMock.Create();
         uiDispatcherMock = new Mock<IUiDispatcher>();
 
         audioPlayerMock
@@ -29,7 +40,9 @@ public class PlaybackVmTests
 
         vm = new PlaybackVm(
             audioPlayerMock.Object,
+            tagWriter,
             Mock.Of<ICoverCache>(),
+            new CoverViewerVm(Mock.Of<ICoverCache>(), uiDispatcherMock.Object),
             uiDispatcherMock.Object
         );
     }
@@ -275,9 +288,52 @@ public class PlaybackVmTests
     }
 
     [Fact]
+    public void StateChanged_PlayingTrack_ShowsTrackAsPlaying()
+    {
+        var metadata = new Metadata() { Title = "Song", Artists = ["Artist"] };
+        var playlistItem = Mock.Of<IPlaylistItem>(
+            it => it.AudioTrack.Metadata == metadata && it.AudioTrack.AudioPath == ""
+        );
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
+
+        Assert.True(vm.IsPlaying);
+        Assert.NotNull(vm.PlayingTrackViewVm);
+        Assert.Equal("Song", vm.PlayingTrackViewVm.Title);
+        Assert.Equal("Artist", vm.PlayingTrackViewVm.Artists);
+    }
+
+    [Fact]
+    public void StateChanged_PausedTrack_ShowsTrackAsPaused()
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it =>
+            it.AudioTrack.Metadata == new Metadata() { Title = "Song" } && it.AudioTrack.AudioPath == "");
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Paused(playlistItem));
+
+        Assert.False(vm.IsPlaying);
+        Assert.Equal("Song", vm.PlayingTrackViewVm?.Title);
+    }
+
+    [Fact]
+    public async Task TrackChanged_PlayingTrackEdited_ShowsNewTitle()
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it =>
+            it.AudioTrack.Metadata == new Metadata() { Title = "Song" } && it.AudioTrack.AudioPath == "");
+        var state = PlaybackState.Playing(playlistItem);
+        audioPlayerMock.SetupGet(it => it.State).Returns(state);
+        audioPlayerMock.Raise(it => it.StateChanged += null, state);
+
+        await tagWriter.EditAsync(playlistItem.AudioTrack, "Edited", []);
+
+        Assert.Equal("Edited", vm.PlayingTrackViewVm?.Title);
+    }
+
+    [Fact]
     public void PreviewSeek_TrackPlaying_ShowsTimeAtPosition()
     {
-        SetupNowPlaying(TimeSpan.FromSeconds(200));
+        SetupPlayingTrack(TimeSpan.FromSeconds(200));
 
         vm.PreviewSeek(0.5);
 
@@ -287,7 +343,7 @@ public class PlaybackVmTests
     [Fact]
     public void PreviewSeek_PositionOutOfRange_ClampsToTrackBounds()
     {
-        SetupNowPlaying(TimeSpan.FromSeconds(200));
+        SetupPlayingTrack(TimeSpan.FromSeconds(200));
 
         vm.PreviewSeek(1.5);
 
@@ -302,13 +358,29 @@ public class PlaybackVmTests
         Assert.Null(vm.SeekPreviewTime);
     }
 
-    private void SetupNowPlaying(TimeSpan duration)
+    private void SetupPlayingTrack(TimeSpan duration)
     {
         var metadata = new Metadata() { Duration = duration };
         var playlistItem = Mock.Of<IPlaylistItem>(it => it.AudioTrack.Metadata == metadata);
 
         audioPlayerMock
-            .SetupGet(it => it.NowPlaying)
-            .Returns(playlistItem);
+            .SetupGet(it => it.State)
+            .Returns(PlaybackState.Playing(playlistItem));
+    }
+
+    [Fact]
+    public void StateChanged_Stopped_ClearsPlayingTrackAndPosition()
+    {
+        var playlistItem = Mock.Of<IPlaylistItem>(it =>
+            it.AudioTrack.Metadata == new Metadata() && it.AudioTrack.AudioPath == "");
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playlistItem));
+        audioPlayerMock.Raise(it => it.PlaybackPositionChanged += null, 0.5f);
+
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Stopped);
+
+        Assert.False(vm.IsPlaying);
+        Assert.Null(vm.PlayingTrackViewVm);
+        Assert.Equal(0, vm.PlaybackPosition);
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = It.IsAny<float>(), Times.Never);
     }
 }

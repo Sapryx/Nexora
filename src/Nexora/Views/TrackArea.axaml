@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="clr-namespace:Nexora.ViewModels"
+             xmlns:controls="clr-namespace:Nexora.Controls"
+             xmlns:views="clr-namespace:Nexora.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Nexora.Views.TrackArea"
+             x:DataType="views:TrackArea"
+             x:Name="Root">
+    <Border Margin="0, 16, 0, 0">
+        <ListBox x:Name="TrackList"
+                 ItemsSource="{Binding #Root.TrackVms}"
+                 SelectionChanged="OnSelectionChanged"
+                 ScrollViewer.AllowAutoHide="False"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0 4 32 0">
+
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="viewModels:TrackControlVm">
+                    <controls:TrackControl Margin="0 0 0 8" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+
+            <ListBox.ItemContainerTheme>
+                <ControlTheme TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="MinHeight" Value="0" />
+                    <Setter Property="MinWidth" Value="0" />
+                    <Setter Property="CornerRadius" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+
+                    <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+
+                    <Style Selector="^:selected /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+
+                    <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </ControlTheme>
+            </ListBox.ItemContainerTheme>
+
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+        </ListBox>
+    </Border>
+</UserControl>

@@ -3,6 +3,7 @@ using Core.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Nexora.Logging;
+using Nexora.Threading;
 using Tests.Shared.Logging;
 
 namespace Nexora.Tests.Logging;
@@ -65,6 +66,26 @@ public class CrashLoggerTests : IDisposable
         Assert.Equal(LogLevel.Critical, entry.Level);
         Assert.Same(exception, entry.Exception);
         loggerFactoryMock.Verify(it => it.Dispose(), Times.Never);
+    }
+
+    [Fact]
+    public void RegisterUiThread_DispatcherReportsException_LogsCriticalWithException()
+    {
+        var logger = new TestLogger<CrashLogger>();
+        var crashLogger = new CrashLogger(CreateLoggerFactoryMock(logger).Object);
+        var uiDispatcherMock = new Mock<IUiDispatcher>();
+        Action<Exception>? handler = null;
+        uiDispatcherMock
+            .Setup(it => it.AddUnhandledExceptionHandler(It.IsAny<Action<Exception>>()))
+            .Callback<Action<Exception>>(it => handler = it);
+        var exception = CreateThrownException();
+        crashLogger.RegisterUiThread(uiDispatcherMock.Object);
+
+        handler?.Invoke(exception);
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Critical, entry.Level);
+        Assert.Same(exception, entry.Exception);
     }
 
     [Fact]

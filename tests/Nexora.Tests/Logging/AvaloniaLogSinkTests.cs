@@ -52,9 +52,15 @@ public class AvaloniaLogSinkTests
             LogEventLevel.Warning,
             LogArea.Binding,
             null,
-            "Error in binding to {Target}.{Property}: {Message}", "TextBlock", "Text", "Null value"
+            "Error in binding to {Target}.{Property}: {Message}",
+            "TextBlock",
+            "Text",
+            "Null value"
         );
-        Assert.Equal("(Avalonia) Binding: Error in binding to TextBlock.Text: Null value", Assert.Single(logger.Entries).Message);
+        Assert.Equal(
+            "(Avalonia) Binding: Error in binding to TextBlock.Text: Null value",
+            Assert.Single(logger.Entries).Message
+        );
     }
 
     [Fact]
@@ -67,8 +73,17 @@ public class AvaloniaLogSinkTests
     [Fact]
     public void Log_ValueWithTrailingNullCharacters_RemovesThem()
     {
-        sink.Log(LogEventLevel.Warning, LogArea.X11Platform, null, "SMLib reported an error: {Message}", "SESSION_MANAGER not defined\0\0\0");
-        Assert.Equal("(Avalonia) X11Platform: SMLib reported an error: SESSION_MANAGER not defined", Assert.Single(logger.Entries).Message);
+        sink.Log(
+            LogEventLevel.Warning,
+            LogArea.X11Platform,
+            null,
+            "SMLib reported an error: {Message}",
+            "SESSION_MANAGER not defined\0\0\0"
+        );
+        Assert.Equal(
+            "(Avalonia) X11Platform: SMLib reported an error: SESSION_MANAGER not defined",
+            Assert.Single(logger.Entries).Message
+        );
     }
 
     [Fact]

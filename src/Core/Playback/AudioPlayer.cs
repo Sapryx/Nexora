@@ -1,13 +1,14 @@
+using Core.Logging;
+using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
-using LibVLCSharp.Shared;
+using Microsoft.Extensions.Logging;
 
 namespace Core.Playback;
 
 public class AudioPlayer : IAudioPlayer
 {
-    public IPlaylistItem? NowPlaying { get; private set; }
-    public bool IsPlaying => mediaPlayer.IsPlaying;
+    public PlaybackState State { get; private set; } = PlaybackState.Stopped;
 
     public int Volume
     {
@@ -15,68 +16,71 @@ public class AudioPlayer : IAudioPlayer
         set
         {
             volume = value;
-            mediaPlayer.Volume = value;
+            mediaEngine.Volume = value;
             volumeStorage.Save(value);
         }
     }
 
     public float PlaybackPosition
     {
-        get => mediaPlayer.Position;
-        set => mediaPlayer.Position = value;
+        get => mediaEngine.Position;
+        set => mediaEngine.Position = value;
     }
 
     public bool Mute
     {
-        get => mediaPlayer.Mute;
-        set => mediaPlayer.Mute = value;
+        get => mediaEngine.Mute;
+        set => mediaEngine.Mute = value;
     }
 
     private const int DefaultVolume = 50;
-    private readonly LibVLC vlc;
-    private readonly MediaPlayer mediaPlayer;
+    private readonly ILogger<AudioPlayer> logger;
+    private readonly IMediaEngine mediaEngine;
     private readonly IVolumeStorage volumeStorage;
+    private readonly Lock fileLock = new Lock();
     private int volume;
+    private ReleasedFile? releasedFile;
+    private bool isAtEnd;
 
-    public event Action? PlaybackStarted;
+    public event Action<PlaybackState>? StateChanged;
     public event Action<float>? PlaybackPositionChanged;
-    public event Action? PlaybackPaused;
-    public event Action? PlaybackFinished;
-    public event Action? PlaybackResumed;
     public event Action<float>? VolumeChanged;
     public event Action<bool>? MuteChanged;
 
-    public AudioPlayer(LibVLC vlc, IVolumeStorage volumeStorage)
+    public AudioPlayer(ILogger<AudioPlayer> logger, IMediaEngine mediaEngine, IVolumeStorage volumeStorage)
     {
-        this.vlc = vlc;
+        this.logger = logger;
+        this.mediaEngine = mediaEngine;
         this.volumeStorage = volumeStorage;
-        mediaPlayer = new MediaPlayer(vlc);
 
         volume = volumeStorage.Load() ?? DefaultVolume;
-        mediaPlayer.Volume = volume;
+        mediaEngine.Volume = volume;
 
-        mediaPlayer.PositionChanged += (_, args) => PlaybackPositionChanged?.Invoke(args.Position);
-        mediaPlayer.Playing += (_, _) => PlaybackStarted?.Invoke();
-        mediaPlayer.Playing += (_, _) => PlaybackResumed?.Invoke();
-        mediaPlayer.EndReached += (_, _) => PlaybackFinished?.Invoke();
-        mediaPlayer.Paused += (_, _) => PlaybackPaused?.Invoke();
-        mediaPlayer.VolumeChanged += (_, args) => OnVolumeChanged(args.Volume * 100f);
-        mediaPlayer.Muted += (_, _) => MuteChanged?.Invoke(Mute);
-        mediaPlayer.Unmuted += (_, _) => MuteChanged?.Invoke(Mute);
+        mediaEngine.PositionChanged += position => PlaybackPositionChanged?.Invoke(position);
+        mediaEngine.EndReached += OnEndReached;
+        mediaEngine.EncounteredError += OnEncounteredError;
+        mediaEngine.VolumeChanged += OnVolumeChanged;
+        mediaEngine.MuteChanged += isMuted => MuteChanged?.Invoke(isMuted);
     }
 
     public void PlayTrack(IPlaylistItem playlistItem)
     {
-        NowPlaying = playlistItem;
+        PlaybackState state;
 
-        using var media = new Media(vlc, playlistItem.AudioTrack.AudioPath, FromType.FromPath);
-        mediaPlayer.Media = media;
-        mediaPlayer.Play();
+        lock(fileLock)
+        {
+            releasedFile = null;
+            state = PlaybackState.Playing(playlistItem);
+            State = state;
+            Open(playlistItem, 0, false);
+        }
+
+        StateChanged?.Invoke(state);
     }
 
     public void PlayNextTrack()
     {
-        var nextTrack = NowPlaying?.GetNext();
+        var nextTrack = State.Track?.GetNext();
 
         if(nextTrack != null)
         {
@@ -86,7 +90,7 @@ public class AudioPlayer : IAudioPlayer
 
     public void PlayPreviousTrack()
     {
-        var previousTrack = NowPlaying?.GetPrevious();
+        var previousTrack = State.Track?.GetPrevious();
 
         if(previousTrack != null)
         {
@@ -96,9 +100,87 @@ public class AudioPlayer : IAudioPlayer
 
     public void TogglePause()
     {
-        if(NowPlaying != null)
+        PlaybackState state;
+
+        lock(fileLock)
         {
-            mediaPlayer.Pause();
+            var track = State.Track;
+
+            if(track == null)
+            {
+                return;
+            }
+
+            state = State.Status == PlaybackStatus.Playing ? PlaybackState.Paused(track) : PlaybackState.Playing(track);
+            State = state;
+
+            if(isAtEnd)
+            {
+                Open(track, 0, false);
+            }
+            else if(releasedFile == null)
+            {
+                // MediaPlayer.Pause() toggles the state LibVLC reports, which lags behind a quick second toggle.
+                mediaEngine.SetPause(state.Status == PlaybackStatus.Paused);
+            }
+        }
+
+        StateChanged?.Invoke(state);
+    }
+
+    public void Stop()
+    {
+        lock(fileLock)
+        {
+            State = PlaybackState.Stopped;
+            releasedFile = null;
+            mediaEngine.Stop();
+        }
+
+        StateChanged?.Invoke(PlaybackState.Stopped);
+    }
+
+    public async Task ReleaseFileAsync(string audioPath, Func<Task> action)
+    {
+        ReleasedFile? release = null;
+
+        lock(fileLock)
+        {
+            var track = State.Track;
+
+            if(releasedFile != null && releasedFile.PlaylistItem.AudioTrack.AudioPath == audioPath)
+            {
+                release = releasedFile;
+                release.Count++;
+            }
+            else if(track != null && track.AudioTrack.AudioPath == audioPath && mediaEngine.HoldsFile)
+            {
+                release = new ReleasedFile() { PlaylistItem = track, Time = Math.Max(0, mediaEngine.Time), Count = 1 };
+                releasedFile = release;
+                mediaEngine.Stop();
+            }
+        }
+
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        finally
+        {
+            if(release != null)
+            {
+                lock(fileLock)
+                {
+                    release.Count--;
+
+                    // Playing another track or stopping meanwhile already replaced the released one.
+                    if(releasedFile == release && release.Count == 0)
+                    {
+                        releasedFile = null;
+                        Open(release.PlaylistItem, release.Time, State.Status == PlaybackStatus.Paused);
+                    }
+                }
+            }
         }
     }
 
@@ -110,6 +192,55 @@ public class AudioPlayer : IAudioPlayer
     public void SkipBack()
     {
         Skip(-5);
+    }
+
+    private void Open(IPlaylistItem playlistItem, long startTimeMs, bool startPaused)
+    {
+        var audioTrack = playlistItem.AudioTrack;
+        var loudness = audioTrack.Metadata.Loudness;
+        double gain = loudness != null ? LoudnessGain.Calculate(loudness, LoudnessGain.TargetLufs) : 0;
+
+        isAtEnd = false;
+        mediaEngine.Open(audioTrack.AudioPath, startTimeMs, startPaused, gain);
+        logger.Debug($"Applied loudness gain {gain:0.00} dB to {audioTrack.AudioPath}");
+    }
+
+    private void OnEndReached()
+    {
+        var track = State.Track;
+        var nextTrack = track?.GetNext();
+
+        if(nextTrack != null)
+        {
+            PlayTrack(nextTrack);
+            return;
+        }
+
+        if(track == null)
+        {
+            return;
+        }
+
+        var state = PlaybackState.Paused(track);
+
+        lock(fileLock)
+        {
+            isAtEnd = true;
+            State = state;
+        }
+
+        StateChanged?.Invoke(state);
+    }
+
+    private void OnEncounteredError()
+    {
+        var track = State.Track;
+
+        if(track != null)
+        {
+            logger.Error($"Failed to play {track.AudioTrack.AudioPath}");
+            Stop();
+        }
     }
 
     private void OnVolumeChanged(float newVolume)
@@ -132,10 +263,19 @@ public class AudioPlayer : IAudioPlayer
 
     private void Skip(float amount)
     {
-        if(NowPlaying != null)
+        var track = State.Track;
+
+        if(track != null)
         {
-            float normalizedAmount = amount / (float)NowPlaying.AudioTrack.Metadata.Duration.TotalSeconds;
-            mediaPlayer.Position += normalizedAmount;
+            float normalizedAmount = amount / (float)track.AudioTrack.Metadata.Duration.TotalSeconds;
+            mediaEngine.Position += normalizedAmount;
         }
+    }
+
+    private class ReleasedFile
+    {
+        public required IPlaylistItem PlaylistItem { get; init; }
+        public required long Time { get; init; }
+        public required int Count { get; set; }
     }
 }

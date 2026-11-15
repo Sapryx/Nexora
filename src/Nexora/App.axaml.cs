@@ -1,16 +1,17 @@
-using System;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Platform;
 using Core.Integrations;
+using Core.Library;
 using Core.Logging;
-using Core.Playlists;
-using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Nexora.Animations;
+using Nexora.Render;
+using Nexora.Theme.Resources;
 using Nexora.ViewModels;
 using Nexora.Views;
 
@@ -32,6 +33,7 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        LoadAnimationResources();
         AvaloniaXamlLoader.Load(this);
     }
 
@@ -49,6 +51,24 @@ public partial class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    private void LoadAnimationResources()
+    {
+        var loader = new AnimationSettingsLoader(
+            ReadDefaultAnimationSettings(),
+            CompositionRoot.AnimationsFilePath,
+            loggerFactory.CreateLogger<AnimationSettingsLoader>()
+        );
+        var factory = new AnimationResourceFactory(loggerFactory.CreateLogger<AnimationResourceFactory>());
+        AnimationResources.Entries = factory.Create(loader.Load(), loader.LoadDefaults());
+    }
+
+    private static string ReadDefaultAnimationSettings()
+    {
+        using var stream = AssetLoader.Open(new Uri("avares://Nexora/Assets/animations.json"));
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
     private void RegisterDiContainer(ServiceCollection builder)
     {
         CompositionRoot.Configure(builder);
@@ -59,12 +79,20 @@ public partial class App : Application
     {
         var logger = provider.GetRequiredService<ILogger<App>>();
 
-        logger.Info($"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture}), .NET {Environment.Version}");
+        logger.Info(
+            $"OS: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture}), " +
+            $".NET {Environment.Version}"
+        );
         logger.Info($"Windowing backend: {GetWindowingBackendName()}");
 
         if(OperatingSystem.IsLinux())
         {
-            logger.Info($"Session type: {GetVariable("XDG_SESSION_TYPE")}, desktop: {GetVariable("XDG_CURRENT_DESKTOP")}, WAYLAND_DISPLAY: {GetVariable("WAYLAND_DISPLAY")}, DISPLAY: {GetVariable("DISPLAY")}");
+            logger.Info(
+                $"Session type: {GetVariable("XDG_SESSION_TYPE")}, " +
+                $"desktop: {GetVariable("XDG_CURRENT_DESKTOP")}, " +
+                $"WAYLAND_DISPLAY: {GetVariable("WAYLAND_DISPLAY")}, " +
+                $"DISPLAY: {GetVariable("DISPLAY")}"
+            );
         }
     }
 
@@ -95,33 +123,16 @@ public partial class App : Application
             return;
         }
 
-        var audioTrackLoaders = provider.GetServices<ITrackLoader>();
-        var playlistRegistry = provider.GetRequiredService<PlaylistRegistry>();
-
         var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
 
-        desktop.MainWindow = new MainWindow()
+        var mainWindow = new MainWindow()
         {
             DataContext = mainWindowVm
         };
+        provider.GetRequiredService<RenderScaleProvider>().Track(mainWindow);
+        desktop.MainWindow = mainWindow;
 
-        var logger = provider.GetRequiredService<ILogger<App>>();
-
-        foreach(var loader in audioTrackLoaders)
-        {
-            Task.Run(() =>
-            {
-                try
-                {
-                    var loadedTracks = loader.Load();
-                    playlistRegistry.GlobalPlaylist.AddTracks(loadedTracks);
-                }
-                catch(Exception ex)
-                {
-                    logger.Error(ex, $"Failed to load tracks");
-                }
-            });
-        }
+        _ = provider.GetRequiredService<MusicLibrary>().LoadAsync();
     }
 }

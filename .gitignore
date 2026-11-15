@@ -9,6 +9,8 @@ bin/
 
 # Unit test results
 Test Results/
-Report/
 
-agents/
+# UI test screenshots
+/tests/Nexora.UiTests/screenshots/
+
+/agents/

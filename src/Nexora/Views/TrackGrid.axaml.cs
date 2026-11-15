@@ -1,0 +1,143 @@
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Input;
+using Avalonia.Threading;
+using Nexora.Controls;
+using Nexora.Threading;
+using Nexora.ViewModels;
+
+namespace Nexora.Views;
+
+public partial class TrackGrid : UserControl
+{
+    public static readonly StyledProperty<ObservableCollection<TrackControlVm>?> TrackVmsProperty =
+        AvaloniaProperty.Register<TrackGrid, ObservableCollection<TrackControlVm>?>(nameof(TrackVms));
+
+    public ObservableCollection<TrackControlVm>? TrackVms
+    {
+        get => GetValue(TrackVmsProperty);
+        set => SetValue(TrackVmsProperty, value);
+    }
+
+    public static readonly StyledProperty<int> ColumnCountProperty =
+        AvaloniaProperty.Register<TrackGrid, int>(nameof(ColumnCount), 1);
+
+    public int ColumnCount
+    {
+        get => GetValue(ColumnCountProperty);
+        set => SetValue(ColumnCountProperty, value);
+    }
+
+    public static readonly StyledProperty<int> FirstVisibleTrackIndexProperty =
+        AvaloniaProperty.Register<TrackGrid, int>(
+            nameof(FirstVisibleTrackIndex),
+            defaultBindingMode: BindingMode.TwoWay
+        );
+
+    public int FirstVisibleTrackIndex
+    {
+        get => GetValue(FirstVisibleTrackIndexProperty);
+        set => SetValue(FirstVisibleTrackIndexProperty, value);
+    }
+
+    public ObservableCollection<TrackGridRow> Rows { get; } = [];
+    private const double CellWidth = 192;
+    private const double RightInset = 32;
+    private readonly IUiDispatcher uiDispatcher = new AvaloniaUiDispatcher();
+    private readonly SmoothScroller scroller;
+    private bool isUpdatePending;
+    private int? pendingTrackIndex;
+
+    public TrackGrid()
+    {
+        InitializeComponent();
+        scroller = new SmoothScroller(RowScrollViewer, RowList);
+        RowScrollViewer.ScrollChanged += OnScrollChanged;
+    }
+
+    public bool ScrollByKey(Key key)
+    {
+        return scroller.ScrollByKey(key);
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        if(change.Property == TrackVmsProperty)
+        {
+            if(change.OldValue is ObservableCollection<TrackControlVm> oldTrackVms)
+            {
+                oldTrackVms.CollectionChanged -= OnTrackVmsChanged;
+            }
+
+            if(change.NewValue is ObservableCollection<TrackControlVm> newTrackVms)
+            {
+                newTrackVms.CollectionChanged += OnTrackVmsChanged;
+            }
+
+            ScheduleRowsUpdate();
+        }
+        else if(change.Property == ColumnCountProperty)
+        {
+            ScheduleRowsUpdate();
+        }
+        else if(change.Property == IsVisibleProperty && IsVisible)
+        {
+            pendingTrackIndex = FirstVisibleTrackIndex;
+            ScheduleRowsUpdate();
+        }
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+        ColumnCount = Math.Max(1, (int)((e.NewSize.Width - RightInset) / CellWidth));
+    }
+
+    private void OnTrackVmsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        if(e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            Rows.Clear();
+        }
+
+        ScheduleRowsUpdate();
+    }
+
+    private void OnScrollChanged(object? sender, ScrollChangedEventArgs e)
+    {
+        if(IsVisible && pendingTrackIndex == null)
+        {
+            FirstVisibleTrackIndex = scroller.FirstVisibleItemIndex * ColumnCount;
+        }
+    }
+
+    // The search refills the collection one item at a time, so rows are rebuilt once after the whole batch.
+    private void ScheduleRowsUpdate()
+    {
+        if(isUpdatePending)
+        {
+            return;
+        }
+
+        isUpdatePending = true;
+        uiDispatcher.Post(
+            () =>
+            {
+                isUpdatePending = false;
+                TrackGridRow.UpdateRows(Rows, TrackVms ?? [], ColumnCount);
+
+                if(pendingTrackIndex != null)
+                {
+                    scroller.ScrollToItem(pendingTrackIndex.Value / ColumnCount);
+                    pendingTrackIndex = null;
+                }
+            },
+            DispatcherPriority.Background
+        );
+    }
+}

@@ -61,8 +61,7 @@ public class SessionLogFilesTests : IDisposable
     [Fact]
     public void DeleteOld_OtherFilesInDirectory_KeepsThem()
     {
-        string[] otherFiles =
-        [
+        string[] otherFiles = [
             CreateFile("session.log"),
             CreateFile("crash-2026-09-01_10-00-00.log"),
             CreateFile("discord.log")
