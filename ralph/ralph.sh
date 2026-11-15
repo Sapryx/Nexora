@@ -46,6 +46,15 @@ elif .type == "user" then
     + (if ($lines | length) > 3 then color("2") + "  ... \($lines | length - 3) more lines" + reset + "\n" else "" end)
 else empty end'
 todo_count='[.[] | select(.state == "todo")] | length'
+context='
+(map(select(.type == "assistant" and .parent_tool_use_id == null)) | last) as $last
+| (map(select(.type == "result")) | last) as $result
+| select($last != null and $result != null)
+| $result.modelUsage[$last.message.model].contextWindow as $window
+| select($window != null)
+| ($last.message.usage
+    | .input_tokens + .cache_creation_input_tokens + .cache_read_input_tokens + .output_tokens) as $used
+| "=== Context: \($used) / \($window) tokens (\($used * 1000 / $window | round / 10)%)\n"'
 
 remaining() {
   if [ -f feature-list.json ]; then
@@ -126,6 +135,8 @@ for ((i = 1; i <= iterations; i++)); do
     | grep --line-buffered '^{' \
     | tee "$log" \
     | jq --unbuffered -rj "$stream"
+
+  jq -rjs "$context" < "$log"
 done
 
 echo "=== Reached $iterations iterations, $(remaining) todo entries left."
