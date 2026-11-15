@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     private const double DragStripHeight = 32;
     private const double ResizeBorderThickness = 6;
     private WindowEdge? hoveredEdge;
+    private WindowState stateBeforeFullScreen = WindowState.Normal;
 
     private readonly Dictionary<Key, Action<MainWindowVm>> keyActions = new Dictionary<Key, Action<MainWindowVm>>()
     {
@@ -152,8 +153,31 @@ public partial class MainWindow : Window
         Focus();
     }
 
+    private void ToggleFullScreen()
+    {
+        if(WindowState == WindowState.FullScreen)
+        {
+            WindowState = stateBeforeFullScreen;
+            return;
+        }
+
+        stateBeforeFullScreen = WindowState;
+        WindowState = WindowState.FullScreen;
+    }
+
     private void OnPreviewKey(object? sender, KeyEventArgs e)
     {
+        if(e.Key == Key.F11)
+        {
+            if(e.RoutedEvent == KeyDownEvent)
+            {
+                ToggleFullScreen();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         if(DataContext is MainWindowVm mainWindowVm && e.Key == Key.Escape && IsPopupOpen)
         {
             if(e.RoutedEvent == KeyDownEvent)
