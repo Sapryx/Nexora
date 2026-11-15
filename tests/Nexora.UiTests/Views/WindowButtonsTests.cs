@@ -1,4 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Controls.Presenters;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -78,6 +82,37 @@ public class WindowButtonsTests
         app.Click(FindButton(app, "window_close"));
 
         Assert.True(closed);
+    }
+
+    [AvaloniaFact]
+    public void CaptionButtons_Hover_HighlightAndResetOnLeave()
+    {
+        using var app = new TestMainWindow();
+        var minimize = FindButton(app, "window_minimize");
+        var maximize = FindButton(app, "window_maximize");
+        var close = FindButton(app, "window_close");
+
+        app.Hover(minimize);
+        Assert.Equal(Color.Parse("#1AFFFFFF"), BackgroundOf(minimize));
+        Assert.Equal(Colors.Transparent, BackgroundOf(maximize));
+
+        app.Hover(maximize);
+        Assert.Equal(Color.Parse("#1AFFFFFF"), BackgroundOf(maximize));
+        Assert.Equal(Colors.Transparent, BackgroundOf(minimize));
+
+        app.Hover(close);
+        Assert.Equal(Color.Parse("#E81123"), BackgroundOf(close));
+
+        app.Window.MouseMove(new Point(5, 400));
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(Colors.Transparent, BackgroundOf(close));
+        Assert.Equal(Colors.Transparent, BackgroundOf(maximize));
+    }
+
+    private static Color BackgroundOf(Button button)
+    {
+        var presenter = button.GetVisualDescendants().OfType<ContentPresenter>().First();
+        return ((ISolidColorBrush?)presenter.Background)?.Color ?? Colors.Transparent;
     }
 
     private static Button FindButton(TestMainWindow app, string iconName)

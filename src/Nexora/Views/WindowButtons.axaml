@@ -17,6 +17,14 @@
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="Transparent" />
         </Style>
+
+        <Style Selector="Button.Caption:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1AFFFFFF" />
+        </Style>
+
+        <Style Selector="Button.Caption.Close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#E81123" />
+        </Style>
     </UserControl.Styles>
 
     <StackPanel Orientation="Horizontal">
@@ -28,7 +36,7 @@
             <controls:Icon x:Name="MaximizeIcon" IconName="window_maximize" />
         </Button>
 
-        <Button Classes="Caption" Click="OnCloseClick">
+        <Button Classes="Caption Close" Click="OnCloseClick">
             <controls:Icon IconName="window_close" />
         </Button>
     </StackPanel>

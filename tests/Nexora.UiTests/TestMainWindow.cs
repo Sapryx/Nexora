@@ -44,15 +44,26 @@ public sealed class TestMainWindow : IDisposable
         Dispatcher.UIThread.RunJobs();
     }
 
+    public void Hover(Control control)
+    {
+        Window.MouseMove(CenterOf(control));
+        Dispatcher.UIThread.RunJobs();
+    }
+
     public void Click(Control control)
     {
-        var center = new Point(control.Bounds.Width / 2, control.Bounds.Height / 2);
-        var point = control.TranslatePoint(center, Window)
-            ?? throw new InvalidOperationException($"{control} is not in the main window");
+        var point = CenterOf(control);
 
         Window.MouseDown(point, MouseButton.Left);
         Window.MouseUp(point, MouseButton.Left);
         Dispatcher.UIThread.RunJobs();
+    }
+
+    private Point CenterOf(Control control)
+    {
+        var center = new Point(control.Bounds.Width / 2, control.Bounds.Height / 2);
+        return control.TranslatePoint(center, Window)
+            ?? throw new InvalidOperationException($"{control} is not in the main window");
     }
 
     public void Dispose()

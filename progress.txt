@@ -47,3 +47,8 @@ Date: 2026-11-14 | 22:47:43
 Task: The grid/list view switch is placed next to the search bar and does not overlap the window buttons
 Result: Replaced the right-aligned switch with a two-column grid (search bar up to 480 wide, switch 16px after it) with a right margin reserving the window buttons area.
 Verification: Debug build clean; all tests pass, including new headless UI tests for adjacency and no overlap with the window buttons at 1280 and 640 width; checked the 640 screenshot.
+
+Date: 2026-11-15 | 11:22:43
+Task: Window buttons are highlighted on hover like Windows caption buttons, with a red background for close
+Result: Added pointerover styles in WindowButtons (light #1AFFFFFF highlight, #E81123 for the Close-class button); added Hover helper to TestMainWindow.
+Verification: Debug build clean; all tests pass; new headless UI test hovers each button and asserts presenter background, then moves away and asserts it resets (screenshot shows the post-leave state).

@@ -90,7 +90,7 @@
             "Hover over the close button and verify its background turns red",
             "Move the pointer away and verify the highlights disappear"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Dragging the top strip of the window moves the window",
