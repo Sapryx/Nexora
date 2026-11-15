@@ -3,7 +3,8 @@ You work autonomously. Nobody will answer your questions: use your own judgment 
 1. Read `progress.txt` and run `git log --oneline -n 20`. Run `git status`, the debug build and the unit tests.
    If the tree is dirty or the build or tests fail, fixing that becomes your task.
 2. Read `feature-list.json` and pick one entry with `"state": "todo"`
-   that has the biggest priority (it's not necessarily the first one).
+   that you consider the most important right now (it's not necessarily the first one).
+   If the behavior already exists, extend or add a UI test that checks every step of the entry, then mark it done.
 3. State what you are going to be working on.
 4. Implement the task using the `/implement` skill. Work on one task only.
 5. Test the behavior end-to-end with a UI test in `tests/Nexora.UiTests` and check its screenshot.

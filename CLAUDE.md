@@ -38,7 +38,24 @@ Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
   It wires services through `CompositionRoot` with a mocked audio player and loudness analyzer.
 - Interact with `app.Click(control)` or Avalonia.Headless input methods on `app.Window` (`KeyPress`, `MouseMove`, ...).
 - When a test ends, the last rendered frame is saved to `screenshots/<test method>.png` next to the test assembly;
-  open it to check how the UI looks.
+  open it to check how the UI looks. The folder is `tests/Nexora.UiTests/bin/Debug/net10.0/screenshots/`,
+  or `$ArtifactsPath/bin/Nexora.UiTests/debug/screenshots/` when `UseArtifactsOutput` is set.
+
+## Style analyzers
+
+`src/Analyzers` reports these on every build:
+- `NX0001` lines are at most 120 characters.
+- `NX0002` no trailing whitespace.
+- `NX0003` members go in order: properties, fields, events, constructors, then methods.
+- `NX0004` one blank line between members; none between consecutive single-line fields/properties, events
+  or bodiless methods.
+- `NX0005` an `if` that is not the first statement in its block is preceded by a blank line.
+- `NX0006` use `== null` / `!= null`, not `is null` / `is not null`.
+- `NX0007` no local functions; use a lambda or a method.
+- `NX0008` no tuples; declare a small class with named properties.
+- `NX0009` no range or spread `..` syntax.
+- `NX0010` wrapped parameters, arguments and collections go one per line.
+- `NX0011` spell out built-in types (`int`, `string`, ...) instead of `var`.
 
 ## Null safety
 
