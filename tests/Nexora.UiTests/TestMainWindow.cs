@@ -15,9 +15,19 @@ using Tests.Shared.Playback;
 
 namespace Nexora.UiTests;
 
+public sealed class RecordingMainWindow : MainWindow
+{
+    public int MoveDragCount { get; private set; }
+
+    protected override void StartMoveDrag(PointerPressedEventArgs e)
+    {
+        MoveDragCount++;
+    }
+}
+
 public sealed class TestMainWindow : IDisposable
 {
-    public MainWindow Window { get; }
+    public RecordingMainWindow Window { get; }
     public Mock<IAudioPlayer> AudioPlayerMock { get; } = Tests.Shared.Playback.AudioPlayerMock.Create();
     private readonly ServiceProvider provider;
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
@@ -34,7 +44,7 @@ public sealed class TestMainWindow : IDisposable
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
         provider = services.BuildServiceProvider();
 
-        Window = new MainWindow()
+        Window = new RecordingMainWindow()
         {
             Width = 1280,
             Height = 800,

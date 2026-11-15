@@ -10,6 +10,7 @@ namespace Nexora.Views;
 public partial class MainWindow : Window
 {
     private bool IsPopupOpen => DataContext is MainWindowVm vm && vm.IsPopupOpen;
+    private const double DragStripHeight = 32;
 
     private readonly Dictionary<Key, Action<MainWindowVm>> keyActions = new Dictionary<Key, Action<MainWindowVm>>()
     {
@@ -31,6 +32,25 @@ public partial class MainWindow : Window
         AddHandler(KeyDownEvent, OnPreviewKey, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnPreviewKey, RoutingStrategies.Tunnel);
         AddHandler(PointerPressedEvent, OnPreviewPointerPressed, RoutingStrategies.Tunnel);
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+
+        bool isLeftPress = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
+
+        if(e.Handled || !isLeftPress || e.GetPosition(this).Y >= DragStripHeight)
+        {
+            return;
+        }
+
+        StartMoveDrag(e);
+    }
+
+    protected virtual void StartMoveDrag(PointerPressedEventArgs e)
+    {
+        BeginMoveDrag(e);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

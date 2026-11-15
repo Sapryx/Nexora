@@ -100,7 +100,7 @@
             "Drag the pointer",
             "Verify the window follows the pointer"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Pressing on interactive controls inside the top strip does not drag the window",
