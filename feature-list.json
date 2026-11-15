@@ -122,7 +122,7 @@
             "Double-click the top strip again",
             "Verify the window is restored"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Dragging a window edge or corner resizes the window",

@@ -45,6 +45,12 @@ public partial class MainWindow : Window
             return;
         }
 
+        if(e.ClickCount == 2)
+        {
+            this.ToggleMaximize();
+            return;
+        }
+
         StartMoveDrag(e);
     }
 

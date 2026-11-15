@@ -64,9 +64,7 @@ public partial class WindowButtons : UserControl
     {
         if(TopLevel.GetTopLevel(this) is Window window)
         {
-            window.WindowState = window.WindowState == WindowState.Maximized
-                ? WindowState.Normal
-                : WindowState.Maximized;
+            window.ToggleMaximize();
         }
     }
 

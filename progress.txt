@@ -57,3 +57,8 @@ Date: 2026-11-15 | 11:33:01
 Task: Dragging the top strip of the window moves the window
 Result: MainWindow starts a native move drag on an unhandled left press in the top 32px strip; the call goes through a virtual StartMoveDrag so tests can observe it.
 Verification: Debug build clean (0 warnings); all tests pass, including new UI tests for a press in the strip (drag starts) and below it (no drag). The actual window movement is native and cannot be observed headlessly.
+
+Date: 2026-11-15 | 11:37:44
+Task: Double-clicking the top strip toggles between maximized and restored
+Result: MainWindow toggles the window state on a double press in the top strip instead of starting a drag; the toggle moved to a shared Window.ToggleMaximize extension also used by the maximize button.
+Verification: Debug build clean; all tests pass, including a new UI test that double-clicks the strip twice and asserts Maximized then Normal; checked the screenshot.
