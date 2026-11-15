@@ -37,9 +37,8 @@ Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
 - Mark tests with `[AvaloniaFact]` and open the window with `using var app = new TestMainWindow();`.
   It wires services through `CompositionRoot` with a mocked audio player and loudness analyzer.
 - Interact with `app.Click(control)` or Avalonia.Headless input methods on `app.Window` (`KeyPress`, `MouseMove`, ...).
-- When a test ends, the last rendered frame is saved to `screenshots/<test method>.png` next to the test assembly;
-  open it to check how the UI looks. The folder is `tests/Nexora.UiTests/bin/Debug/net10.0/screenshots/`,
-  or `$ArtifactsPath/bin/Nexora.UiTests/debug/screenshots/` when `UseArtifactsOutput` is set.
+- When a test ends, the last rendered frame is saved to `tests/Nexora.UiTests/screenshots/<test method>.png`
+  (ignored by git); open it to check how the UI looks.
 
 ## Style analyzers
 

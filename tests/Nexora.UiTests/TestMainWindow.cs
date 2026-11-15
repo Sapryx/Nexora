@@ -20,7 +20,7 @@ public sealed class TestMainWindow : IDisposable
     public MainWindow Window { get; }
     public Mock<IAudioPlayer> AudioPlayerMock { get; } = Tests.Shared.Playback.AudioPlayerMock.Create();
     private readonly ServiceProvider provider;
-    private readonly string screenshotDirectory = Path.Combine(AppContext.BaseDirectory, "screenshots");
+    private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
     private readonly string screenshotPath;
 
     public TestMainWindow([CallerMemberName] string testName = "")
@@ -57,6 +57,12 @@ public sealed class TestMainWindow : IDisposable
         Window.MouseDown(point, MouseButton.Left);
         Window.MouseUp(point, MouseButton.Left);
         Dispatcher.UIThread.RunJobs();
+    }
+
+    private static string ProjectDirectory([CallerFilePath] string sourcePath = "")
+    {
+        return Path.GetDirectoryName(sourcePath)
+            ?? throw new InvalidOperationException($"{sourcePath} has no directory");
     }
 
     private Point CenterOf(Control control)
