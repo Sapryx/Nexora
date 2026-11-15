@@ -11,6 +11,3 @@ bin/
 Test Results/
 
 /agents/
-
-# Ralph loop logs
-/ralph/logs/

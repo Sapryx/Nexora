@@ -15,7 +15,7 @@ fi
 
 iterations="${1:-10}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
-logs="$root/ralph/logs"
+logs="$HOME/.nexora-ralph/logs"
 image="nexora-ralph"
 container="nexora-ralph-$$"
 mkdir -p "$logs"
