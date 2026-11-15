@@ -28,6 +28,10 @@ if (-not (Test-Path $configPath)) {
 
 dotnet publish src/Nexora -c Release -r $Rid
 
+if ($LASTEXITCODE -ne 0) {
+    throw "dotnet publish failed with exit code $LASTEXITCODE"
+}
+
 Write-Host "`n--- Trimming VLC plugins (RID: $Rid, platform: $platform) ---"
 
 if (-not (Test-Path $publishDir)) {
