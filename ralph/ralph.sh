@@ -117,6 +117,8 @@ for ((i = 1; i <= iterations; i++)); do
 
   "run_$mode" -p "$(cat PROMPT.md)" \
       --disallowedTools "Bash(git push:*)" \
+      --model claude-opus-5-5 \
+      --effort medium \
       --no-session-persistence \
       --verbose \
       --output-format stream-json \
