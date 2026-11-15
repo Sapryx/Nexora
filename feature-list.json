@@ -154,6 +154,6 @@
             "Verify the window returns to its restored size and follows the pointer",
             "Verify the button shows the maximize icon"
         ],
-        "state": "todo"
+        "state": "done"
     }
 ]

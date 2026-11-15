@@ -23,6 +23,21 @@ public class WindowDragTests
     }
 
     [AvaloniaFact]
+    public void MaximizedTopStrip_PressOnEmptySpot_StartsMoveDrag()
+    {
+        using var app = new TestMainWindow();
+        app.Window.WindowState = WindowState.Maximized;
+        Dispatcher.UIThread.RunJobs();
+
+        Press(app, new Point(900, 10));
+        app.Window.WindowState = WindowState.Normal;
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(1, app.Window.MoveDragCount);
+        Assert.Equal(WindowState.Normal, app.Window.WindowState);
+    }
+
+    [AvaloniaFact]
     public void BelowTopStrip_PressOnEmptySpot_DoesNotStartMoveDrag()
     {
         using var app = new TestMainWindow();
