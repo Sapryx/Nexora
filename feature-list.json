@@ -25,6 +25,7 @@
         "description": "The grid/list view switch is placed next to the search bar and does not overlap the window buttons",
         "steps": [
             "Launch the app with the Library tab open",
+            "Verify the search bar is still positioned like in commit d996d81",
             "Verify the grid/list switch sits right next to the search bar",
             "Verify the switch does not overlap the minimize, maximize and close buttons",
             "Resize the window to its minimum width and verify they still do not overlap"

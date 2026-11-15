@@ -82,3 +82,8 @@ Date: 2026-11-15 | 12:01:14
 Task: Dragging the window by the top strip to the left or right screen edge snaps it to that half of the screen
 Result: No production change; snapping is native Windows Aero Snap, which already works because the strip press calls BeginMoveDrag on a resizable window whose BorderOnly decorations keep the thick frame. Added a UI test pinning those preconditions.
 Verification: Debug build clean; all tests pass. New UI test asserts a press on the strip of a normal window starts a move drag while CanResize is true and WindowDecorations is BorderOnly; checked the screenshot. The snap itself is native and cannot be observed headlessly.
+
+Date: 2026-11-15 | 12:11:14
+Task: The grid/list view switch is placed next to the search bar and does not overlap the window buttons (reopened with a new step: the search bar keeps its position from commit d996d81)
+Result: Restored the centered search bar (max 480, same spot as d996d81 at default size) with the switch 16px to its right: the search bar and a fixed 99px switch column share a grid whose left margin exceeds the right one by that column width, so the search bar stays centered while the switch stays clear of the caption buttons down to the minimum width.
+Verification: Debug build clean; all tests pass, including new UI tests for the d996d81 bounds at 1280 (550,16 480 wide), centering at 800 and 640, and no overlap with the window buttons at 1280, 960, 800 and 640; checked the 1280 and 640 screenshots.

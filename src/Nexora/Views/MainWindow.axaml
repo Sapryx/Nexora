@@ -86,11 +86,12 @@
                            IsVisible="{Binding IsSettingsOpen}" />
 
                 <Grid Grid.Row="0"
-                      Margin="32 0 170 0"
+                      Margin="245 0 146 0"
+                      MaxWidth="579"
                       IsVisible="{Binding !IsSettingsOpen}">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" MaxWidth="480" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="99" />
                     </Grid.ColumnDefinitions>
 
                     <views:SearchBar Grid.Column="0"
@@ -99,6 +100,7 @@
 
                     <controls:SegmentedControl x:Name="LibraryViewSwitch"
                                                Grid.Column="1"
+                                               HorizontalAlignment="Left"
                                                VerticalAlignment="Center"
                                                Margin="16 0 0 0"
                                                SelectedIndex="{Binding LibraryViewIndex}">
