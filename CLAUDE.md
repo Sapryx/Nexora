@@ -30,6 +30,7 @@ pwsh scripts/Crap.ps1 -Method "LruCache.TryGet"
 ```
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
 Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
+Profile (Linux, perf + Hotspot): `scripts/profile.sh [output file]` (GUI; blocking).
 
 ## UI tests
 

@@ -189,3 +189,12 @@ Run the tests:
 ```
 
 (`.\scripts\Test.ps1` on Windows.)
+
+Profile the app with `perf` and open the recording in [Hotspot](https://github.com/KDAB/hotspot) (Arch Linux; needs `perf` and `hotspot`):
+
+```
+./scripts/profile.sh [output file]
+```
+
+It builds a Release (JIT) build, records it until the app is closed or Ctrl+C is pressed, and installs debug symbols
+for stripped system libraries from Arch's debuginfod server. The recording goes to `~/nexora.perf.data` by default.
