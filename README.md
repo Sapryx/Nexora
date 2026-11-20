@@ -193,8 +193,12 @@ Run the tests:
 Profile the app with `perf` and open the recording in [Hotspot](https://github.com/KDAB/hotspot) (Arch Linux; needs `perf` and `hotspot`):
 
 ```
-./scripts/profile.sh [output file]
+./scripts/profile.sh [--dwarf] [output file]
 ```
 
 It builds a Release (JIT) build, records it until the app is closed or Ctrl+C is pressed, and installs debug symbols
 for stripped system libraries from Arch's debuginfod server. The recording goes to `~/nexora.perf.data` by default.
+
+Native libraries such as SkiaSharp are built without frame pointers, so their call stacks stop at the first native
+frame. Pass `--dwarf` to unwind them from debug info instead; the recording grows by tens of MB per second, so keep it
+short.

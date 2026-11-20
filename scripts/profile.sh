@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+call_graph="fp"
+
+if [[ "${1:-}" == "--dwarf" ]]; then
+    call_graph="dwarf,32768"
+    shift
+fi
+
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 data="${1:-$HOME/nexora.perf.data}"
 app="$root/src/Nexora/bin/Release/net10.0/Nexora"
@@ -18,7 +25,7 @@ dotnet build "$root/src/Nexora" -c Release -v q -nologo
 echo "Recording. Reproduce the FPS drops, then close the app or press Ctrl+C."
 trap : INT
 DOTNET_PerfMapEnabled=1 DOTNET_EnableWriteXorExecute=0 \
-    perf record -F 999 -g -o "$data" -- "$app" || true
+    perf record -F 999 --call-graph "$call_graph" -o "$data" -- "$app" || true
 trap - INT
 
 perf report -i "$data" --no-children --sort dso -g none -q --stdio --percent-limit 0.1 2>/dev/null \
