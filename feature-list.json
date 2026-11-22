@@ -156,5 +156,17 @@
             "Verify the button shows the maximize icon"
         ],
         "state": "done"
+    },
+    {
+        "description": "Playing a track while its tags are being written starts playback after the write finishes, and the write succeeds",
+        "steps": [
+            "Start a tag write for a track that is not playing (a title/artist edit or a loudness save)",
+            "Play that track before the write finishes",
+            "Verify the write succeeds and the new tags are in the file",
+            "Verify playback of that track starts once the write finishes",
+            "While the playing track is released for a tag write, play it again",
+            "Verify the write succeeds and playback starts from the beginning after it"
+        ],
+        "state": "todo"
     }
 ]
