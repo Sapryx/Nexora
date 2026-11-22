@@ -52,7 +52,12 @@ elif .type == "user" then
     + (if ($lines | length) > 3 then color("2") + "  ... \($lines | length - 3) more lines" + reset + "\n" else "" end)
 else empty end'
 todo_count='[.[] | select(.state == "todo")] | length'
-todo_list='to_entries[] | select(.value.state == "todo") | "\(.key). \(.value.description)\n" + (.value.steps | map("   - \(.)\n") | join(""))'
+todo_list='
+to_entries[]
+| select(.value.state == "todo")
+| "\(.key). \(.value.description)\n"
+  + (.value.steps | map("   - \(.)\n") | join(""))
+  + (.value.out_of_scope // [] | if length > 0 then "   Out of scope:\n" + (map("   - \(.)\n") | join("")) else "" end)'
 context='
 (map(select(.type == "assistant" and .parent_tool_use_id == null)) | last) as $last
 | (map(select(.type == "result")) | last) as $result
