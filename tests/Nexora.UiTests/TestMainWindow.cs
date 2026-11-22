@@ -7,6 +7,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Core.Playback;
 using Core.Playback.Loudness;
+using Core.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Nexora.ViewModels;
@@ -35,18 +36,33 @@ public sealed class TestMainWindow : IDisposable
 {
     public RecordingMainWindow Window { get; }
     public Mock<IAudioPlayer> AudioPlayerMock { get; } = Tests.Shared.Playback.AudioPlayerMock.Create();
+    public IServiceProvider Services => provider;
     private readonly ServiceProvider provider;
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
     private readonly string screenshotPath;
 
-    public TestMainWindow([CallerMemberName] string testName = "")
+    public TestMainWindow([CallerMemberName] string testName = "") : this(null, testName)
+    {
+    }
+
+    public TestMainWindow(FakeMediaEngine? mediaEngine, [CallerMemberName] string testName = "")
     {
         screenshotPath = Path.Combine(screenshotDirectory, $"{testName}.png");
 
         var services = new ServiceCollection();
         services.AddLogging();
         CompositionRoot.Configure(services);
-        services.AddSingleton(AudioPlayerMock.Object);
+
+        if(mediaEngine == null)
+        {
+            services.AddSingleton(AudioPlayerMock.Object);
+        }
+        else
+        {
+            services.AddSingleton<IMediaEngine>(mediaEngine);
+            services.AddSingleton(Mock.Of<IVolumeStorage>());
+        }
+
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
         provider = services.BuildServiceProvider();
 

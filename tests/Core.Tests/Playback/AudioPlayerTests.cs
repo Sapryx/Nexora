@@ -5,6 +5,7 @@ using Core.Tracks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Shared.Logging;
+using Tests.Shared.Playback;
 
 namespace Core.Tests.Playback;
 
@@ -104,6 +105,68 @@ public class AudioPlayerTests
         Assert.False(mediaEngine.IsPaused);
         Assert.Equal(PlaybackStatus.Playing, player.State.Status);
         Assert.Same(item, player.State.Track);
+    }
+
+    [Fact]
+    public void PlaybackPosition_SetAtEndOfLastTrack_KeepsPositionAndStaysPaused()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaiseEndReached();
+        positions.Clear();
+
+        player.PlaybackPosition = 0.5f;
+
+        Assert.Equal(0.5f, player.PlaybackPosition);
+        Assert.Equal([0.5f], positions);
+        Assert.Equal(PlaybackStatus.Paused, player.State.Status);
+        Assert.Equal(1, mediaEngine.OpenCount);
+    }
+
+    [Fact]
+    public void TogglePause_SoughtAtEndOfLastTrack_PlaysFromSoughtPosition()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaiseEndReached();
+        player.PlaybackPosition = 0.5f;
+
+        player.TogglePause();
+
+        Assert.Equal(2, mediaEngine.OpenCount);
+        Assert.Equal(50000, mediaEngine.OpenedStartTimeMs);
+        Assert.False(mediaEngine.IsPaused);
+        Assert.Equal(PlaybackStatus.Playing, player.State.Status);
+    }
+
+    [Fact]
+    public void SkipBack_AtEndOfLastTrack_MovesFiveSecondsBeforeEndAndStaysPaused()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaiseEndReached();
+        positions.Clear();
+
+        player.SkipBack();
+        player.TogglePause();
+
+        Assert.Equal(0.95f, positions.Single(), 4);
+        Assert.Equal(95000, mediaEngine.OpenedStartTimeMs);
+    }
+
+    [Fact]
+    public void PlayTrack_SoughtAtEndOfLastTrack_PlaysNewTrackFromStart()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaiseEndReached();
+        player.PlaybackPosition = 0.5f;
+
+        player.PlayTrack(AddTrack("/music/two.opus"));
+
+        Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
+        Assert.Equal(0, player.PlaybackPosition);
+        Assert.Equal(0f, mediaEngine.Position);
     }
 
     [Fact]

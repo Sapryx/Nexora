@@ -1,6 +1,6 @@
 using Core.Playback;
 
-namespace Core.Tests.Playback;
+namespace Tests.Shared.Playback;
 
 public class FakeMediaEngine : IMediaEngine
 {

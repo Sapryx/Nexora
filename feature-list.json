@@ -195,7 +195,7 @@
             "Press Play and verify playback resumes 5 s before the end",
             "Let it finish again, seek, then play another track and verify that track starts from the beginning"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Dragging the playback position slider fast seeks at most once every 150 ms to the latest position, so the sound does not tear",

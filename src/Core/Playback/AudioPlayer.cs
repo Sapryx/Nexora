@@ -23,11 +23,38 @@ public class AudioPlayer : IAudioPlayer
 
     public float PlaybackPosition
     {
-        get => isPositionReset ? 0 : mediaEngine.Position;
+        get
+        {
+            if(isAtEnd)
+            {
+                return endSeekPosition ?? 1;
+            }
+
+            return isPositionReset ? 0 : mediaEngine.Position;
+        }
         set
         {
-            isPositionReset = false;
-            mediaEngine.Position = value;
+            float? seekPosition = null;
+
+            lock(fileLock)
+            {
+                isPositionReset = false;
+
+                if(isAtEnd)
+                {
+                    seekPosition = Math.Clamp(value, 0, 1);
+                    endSeekPosition = seekPosition;
+                }
+                else
+                {
+                    mediaEngine.Position = value;
+                }
+            }
+
+            if(seekPosition != null)
+            {
+                PlaybackPositionChanged?.Invoke(seekPosition.Value);
+            }
         }
     }
 
@@ -45,6 +72,7 @@ public class AudioPlayer : IAudioPlayer
     private int volume;
     private ReleasedFile? releasedFile;
     private bool isAtEnd;
+    private float? endSeekPosition;
     private bool isPositionReset;
 
     public event Action<PlaybackState>? StateChanged;
@@ -123,7 +151,7 @@ public class AudioPlayer : IAudioPlayer
 
             if(isAtEnd)
             {
-                Open(track, 0, false);
+                Open(track, EndSeekTimeMs(track), false);
             }
             else if(releasedFile == null)
             {
@@ -208,6 +236,7 @@ public class AudioPlayer : IAudioPlayer
         double gain = loudness != null ? LoudnessGain.Calculate(loudness, LoudnessGain.TargetLufs) : 0;
 
         isAtEnd = false;
+        endSeekPosition = null;
         mediaEngine.Open(audioTrack.AudioPath, startTimeMs, startPaused, gain);
         logger.Debug($"Applied loudness gain {gain:0.00} dB to {audioTrack.AudioPath}");
     }
@@ -281,8 +310,15 @@ public class AudioPlayer : IAudioPlayer
         if(track != null)
         {
             float normalizedAmount = amount / (float)track.AudioTrack.Metadata.Duration.TotalSeconds;
-            mediaEngine.Position += normalizedAmount;
+            PlaybackPosition = (isAtEnd ? PlaybackPosition : mediaEngine.Position) + normalizedAmount;
         }
+    }
+
+    private long EndSeekTimeMs(IPlaylistItem track)
+    {
+        float position = endSeekPosition ?? 1;
+
+        return position < 1 ? (long)Math.Round(track.AudioTrack.Metadata.Duration.TotalMilliseconds * position) : 0;
     }
 
     private class ReleasedFile
