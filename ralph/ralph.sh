@@ -18,7 +18,6 @@ finish() {
   if [ "$mode" = "sandbox" ]; then
     sbx stop "$sandbox" > /dev/null 2>&1 || true
   fi
-  read -rp "=== Press Enter to close." _ || true
 }
 
 trap finish EXIT
