@@ -168,5 +168,18 @@
             "Verify the write succeeds and playback starts from the beginning after it"
         ],
         "state": "todo"
+    },
+    {
+        "description": "When Discord connects while Nexora is running, Rich Presence shows the current track without a track change",
+        "steps": [
+            "Start Nexora with Discord closed and play a track",
+            "Start Discord and verify Rich Presence shows the playing track",
+            "Fully quit and restart Discord and verify the track is shown again",
+            "Reload Discord with Ctrl+R and verify the track is shown again",
+            "Pause the track, reload Discord and verify the paused track is still shown",
+            "Remove the current track, reload Discord and verify no presence is shown",
+            "Switch to another track and verify the presence updates to it"
+        ],
+        "state": "todo"
     }
 ]
