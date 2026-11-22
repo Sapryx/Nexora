@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-wait_for_enter() {
-  read -rp "=== Press Enter to close." _ || true
-}
-
-trap wait_for_enter EXIT
-
-mode="docker"
+mode="sandbox"
 if [ "${1:-}" = "--local" ]; then
   mode="local"
   shift
@@ -15,9 +9,20 @@ fi
 
 iterations="${1:-10}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
-logs="$HOME/.nexora-ralph/logs"
+state="$HOME/.nexora-ralph"
+logs="$state/logs"
 image="nexora-ralph"
-container="nexora-ralph-$$"
+sandbox="nexora-ralph"
+
+finish() {
+  if [ "$mode" = "sandbox" ]; then
+    sbx stop "$sandbox" > /dev/null 2>&1 || true
+  fi
+  read -rp "=== Press Enter to close." _ || true
+}
+
+trap finish EXIT
+
 verify='dotnet build Nexora.slnx -v q -nologo && dotnet test Nexora.slnx -v q -nologo --logger "console;verbosity=minimal"'
 mkdir -p "$logs"
 cd "$root"
@@ -72,24 +77,12 @@ prompt() {
   printf '\n## Todo entries\n\nNumbers are indexes in `feature-list.json`.\n\n%s\n' "$(jq -rj "$todo_list" < feature-list.json)"
 }
 
-in_docker() {
-  MSYS_NO_PATHCONV=1 docker run --rm -i --init --name "$container" \
-    -v "$(pwd -W):/work" \
-    -v "$HOME/.claude/CLAUDE.md:/home/agent/.claude/CLAUDE.md:ro" \
-    -v nexora-ralph-nuget:/home/agent/.nuget/packages \
-    -v nexora-ralph-artifacts:/home/agent/artifacts \
-    -e CLAUDE_CODE_OAUTH_TOKEN \
-    -e TZ="$timezone" \
-    -e GIT_AUTHOR_NAME="$(git config user.name)" \
-    -e GIT_AUTHOR_EMAIL="$(git config user.email)" \
-    -e GIT_COMMITTER_NAME="$(git config user.name)" \
-    -e GIT_COMMITTER_EMAIL="$(git config user.email)" \
-    "$image" \
-    "$@"
+in_sandbox() {
+  sbx exec "$sandbox" "$@"
 }
 
-run_docker() {
-  in_docker claude "$@" --dangerously-skip-permissions
+run_sandbox() {
+  in_sandbox claude "$@" --dangerously-skip-permissions --append-system-prompt "$(cat "$HOME/.claude/CLAUDE.md")"
 }
 
 in_local() {
@@ -104,28 +97,38 @@ stop() {
   trap - INT TERM
   echo
   echo "=== Interrupted."
-  if [ "$mode" = "docker" ]; then
-    docker stop "$container" > /dev/null 2>&1 || true
-  fi
   exit 130
 }
 
-if [ "$mode" = "docker" ]; then
-  if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
-    echo "Set CLAUDE_CODE_OAUTH_TOKEN first (get one with: claude setup-token)."
+if ! command -v jq > /dev/null; then
+  echo "Install jq first."
+  exit 1
+fi
+
+if [ "$mode" = "sandbox" ]; then
+  if ! sbx secret ls 2> /dev/null | grep -q anthropic; then
+    echo "Sign in to Claude for sandboxes first: sbx run claude -- auth login"
     exit 1
   fi
 
-  timezone="$(pwsh -NoProfile -Command '$iana = $null; [TimeZoneInfo]::TryConvertWindowsIdToIanaId([TimeZoneInfo]::Local.Id, [ref]$iana) | Out-Null; $iana' | tr -d '\r')"
-
-  jq() {
-    docker run --rm -i "$image" jq "$@"
-  }
-
+  echo "=== Preparing sandbox $sandbox."
+  mkdir -p "$state/nuget" "$state/artifacts"
   docker build -q -t "$image" - < ralph/Dockerfile > /dev/null
-elif ! command -v jq > /dev/null; then
-  echo "Install jq first (winget install jqlang.jq)."
-  exit 1
+  docker save -o "$state/image.tar" "$image"
+  sbx template load "$state/image.tar" > /dev/null
+  rm "$state/image.tar"
+  sbx rm -f "$sandbox" > /dev/null 2>&1 || true
+  sbx create --no-progress --name "$sandbox" --pull never -t "$image" \
+    -e TZ="$(timedatectl show -p Timezone --value)" \
+    -e GIT_AUTHOR_NAME="$(git config user.name)" \
+    -e GIT_AUTHOR_EMAIL="$(git config user.email)" \
+    -e GIT_COMMITTER_NAME="$(git config user.name)" \
+    -e GIT_COMMITTER_EMAIL="$(git config user.email)" \
+    claude "$root" \
+    "$state/nuget:/home/agent/.nuget" \
+    "$state/artifacts:/home/agent/artifacts" \
+    > /dev/null
+  sbx policy allow network --sandbox "$sandbox" api.nuget.org > /dev/null
 fi
 
 trap stop INT TERM
