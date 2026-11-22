@@ -26,6 +26,7 @@ public interface IAudioPlayer
     /// Closes the playing track's file while <paramref name="action"/> runs if it is <paramref name="audioPath"/>,
     /// then reopens it at the same time once the last overlapping release of it finishes.
     /// Pausing or resuming meanwhile changes whether it reopens playing or paused.
+    /// Playing <paramref name="audioPath"/> meanwhile opens it from the start once the last release of it finishes.
     /// </summary>
     public Task ReleaseFileAsync(string audioPath, Func<Task> action);
 }

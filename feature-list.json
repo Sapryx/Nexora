@@ -167,7 +167,7 @@
             "While the playing track is released for a tag write, play it again",
             "Verify the write succeeds and playback starts from the beginning after it"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "When Discord connects while Nexora is running, Rich Presence shows the current track without a track change",

@@ -1,6 +1,7 @@
 using System.Text;
 using Core.Storage.Tags;
 using Core.Tracks;
+using Tests.Shared.Storage;
 
 namespace Core.Tests.Storage.Tags;
 
@@ -22,7 +23,7 @@ public class TagLibMetadataSaverTests : IDisposable
     [Fact]
     public void SaveLoudness_WavFile_WritesReplayGainTags()
     {
-        string path = CreateWav();
+        string path = TestWavFile.Create(directory);
 
         saver.SaveLoudness(path, new TrackLoudness() { Lufs = -9.25, PeakDb = -6.0206 });
 
@@ -35,7 +36,7 @@ public class TagLibMetadataSaverTests : IDisposable
     [Fact]
     public void SaveLoudness_WavFile_LeavesNoTempFile()
     {
-        string path = CreateWav();
+        string path = TestWavFile.Create(directory);
 
         saver.SaveLoudness(path, new TrackLoudness() { Lufs = -14 });
 
@@ -46,7 +47,7 @@ public class TagLibMetadataSaverTests : IDisposable
     [Fact]
     public void Save_TitleChange_WritesTitle()
     {
-        string path = CreateWav();
+        string path = TestWavFile.Create(directory);
 
         saver.Save(new MetadataChange() { AudioPath = path, Title = "Title" });
 
@@ -70,7 +71,7 @@ public class TagLibMetadataSaverTests : IDisposable
     [Fact]
     public void SaveLoudness_LeftoverTempFile_OverwritesItAndRemovesIt()
     {
-        string path = CreateWav();
+        string path = TestWavFile.Create(directory);
         File.WriteAllText(TagLibMetadataSaver.GetTempPath(path), "leftover");
 
         saver.SaveLoudness(path, new TrackLoudness() { Lufs = -14 });
@@ -83,7 +84,7 @@ public class TagLibMetadataSaverTests : IDisposable
     [Fact]
     public void SaveAndSaveLoudness_ConcurrentOnSameFile_BothLand()
     {
-        string path = CreateWav();
+        string path = TestWavFile.Create(directory);
 
         Parallel.For(0, 100, index =>
         {
@@ -100,31 +101,5 @@ public class TagLibMetadataSaverTests : IDisposable
         using var tagFile = TagLib.File.Create(path);
         Assert.Equal("Title", tagFile.Tag.Title);
         Assert.Equal(-14, LoudnessTags.Read(tagFile)!.Lufs, 6);
-    }
-
-    private string CreateWav()
-    {
-        const int sampleRate = 48000;
-        const short channels = 2;
-        const short bitsPerSample = 16;
-        int dataSize = sampleRate * channels * bitsPerSample / 8 / 10;
-        string path = Path.Combine(directory, "track.wav");
-
-        using var writer = new BinaryWriter(File.Create(path));
-        writer.Write(Encoding.ASCII.GetBytes("RIFF"));
-        writer.Write(36 + dataSize);
-        writer.Write(Encoding.ASCII.GetBytes("WAVEfmt "));
-        writer.Write(16);
-        writer.Write((short)1);
-        writer.Write(channels);
-        writer.Write(sampleRate);
-        writer.Write(sampleRate * channels * bitsPerSample / 8);
-        writer.Write((short)(channels * bitsPerSample / 8));
-        writer.Write(bitsPerSample);
-        writer.Write(Encoding.ASCII.GetBytes("data"));
-        writer.Write(dataSize);
-        writer.Write(new byte[dataSize]);
-
-        return path;
     }
 }

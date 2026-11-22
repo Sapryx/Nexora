@@ -303,6 +303,153 @@ public class AudioPlayerTests
     }
 
     [Fact]
+    public async Task PlayTrack_FileBeingWritten_OpensItFromStartAfterWrite()
+    {
+        var player = CreatePlayer();
+        var item = AddTrack("/music/one.opus");
+        var write = new TaskCompletionSource();
+        bool wasOpenedDuringWrite = true;
+
+        var release = player.ReleaseFileAsync("/music/one.opus", async () =>
+        {
+            await write.Task;
+            wasOpenedDuringWrite = mediaEngine.OpenCount > 0;
+        });
+        player.PlayTrack(item);
+
+        Assert.Equal(PlaybackStatus.Playing, player.State.Status);
+        Assert.Same(item, player.State.Track);
+        Assert.Equal(0, mediaEngine.OpenCount);
+
+        write.SetResult();
+        await release;
+
+        Assert.False(wasOpenedDuringWrite);
+        Assert.Equal(1, mediaEngine.OpenCount);
+        Assert.Equal("/music/one.opus", mediaEngine.OpenedPath);
+        Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
+        Assert.False(mediaEngine.IsPaused);
+    }
+
+    [Fact]
+    public async Task PlayTrack_FileBeingWrittenWhileOtherPlays_StopsOtherAndOpensAfterWrite()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/two.opus"));
+        var item = AddTrack("/music/one.opus");
+        var write = new TaskCompletionSource();
+
+        var release = player.ReleaseFileAsync("/music/one.opus", () => write.Task);
+        player.PlayTrack(item);
+
+        Assert.True(mediaEngine.IsStopped);
+        Assert.Equal("/music/two.opus", mediaEngine.OpenedPath);
+
+        write.SetResult();
+        await release;
+
+        Assert.Equal("/music/one.opus", mediaEngine.OpenedPath);
+        Assert.Equal(2, mediaEngine.OpenCount);
+    }
+
+    [Fact]
+    public async Task PlayTrack_ReleasedTrackPlayedAgain_OpensItFromStartAfterWrite()
+    {
+        var player = CreatePlayer();
+        var item = AddTrack("/music/one.opus");
+        player.PlayTrack(item);
+        mediaEngine.Time = 4200;
+        int openCountDuringWrite = 0;
+
+        await player.ReleaseFileAsync("/music/one.opus", () =>
+        {
+            player.PlayTrack(item);
+            openCountDuringWrite = mediaEngine.OpenCount;
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal(1, openCountDuringWrite);
+        Assert.Equal(2, mediaEngine.OpenCount);
+        Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
+        Assert.False(mediaEngine.IsPaused);
+    }
+
+    [Fact]
+    public async Task PlayTrack_FileBeingWrittenThenPaused_OpensItPausedAfterWrite()
+    {
+        var player = CreatePlayer();
+        var item = AddTrack("/music/one.opus");
+
+        await player.ReleaseFileAsync("/music/one.opus", () =>
+        {
+            player.PlayTrack(item);
+            player.TogglePause();
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal(PlaybackStatus.Paused, player.State.Status);
+        Assert.Equal(1, mediaEngine.OpenCount);
+        Assert.True(mediaEngine.IsPaused);
+    }
+
+    [Fact]
+    public async Task PlayTrack_FileBeingWrittenThenStopped_DoesNotOpenAfterWrite()
+    {
+        var player = CreatePlayer();
+        var item = AddTrack("/music/one.opus");
+
+        await player.ReleaseFileAsync("/music/one.opus", () =>
+        {
+            player.PlayTrack(item);
+            player.Stop();
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal(0, mediaEngine.OpenCount);
+    }
+
+    [Fact]
+    public async Task PlayTrack_FileWrittenTwiceOverlapping_OpensAfterLastWrite()
+    {
+        var player = CreatePlayer();
+        var item = AddTrack("/music/one.opus");
+        var firstWrite = new TaskCompletionSource();
+        var secondWrite = new TaskCompletionSource();
+
+        var first = player.ReleaseFileAsync("/music/one.opus", () => firstWrite.Task);
+        var second = player.ReleaseFileAsync("/music/one.opus", () => secondWrite.Task);
+        player.PlayTrack(item);
+        firstWrite.SetResult();
+        await first;
+
+        Assert.Equal(0, mediaEngine.OpenCount);
+
+        secondWrite.SetResult();
+        await second;
+
+        Assert.Equal(1, mediaEngine.OpenCount);
+    }
+
+    [Fact]
+    public async Task TogglePause_AtEndWhileFileBeingWritten_OpensItAfterWrite()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaiseEndReached();
+
+        await player.ReleaseFileAsync("/music/one.opus", () =>
+        {
+            player.TogglePause();
+            Assert.Equal(1, mediaEngine.OpenCount);
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal(2, mediaEngine.OpenCount);
+        Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
+        Assert.Equal(PlaybackStatus.Playing, player.State.Status);
+    }
+
+    [Fact]
     public void Constructor_NoSavedVolume_AppliesDefaultVolume()
     {
         var player = CreatePlayer();

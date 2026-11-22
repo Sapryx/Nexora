@@ -8,6 +8,7 @@ using Avalonia.Threading;
 using Core.Playback;
 using Core.Playback.Loudness;
 using Core.Storage;
+using Core.Storage.Tags;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Nexora.ViewModels;
@@ -41,11 +42,14 @@ public sealed class TestMainWindow : IDisposable
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
     private readonly string screenshotPath;
 
-    public TestMainWindow([CallerMemberName] string testName = "") : this(null, testName)
+    public TestMainWindow([CallerMemberName] string testName = "") : this(null, null, testName)
     {
     }
 
-    public TestMainWindow(FakeMediaEngine? mediaEngine, [CallerMemberName] string testName = "")
+    public TestMainWindow(
+        FakeMediaEngine? mediaEngine,
+        IMetadataSaver? metadataSaver = null,
+        [CallerMemberName] string testName = "")
     {
         screenshotPath = Path.Combine(screenshotDirectory, $"{testName}.png");
 
@@ -61,6 +65,11 @@ public sealed class TestMainWindow : IDisposable
         {
             services.AddSingleton<IMediaEngine>(mediaEngine);
             services.AddSingleton(Mock.Of<IVolumeStorage>());
+        }
+
+        if(metadataSaver != null)
+        {
+            services.AddSingleton(metadataSaver);
         }
 
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
