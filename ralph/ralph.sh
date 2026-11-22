@@ -18,6 +18,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 logs="$HOME/.nexora-ralph/logs"
 image="nexora-ralph"
 container="nexora-ralph-$$"
+verify='dotnet build Nexora.slnx -v q -nologo && dotnet test Nexora.slnx -v q -nologo --logger "console;verbosity=minimal"'
 mkdir -p "$logs"
 cd "$root"
 
@@ -46,6 +47,7 @@ elif .type == "user" then
     + (if ($lines | length) > 3 then color("2") + "  ... \($lines | length - 3) more lines" + reset + "\n" else "" end)
 else empty end'
 todo_count='[.[] | select(.state == "todo")] | length'
+todo_list='to_entries[] | select(.value.state == "todo") | "\(.key). \(.value.description)\n" + (.value.steps | map("   - \(.)\n") | join(""))'
 context='
 (map(select(.type == "assistant" and .parent_tool_use_id == null)) | last) as $last
 | (map(select(.type == "result")) | last) as $result
@@ -64,7 +66,13 @@ remaining() {
   fi
 }
 
-run_docker() {
+prompt() {
+  cat PROMPT.md
+  printf '\n## Checks\n\nThey %s. The end of their output:\n\n```\n%s\n```\n' "$verdict" "$(tail -n 60 <<< "$checks")"
+  printf '\n## Todo entries\n\nNumbers are indexes in `feature-list.json`.\n\n%s\n' "$(jq -rj "$todo_list" < feature-list.json)"
+}
+
+in_docker() {
   MSYS_NO_PATHCONV=1 docker run --rm -i --init --name "$container" \
     -v "$(pwd -W):/work" \
     -v "$HOME/.claude/CLAUDE.md:/home/agent/.claude/CLAUDE.md:ro" \
@@ -77,7 +85,15 @@ run_docker() {
     -e GIT_COMMITTER_NAME="$(git config user.name)" \
     -e GIT_COMMITTER_EMAIL="$(git config user.email)" \
     "$image" \
-    claude "$@" --dangerously-skip-permissions
+    "$@"
+}
+
+run_docker() {
+  in_docker claude "$@" --dangerously-skip-permissions
+}
+
+in_local() {
+  "$@"
 }
 
 run_local() {
@@ -124,7 +140,14 @@ for ((i = 1; i <= iterations; i++)); do
   log="$logs/$(date +%Y%m%d-%H%M%S)-$i.log"
   echo "=== Ralph iteration $i/$iterations ($mode), $todo todo entries (log: $log)"
 
-  "run_$mode" -p "$(cat PROMPT.md)" \
+  if checks="$("in_$mode" sh -c "$verify" < /dev/null 2>&1 | tr -d '\r')"; then
+    verdict="passed"
+  else
+    verdict="failed"
+  fi
+  echo "=== Checks $verdict."
+
+  "run_$mode" -p "$(prompt)" \
       --disallowedTools "Bash(git push:*)" \
       --model claude-opus-5-5 \
       --effort medium \
