@@ -37,6 +37,9 @@ Profile (Linux, perf + Hotspot): `scripts/profile.sh [--dwarf] [output file]` (G
 `tests/Nexora.UiTests` runs the real `MainWindow` on Avalonia's headless platform (xUnit v3), so no display is needed.
 - Mark tests with `[AvaloniaFact]` and open the window with `using var app = new TestMainWindow();`.
   It wires services through `CompositionRoot` with a mocked audio player and loudness analyzer.
+- To test playback end to end, pass a `FakeMediaEngine` (`tests/Tests.Shared/Playback`):
+  `new TestMainWindow(mediaEngine)` runs the real audio player on top of it. Call `Dispatcher.UIThread.RunJobs()`
+  after adding a track to the queue and before playing it.
 - Interact with `app.Click(control)` or Avalonia.Headless input methods on `app.Window` (`KeyPress`, `MouseMove`, ...).
 - When a test ends, the last rendered frame is saved to `tests/Nexora.UiTests/screenshots/<test method>.png`
   (ignored by git); open it to check how the UI looks.
