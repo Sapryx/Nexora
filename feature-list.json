@@ -181,5 +181,20 @@
             "Switch to another track and verify the presence updates to it"
         ],
         "state": "todo"
+    },
+    {
+        "description": "Seeking while paused at the end of the last track in the queue is kept, and Play resumes from the new position",
+        "steps": [
+            "Play the last track in the queue and let it finish",
+            "Verify the track stays shown as paused",
+            "Press Play and verify it starts from the beginning",
+            "Let it finish again, then drag the position slider to the middle",
+            "Verify the slider stays at the new position and the track stays paused",
+            "Press Play and verify playback resumes from that position",
+            "Let it finish again, press Left, and verify the position moves to 5 s before the end while staying paused",
+            "Press Play and verify playback resumes 5 s before the end",
+            "Let it finish again, seek, then play another track and verify that track starts from the beginning"
+        ],
+        "state": "todo"
     }
 ]
