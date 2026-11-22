@@ -13,7 +13,6 @@ state="$HOME/.nexora-ralph"
 logs="$state/logs"
 image="nexora-ralph"
 sandbox="nexora-ralph"
-user_config="/home/agent/user-config"
 
 finish() {
   if [ "$mode" = "sandbox" ]; then
@@ -88,8 +87,7 @@ in_sandbox() {
 }
 
 run_sandbox() {
-  in_sandbox claude "$@" --dangerously-skip-permissions --add-dir "$user_config" \
-    --append-system-prompt "$(cat "$HOME/.claude/CLAUDE.md")"
+  in_sandbox claude "$@" --dangerously-skip-permissions --append-system-prompt "$(cat "$HOME/.claude/CLAUDE.md")"
 }
 
 in_local() {
@@ -125,7 +123,7 @@ if [ "$mode" = "sandbox" ]; then
   sbx template load "$state/image.tar" > /dev/null
   rm "$state/image.tar"
   sbx rm -f "$sandbox" > /dev/null 2>&1 || true
-  sbx create --no-progress --name "$sandbox" --pull never -t "$image" \
+  sbx create --no-progress --skills off --name "$sandbox" --pull never -t "$image" \
     -e TZ="$(timedatectl show -p Timezone --value)" \
     -e GIT_AUTHOR_NAME="$(git config user.name)" \
     -e GIT_AUTHOR_EMAIL="$(git config user.email)" \
@@ -134,7 +132,7 @@ if [ "$mode" = "sandbox" ]; then
     claude "$root" \
     "$state/nuget:/home/agent/.nuget" \
     "$state/artifacts:/home/agent/artifacts" \
-    "$HOME/.claude/skills:$user_config/.claude/skills:ro" \
+    "$HOME/.claude/skills:/home/agent/.claude/skills:ro" \
     > /dev/null
   sbx policy allow network --sandbox "$sandbox" api.nuget.org > /dev/null
 fi
