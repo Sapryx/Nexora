@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using Core.Library;
+using Core.Tracks;
 using TagLib;
 using File = TagLib.File;
 

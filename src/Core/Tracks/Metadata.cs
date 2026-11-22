@@ -1,4 +1,4 @@
-namespace Core.Library;
+namespace Core.Tracks;
 
 public class Metadata
 {

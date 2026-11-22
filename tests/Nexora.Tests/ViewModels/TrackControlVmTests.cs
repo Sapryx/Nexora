@@ -2,6 +2,7 @@ using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage.Tags;
+using Core.Tracks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;

@@ -1,6 +1,6 @@
-using Core.Library;
+using Core.Tracks;
 
-namespace Core.Tests.Library;
+namespace Core.Tests.Tracks;
 
 public class AudioTrackTests
 {
