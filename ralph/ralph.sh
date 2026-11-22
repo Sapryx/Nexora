@@ -13,6 +13,7 @@ state="$HOME/.nexora-ralph"
 logs="$state/logs"
 image="nexora-ralph"
 sandbox="nexora-ralph"
+user_config="/home/agent/user-config"
 
 finish() {
   if [ "$mode" = "sandbox" ]; then
@@ -87,7 +88,8 @@ in_sandbox() {
 }
 
 run_sandbox() {
-  in_sandbox claude "$@" --dangerously-skip-permissions --append-system-prompt "$(cat "$HOME/.claude/CLAUDE.md")"
+  in_sandbox claude "$@" --dangerously-skip-permissions --add-dir "$user_config" \
+    --append-system-prompt "$(cat "$HOME/.claude/CLAUDE.md")"
 }
 
 in_local() {
@@ -132,6 +134,7 @@ if [ "$mode" = "sandbox" ]; then
     claude "$root" \
     "$state/nuget:/home/agent/.nuget" \
     "$state/artifacts:/home/agent/artifacts" \
+    "$HOME/.claude/skills:$user_config/.claude/skills:ro" \
     > /dev/null
   sbx policy allow network --sandbox "$sandbox" api.nuget.org > /dev/null
 fi
