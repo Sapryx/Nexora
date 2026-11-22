@@ -24,9 +24,10 @@ Unit tests (all test projects):
 dotnet test Nexora.slnx -v q -nologo --logger "console;verbosity=minimal"
 ```
 Single test: add `--filter "FullyQualifiedName~LruCacheTests"`.
-CRAP score of a method (runs all tests with coverage; `-NoTest` reuses the last run):
+Coverage and cyclomatic complexity of methods; fails unless each has 100% coverage and complexity of at most 8
+(runs all tests with coverage; `--no-test` reuses the last run):
 ```
-pwsh scripts/Crap.ps1 -Method "LruCache.TryGet"
+scripts/method-metrics.sh "LruCache.TryGet"
 ```
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
 Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
