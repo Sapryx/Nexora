@@ -4,6 +4,7 @@ using Core.Playlists;
 using Core.Storage.Tags;
 using Core.Tracks;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nexora.Media;
 using Nexora.Threading;
@@ -16,7 +17,9 @@ public class PlaybackVmTests
 {
     private const int InitialVolume = 50;
     private readonly Mock<IAudioPlayer> audioPlayerMock;
+    private static readonly TimeSpan SeekInterval = TimeSpan.FromMilliseconds(150);
     private readonly Mock<IUiDispatcher> uiDispatcherMock;
+    private readonly FakeTimeProvider timeProvider = new FakeTimeProvider();
 
     private readonly TrackTagWriter tagWriter = new TrackTagWriter(
         NullLogger<TrackTagWriter>.Instance,
@@ -44,7 +47,8 @@ public class PlaybackVmTests
             tagWriter,
             Mock.Of<ICoverCache>(),
             new CoverViewerVm(Mock.Of<ICoverCache>(), uiDispatcherMock.Object),
-            uiDispatcherMock.Object
+            uiDispatcherMock.Object,
+            new Throttler(timeProvider, uiDispatcherMock.Object, SeekInterval)
         );
     }
 
@@ -266,6 +270,57 @@ public class PlaybackVmTests
         vm.PlaybackPosition = 0.5f;
 
         audioPlayerMock.VerifySet(it => it.PlaybackPosition = 0.5f);
+    }
+
+    [Fact]
+    public void PlaybackPosition_DraggedRepeatedly_SeeksFirstImmediatelyAndLatestAfterInterval()
+    {
+        vm.IsDraggingPosition = true;
+
+        vm.PlaybackPosition = 0.2f;
+        vm.PlaybackPosition = 0.4f;
+        vm.PlaybackPosition = 0.3f;
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = It.IsAny<float>(), Times.Once);
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = 0.2f);
+
+        timeProvider.Advance(SeekInterval);
+
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = It.IsAny<float>(), Times.Exactly(2));
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = 0.3f);
+    }
+
+    [Fact]
+    public void IsDraggingPosition_ReleasedWithPendingSeek_SeeksLatestPositionImmediately()
+    {
+        vm.IsDraggingPosition = true;
+        vm.PlaybackPosition = 0.2f;
+        vm.PlaybackPosition = 0.6f;
+
+        vm.IsDraggingPosition = false;
+        timeProvider.Advance(SeekInterval);
+
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = It.IsAny<float>(), Times.Exactly(2));
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = 0.6f);
+    }
+
+    [Fact]
+    public void PlaybackPosition_DraggedAfterTrackChanged_DoesNotSeekNewTrack()
+    {
+        SetupPlayingTrack(TimeSpan.FromSeconds(100));
+        vm.IsDraggingPosition = true;
+        vm.PlaybackPosition = 0.2f;
+        vm.PlaybackPosition = 0.4f;
+        SetupPlayingTrack(TimeSpan.FromSeconds(50));
+
+        vm.PlaybackPosition = 0.5f;
+        vm.IsDraggingPosition = false;
+        timeProvider.Advance(SeekInterval);
+        vm.IsDraggingPosition = true;
+        vm.PlaybackPosition = 0.7f;
+
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = It.IsAny<float>(), Times.Exactly(2));
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = 0.2f);
+        audioPlayerMock.VerifySet(it => it.PlaybackPosition = 0.7f);
     }
 
     [Fact]

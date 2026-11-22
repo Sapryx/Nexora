@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Library;
 using Core.Playback;
+using Core.Playlists;
 using Nexora.Media;
 using Nexora.Threading;
 
@@ -31,8 +32,29 @@ public partial class PlaybackVm : ViewModelBase
 
     public string VolumeIconName => GetVolumeIconName();
     public bool IsDraggingVolume { get; set; }
-    public bool IsDraggingPosition { get; set; }
+
+    public bool IsDraggingPosition
+    {
+        get => isDraggingPosition;
+        set
+        {
+            isDraggingPosition = value;
+
+            if(value)
+            {
+                draggedTrack = audioPlayer.State.Track;
+            }
+            else
+            {
+                seekThrottler.Flush();
+            }
+        }
+    }
+
     private readonly IAudioPlayer audioPlayer;
+    private readonly Throttler seekThrottler;
+    private bool isDraggingPosition;
+    private IPlaylistItem? draggedTrack;
     private int volumeBeforeMute;
     private bool isUpdatingDisplay;
 
@@ -41,9 +63,11 @@ public partial class PlaybackVm : ViewModelBase
         TrackTagWriter tagWriter,
         ICoverCache coverCache,
         CoverViewerVm coverViewerVm,
-        IUiDispatcher uiDispatcher)
+        IUiDispatcher uiDispatcher,
+        Throttler seekThrottler)
     {
         this.audioPlayer = audioPlayer;
+        this.seekThrottler = seekThrottler;
 
         SetVolumeDisplay(audioPlayer.Volume);
 
@@ -193,9 +217,26 @@ public partial class PlaybackVm : ViewModelBase
 
     partial void OnPlaybackPositionChanged(float value)
     {
-        if(!isUpdatingDisplay)
+        if(isUpdatingDisplay)
+        {
+            return;
+        }
+
+        if(!IsDraggingPosition)
         {
             audioPlayer.PlaybackPosition = value;
+            return;
+        }
+
+        var track = draggedTrack;
+        seekThrottler.Run(() => SeekDraggedTrack(track, value));
+    }
+
+    private void SeekDraggedTrack(IPlaylistItem? track, float position)
+    {
+        if(audioPlayer.State.Track == track)
+        {
+            audioPlayer.PlaybackPosition = position;
         }
     }
 

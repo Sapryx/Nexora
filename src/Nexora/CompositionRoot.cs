@@ -37,6 +37,7 @@ public static class CompositionRoot
     );
 
     private static readonly string VolumeFilePath = Path.Combine(AppDataDirectory, "volume.txt");
+    private static readonly TimeSpan SeekThrottleInterval = TimeSpan.FromMilliseconds(150);
 #if DEBUG
     private static readonly string? AnimationsFilePath = null;
 #else
@@ -88,6 +89,12 @@ public static class CompositionRoot
         builder.AddSingleton<LibVlcLogForwarder>();
         builder.AddSingleton(provider => CreateLibVlc(provider.GetRequiredService<LibVlcLogForwarder>()));
         builder.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
+        builder.AddSingleton(TimeProvider.System);
+        builder.AddTransient(provider => new Throttler(
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<IUiDispatcher>(),
+            SeekThrottleInterval
+        ));
         builder.AddSingleton<TrackControlVmRegistry>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
         builder.AddSingleton<

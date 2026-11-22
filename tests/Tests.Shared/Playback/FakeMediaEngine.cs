@@ -4,7 +4,16 @@ namespace Tests.Shared.Playback;
 
 public class FakeMediaEngine : IMediaEngine
 {
-    public float Position { get; set; }
+    public float Position
+    {
+        get => position;
+        set
+        {
+            position = value;
+            SoughtPositions.Add(value);
+        }
+    }
+
     public long Time { get; set; }
     public int Volume { get; set; }
     public bool Mute { get; set; }
@@ -15,6 +24,8 @@ public class FakeMediaEngine : IMediaEngine
     public int OpenCount { get; private set; }
     public bool IsPaused { get; private set; }
     public bool IsStopped { get; private set; }
+    public List<float> SoughtPositions { get; } = [];
+    private float position;
 
     public event Action<float>? PositionChanged;
     public event Action? EndReached;

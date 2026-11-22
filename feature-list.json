@@ -210,6 +210,6 @@
             "Focus the slider, press arrow keys and verify each press seeks immediately",
             "Start dragging, let the track change (it ends or Next is pressed) before releasing, and verify the new track is not sought by the drag"
         ],
-        "state": "todo"
+        "state": "done"
     }
 ]

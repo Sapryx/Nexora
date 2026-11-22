@@ -10,6 +10,7 @@ using Core.Playback.Loudness;
 using Core.Storage;
 using Core.Storage.Tags;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nexora.ViewModels;
 using Nexora.Views;
@@ -37,6 +38,7 @@ public sealed class TestMainWindow : IDisposable
 {
     public RecordingMainWindow Window { get; }
     public Mock<IAudioPlayer> AudioPlayerMock { get; } = Tests.Shared.Playback.AudioPlayerMock.Create();
+    public FakeTimeProvider TimeProvider { get; } = new FakeTimeProvider();
     public IServiceProvider Services => provider;
     private readonly ServiceProvider provider;
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
@@ -73,6 +75,7 @@ public sealed class TestMainWindow : IDisposable
         }
 
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
+        services.AddSingleton<TimeProvider>(TimeProvider);
         provider = services.BuildServiceProvider();
 
         Window = new RecordingMainWindow()
