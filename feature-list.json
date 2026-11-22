@@ -196,5 +196,20 @@
             "Let it finish again, seek, then play another track and verify that track starts from the beginning"
         ],
         "state": "todo"
+    },
+    {
+        "description": "Dragging the playback position slider fast seeks at most once every 150 ms to the latest position, so the sound does not tear",
+        "steps": [
+            "Play a track and press on the position slider thumb, then drag it quickly back and forth",
+            "Verify the thumb and the seek time tooltip follow the pointer without delay",
+            "Verify the sound follows the thumb without tearing and the player is sought at most once every 150 ms, the first time as soon as the drag starts",
+            "Stop moving while still holding and verify playback jumps to the thumb position within 150 ms",
+            "Release right after a move and verify playback immediately continues from the release position, with no later jump back to an earlier dragged position",
+            "Verify the playing position does not move the thumb while dragging",
+            "Click a point on the slider without dragging and verify playback jumps there immediately, sought only once",
+            "Focus the slider, press arrow keys and verify each press seeks immediately",
+            "Start dragging, let the track change (it ends or Next is pressed) before releasing, and verify the new track is not sought by the drag"
+        ],
+        "state": "todo"
     }
 ]
