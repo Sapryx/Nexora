@@ -15,6 +15,7 @@ public class AudioPlayerTests
     private readonly Mock<IVolumeStorage> volumeStorageMock = new Mock<IVolumeStorage>();
     private readonly Playlist playlist = new Playlist();
     private readonly List<PlaybackState> states = [];
+    private readonly List<float> positions = [];
 
     [Fact]
     public void PlayTrack_Stopped_OpensTrackAndReportsPlaying()
@@ -295,10 +296,98 @@ public class AudioPlayerTests
         Assert.Equal(0.55f, mediaEngine.Position, 4);
     }
 
+    [Fact]
+    public void PlayTrack_PreviousTrackPositionKept_ReportsStartOnce()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaisePositionChanged(0.7f);
+        mediaEngine.Position = 0.7f;
+        positions.Clear();
+
+        player.PlayTrack(AddTrack("/music/two.opus"));
+
+        Assert.Equal([0f], positions);
+        Assert.Equal(0, player.PlaybackPosition);
+    }
+
+    [Fact]
+    public void PositionChanged_AfterPlayTrack_ReportsEnginePosition()
+    {
+        var player = CreatePlayer();
+        mediaEngine.Position = 0.7f;
+        player.PlayTrack(AddTrack("/music/one.opus"));
+
+        mediaEngine.Position = 0.01f;
+        mediaEngine.RaisePositionChanged(0.01f);
+
+        Assert.Equal(0.01f, player.PlaybackPosition);
+        Assert.Equal(0.01f, positions.Last());
+    }
+
+    [Fact]
+    public void PlaybackPosition_SetAfterPlayTrack_ReportsSeekPosition()
+    {
+        var player = CreatePlayer();
+        mediaEngine.Position = 0.7f;
+        player.PlayTrack(AddTrack("/music/one.opus"));
+
+        player.PlaybackPosition = 0.3f;
+
+        Assert.Equal(0.3f, player.PlaybackPosition);
+    }
+
+    [Fact]
+    public void TogglePause_Playing_DoesNotReportPosition()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaisePositionChanged(0.5f);
+        mediaEngine.Position = 0.5f;
+        positions.Clear();
+
+        player.TogglePause();
+        player.TogglePause();
+
+        Assert.Empty(positions);
+        Assert.Equal(0.5f, player.PlaybackPosition);
+    }
+
+    [Fact]
+    public void Skip_Playing_DoesNotReportPosition()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaisePositionChanged(0.5f);
+        mediaEngine.Position = 0.5f;
+        positions.Clear();
+
+        player.SkipForward();
+        player.SkipBack();
+
+        Assert.Empty(positions);
+    }
+
+    [Fact]
+    public async Task ReleaseFileAsync_Playing_DoesNotReportPosition()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaisePositionChanged(0.5f);
+        mediaEngine.Position = 0.5f;
+        positions.Clear();
+
+        await player.ReleaseFileAsync("/music/one.opus", () => Task.CompletedTask);
+
+        Assert.Empty(positions);
+        Assert.Equal(0.5f, player.PlaybackPosition);
+    }
+
     private AudioPlayer CreatePlayer()
     {
         var player = new AudioPlayer(logger, mediaEngine, volumeStorageMock.Object);
         player.StateChanged += it => states.Add(it);
+        player.PlaybackPositionChanged += it => positions.Add(it);
 
         return player;
     }

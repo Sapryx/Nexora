@@ -23,8 +23,12 @@ public class AudioPlayer : IAudioPlayer
 
     public float PlaybackPosition
     {
-        get => mediaEngine.Position;
-        set => mediaEngine.Position = value;
+        get => isPositionReset ? 0 : mediaEngine.Position;
+        set
+        {
+            isPositionReset = false;
+            mediaEngine.Position = value;
+        }
     }
 
     public bool Mute
@@ -41,6 +45,7 @@ public class AudioPlayer : IAudioPlayer
     private int volume;
     private ReleasedFile? releasedFile;
     private bool isAtEnd;
+    private bool isPositionReset;
 
     public event Action<PlaybackState>? StateChanged;
     public event Action<float>? PlaybackPositionChanged;
@@ -56,7 +61,7 @@ public class AudioPlayer : IAudioPlayer
         volume = volumeStorage.Load() ?? DefaultVolume;
         mediaEngine.Volume = volume;
 
-        mediaEngine.PositionChanged += position => PlaybackPositionChanged?.Invoke(position);
+        mediaEngine.PositionChanged += OnPositionChanged;
         mediaEngine.EndReached += OnEndReached;
         mediaEngine.EncounteredError += OnEncounteredError;
         mediaEngine.VolumeChanged += OnVolumeChanged;
@@ -72,10 +77,12 @@ public class AudioPlayer : IAudioPlayer
             releasedFile = null;
             state = PlaybackState.Playing(playlistItem);
             State = state;
+            isPositionReset = true;
             Open(playlistItem, 0, false);
         }
 
         StateChanged?.Invoke(state);
+        PlaybackPositionChanged?.Invoke(0);
     }
 
     public void PlayNextTrack()
@@ -203,6 +210,12 @@ public class AudioPlayer : IAudioPlayer
         isAtEnd = false;
         mediaEngine.Open(audioTrack.AudioPath, startTimeMs, startPaused, gain);
         logger.Debug($"Applied loudness gain {gain:0.00} dB to {audioTrack.AudioPath}");
+    }
+
+    private void OnPositionChanged(float position)
+    {
+        isPositionReset = false;
+        PlaybackPositionChanged?.Invoke(position);
     }
 
     private void OnEndReached()
