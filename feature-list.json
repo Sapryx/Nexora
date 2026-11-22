@@ -180,7 +180,7 @@
             "Remove the current track, reload Discord and verify no presence is shown",
             "Switch to another track and verify the presence updates to it"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Seeking while paused at the end of the last track in the queue is kept, and Play resumes from the new position",

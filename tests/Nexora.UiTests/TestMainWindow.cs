@@ -9,11 +9,13 @@ using Core.Playback;
 using Core.Playback.Loudness;
 using Core.Storage;
 using Core.Storage.Tags;
+using DiscordRPC.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nexora.ViewModels;
 using Nexora.Views;
+using Tests.Shared.Integrations;
 using Tests.Shared.Playback;
 
 namespace Nexora.UiTests;
@@ -39,6 +41,7 @@ public sealed class TestMainWindow : IDisposable
     public RecordingMainWindow Window { get; }
     public Mock<IAudioPlayer> AudioPlayerMock { get; } = Tests.Shared.Playback.AudioPlayerMock.Create();
     public FakeTimeProvider TimeProvider { get; } = new FakeTimeProvider();
+    public FakeDiscordPipe DiscordPipe { get; } = new FakeDiscordPipe();
     public IServiceProvider Services => provider;
     private readonly ServiceProvider provider;
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
@@ -76,6 +79,7 @@ public sealed class TestMainWindow : IDisposable
 
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
         services.AddSingleton<TimeProvider>(TimeProvider);
+        services.AddSingleton<INamedPipeClient>(DiscordPipe);
         provider = services.BuildServiceProvider();
 
         Window = new RecordingMainWindow()

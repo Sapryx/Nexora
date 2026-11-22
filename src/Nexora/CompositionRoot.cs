@@ -10,6 +10,7 @@ using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
 using Core.Storage.Tags;
+using DiscordRPC.IO;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -113,6 +114,7 @@ public static class CompositionRoot
         >();
         builder.AddSingleton<TrackTagWriter>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
+        builder.AddSingleton<INamedPipeClient, ManagedNamedPipeClient>();
         builder.AddSingleton<IDiscordClient, DiscordRpcClientAdapter>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<IMediaEngine, VlcMediaEngine>();
