@@ -113,7 +113,7 @@ if [ "$mode" = "sandbox" ]; then
 
   echo "=== Preparing sandbox $sandbox."
   mkdir -p "$state/nuget" "$state/artifacts"
-  docker build -q -t "$image" - < ralph/Dockerfile > /dev/null
+  docker build -q --provenance=false -t "$image" - < ralph/Dockerfile > /dev/null
   docker save -o "$state/image.tar" "$image"
   sbx template load "$state/image.tar" > /dev/null
   rm "$state/image.tar"
