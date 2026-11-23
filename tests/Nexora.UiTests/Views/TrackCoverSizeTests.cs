@@ -4,7 +4,6 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Core.Library;
 using Core.Tracks;
 using Microsoft.Extensions.DependencyInjection;
 using Nexora.Controls;
@@ -39,7 +38,7 @@ public class TrackCoverSizeTests
         AssertCover<TrackTile>(app, TallPath, new PixelSize(80, 160), new Size(80, 160));
         Assert.Null(CoverImage<TrackTile>(app, NoCoverPath).Source);
 
-        ShowList(app);
+        app.ShowLibraryList();
         WaitForCovers<TrackControl>(app);
         AssertCover<TrackControl>(app, SquarePath, new PixelSize(64, 64), new Size(64, 64));
         AssertCover<TrackControl>(app, WidePath, new PixelSize(64, 32), new Size(64, 32));
@@ -76,7 +75,7 @@ public class TrackCoverSizeTests
         Assert.Equal(new PixelSize(240, 240), PixelSizeOf(CoverImage<TrackTile>(app, SquarePath)));
         Assert.Equal(new PixelSize(240, 120), PixelSizeOf(CoverImage<TrackTile>(app, WidePath)));
 
-        ShowList(app);
+        app.ShowLibraryList();
         WaitForCovers<TrackControl>(app);
         Assert.Equal(new PixelSize(96, 96), PixelSizeOf(CoverImage<TrackControl>(app, SquarePath)));
         Assert.Equal(new PixelSize(96, 48), PixelSizeOf(CoverImage<TrackControl>(app, WidePath)));
@@ -92,24 +91,17 @@ public class TrackCoverSizeTests
         app.CoverLoader.Add(SquarePath, new PixelSize(500, 500));
         app.CoverLoader.Add(WidePath, new PixelSize(600, 300));
         app.CoverLoader.Add(TallPath, new PixelSize(300, 600));
-        app.Services.GetRequiredService<MusicLibrary>().Playlist.AddTracks([
+        app.AddToLibrary([
             CreateTrack(SquarePath, "Square"),
             CreateTrack(WidePath, "Wide"),
             CreateTrack(TallPath, "Tall"),
             CreateTrack(NoCoverPath, "No Cover")
         ]);
-        Dispatcher.UIThread.RunJobs();
     }
 
     private static AudioTrack CreateTrack(string audioPath, string title)
     {
         return new AudioTrack(audioPath, new Metadata() { Title = title, Duration = TimeSpan.FromSeconds(100) });
-    }
-
-    private static void ShowList(TestMainWindow app)
-    {
-        app.Find<SegmentedControl>("LibraryViewSwitch").SelectedIndex = 1;
-        Dispatcher.UIThread.RunJobs();
     }
 
     private static void WaitForCovers<T>(TestMainWindow app) where T : Control
@@ -134,24 +126,18 @@ public class TrackCoverSizeTests
 
     private static Image CoverImage<T>(TestMainWindow app, string audioPath) where T : Control
     {
-        return FindTrack<T>(app, audioPath).GetVisualDescendants().OfType<Image>().First();
-    }
-
-    private static T FindTrack<T>(TestMainWindow app, string audioPath) where T : Control
-    {
-        return app.Window.GetVisualDescendants().OfType<T>()
-            .Single(it => it.IsEffectivelyVisible && (it.DataContext as TrackControlVm)?.AudioPath == audioPath);
+        return app.CoverImageOf(app.FindTrack<T>(audioPath));
     }
 
     private static Button PlayButton(TestMainWindow app, string audioPath)
     {
-        return FindTrack<TrackControl>(app, audioPath).GetVisualDescendants().OfType<Button>()
+        return app.FindTrack<TrackControl>(audioPath).GetVisualDescendants().OfType<Button>()
             .Single(it => it.Name == "TogglePlayButton");
     }
 
     private static TrackControlVm TrackVm(TestMainWindow app, string audioPath)
     {
-        var vm = FindTrack<TrackControl>(app, audioPath).DataContext;
+        var vm = app.FindTrack<TrackControl>(audioPath).DataContext;
         return Assert.IsType<TrackControlVm>(vm);
     }
 }

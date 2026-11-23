@@ -6,10 +6,12 @@ using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Core.Library;
 using Core.Playback;
 using Core.Playback.Loudness;
 using Core.Storage;
 using Core.Storage.Tags;
+using Core.Tracks;
 using DiscordRPC.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
@@ -162,6 +164,73 @@ public sealed class TestMainWindow : IDisposable
         var point = new Point(control.Bounds.Width * fractionX, control.Bounds.Height * fractionY);
         return control.TranslatePoint(point, Window)
             ?? throw new InvalidOperationException($"{control} is not in the main window");
+    }
+
+    public void AddToLibrary(IEnumerable<IAudioTrack> tracks)
+    {
+        Services.GetRequiredService<MusicLibrary>().Playlist.AddTracks(tracks);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    public void ShowLibraryGrid()
+    {
+        Find<SegmentedControl>("LibraryViewSwitch").SelectedIndex = 0;
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    public void ShowLibraryList()
+    {
+        Find<SegmentedControl>("LibraryViewSwitch").SelectedIndex = 1;
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    public T FindTrack<T>(string audioPath) where T : Control
+    {
+        return Window.GetVisualDescendants().OfType<T>()
+            .Single(it => it.IsEffectivelyVisible && (it.DataContext as TrackControlVm)?.AudioPath == audioPath);
+    }
+
+    public Image CoverImageOf(Control track)
+    {
+        return track.GetVisualDescendants().OfType<Image>().First();
+    }
+
+    public List<Image> VisibleCoverImages<T>(ScrollViewer scrollViewer) where T : Control
+    {
+        return scrollViewer.GetVisualDescendants().OfType<T>()
+            .Where(track => track.IsEffectivelyVisible && IsInViewport(track, scrollViewer))
+            .Select(CoverImageOf)
+            .ToList();
+    }
+
+    public void WaitForVisibleCovers<T>(ScrollViewer scrollViewer) where T : Control
+    {
+        WaitUntil(() =>
+        {
+            var images = VisibleCoverImages<T>(scrollViewer);
+            return images.Count > 0 && images.All(image => image.Source != null);
+        });
+    }
+
+    public void ScrollTo(ScrollViewer scrollViewer, double offset)
+    {
+        scrollViewer.Offset = new Vector(0, offset);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    public void ScrollByScreens(ScrollViewer scrollViewer, double screens)
+    {
+        double maxOffset = scrollViewer.Extent.Height - scrollViewer.Viewport.Height;
+        double offset = scrollViewer.Offset.Y + screens * scrollViewer.Viewport.Height;
+        ScrollTo(scrollViewer, Math.Clamp(offset, 0, maxOffset));
+    }
+
+    private static bool IsInViewport(Control control, ScrollViewer scrollViewer)
+    {
+        var top = control.TranslatePoint(new Point(0, 0), scrollViewer);
+        return top != null
+            && top.Value.Y < scrollViewer.Viewport.Height
+            && top.Value.Y + control.Bounds.Height > 0;
     }
 
     private static string ProjectDirectory([CallerFilePath] string sourcePath = "")

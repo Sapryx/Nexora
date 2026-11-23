@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Core.Library;
 using Core.Tracks;
 using Microsoft.Extensions.DependencyInjection;
 using Nexora.Controls;
@@ -33,9 +32,9 @@ public class CoverMemoryBudgetTests
         AddLibrary(app, 10000);
         var coverCache = app.Services.GetRequiredService<ICoverCache>();
         var gridScroll = app.Find<ScrollViewer>("RowScrollViewer");
-        WaitForVisibleCovers<TrackTile>(app, gridScroll);
+        app.WaitForVisibleCovers<TrackTile>(gridScroll);
         long gridBudget = coverCache.MemoryBudget;
-        int visibleTiles = VisibleCoverImages<TrackTile>(app, gridScroll).Count;
+        int visibleTiles = app.VisibleCoverImages<TrackTile>(gridScroll).Count;
 
         Assert.Equal(CoverMemoryBudget.Screens * TileBytes * GridCoverCount(app) + QueueBudget(app), gridBudget);
         Assert.InRange(gridBudget, CoverMemoryBudget.Screens * TileBytes * visibleTiles, 10000 * TileBytes / 20);
@@ -48,7 +47,7 @@ public class CoverMemoryBudgetTests
         app.Window.Width = 1920;
         app.Window.Height = 1200;
         Dispatcher.UIThread.RunJobs();
-        WaitForVisibleCovers<TrackTile>(app, gridScroll);
+        app.WaitForVisibleCovers<TrackTile>(gridScroll);
         Assert.True(coverCache.MemoryBudget > gridBudget);
         Assert.Equal(
             CoverMemoryBudget.Screens * TileBytes * GridCoverCount(app) + QueueBudget(app),
@@ -56,9 +55,9 @@ public class CoverMemoryBudgetTests
         );
         Assert.True(coverCache.MemoryUsed <= coverCache.MemoryBudget);
 
-        ShowList(app);
+        app.ShowLibraryList();
         var listScroll = LibraryListScroll(app);
-        WaitForVisibleCovers<TrackControl>(app, listScroll);
+        app.WaitForVisibleCovers<TrackControl>(listScroll);
         int listCovers = SmoothScroller.GetVisibleItemCount(listScroll.Viewport.Height, ItemHeight(listScroll));
         Assert.Equal(
             CoverMemoryBudget.Screens * ThumbnailBytes * listCovers + QueueBudget(app),
@@ -69,8 +68,8 @@ public class CoverMemoryBudgetTests
         ScrollThrough<TrackControl>(app, listScroll, coverCache, 1, 40);
         AssertScrollBackShowsCachedCovers<TrackControl>(app, listScroll);
 
-        ShowGrid(app);
-        WaitForVisibleCovers<TrackTile>(app, gridScroll);
+        app.ShowLibraryGrid();
+        app.WaitForVisibleCovers<TrackTile>(gridScroll);
         Assert.Equal(
             CoverMemoryBudget.Screens * TileBytes * GridCoverCount(app) + QueueBudget(app),
             coverCache.MemoryBudget
@@ -84,11 +83,11 @@ public class CoverMemoryBudgetTests
         var tracks = AddLibrary(app, 100);
         var coverCache = app.Services.GetRequiredService<ICoverCache>();
         var gridScroll = app.Find<ScrollViewer>("RowScrollViewer");
-        WaitForVisibleCovers<TrackTile>(app, gridScroll);
+        app.WaitForVisibleCovers<TrackTile>(gridScroll);
 
         ScrollThrough<TrackTile>(app, gridScroll, coverCache, 1);
-        ScrollTo(gridScroll, 0);
-        WaitForVisibleCovers<TrackTile>(app, gridScroll);
+        app.ScrollTo(gridScroll, 0);
+        app.WaitForVisibleCovers<TrackTile>(gridScroll);
 
         Assert.All(tracks, track => Assert.Equal(1, app.CoverLoader.LoadCount(track.AudioPath)));
         Assert.Equal(100 * TileBytes, coverCache.MemoryUsed);
@@ -103,8 +102,7 @@ public class CoverMemoryBudgetTests
                 new Metadata() { Title = $"Track {index:D5}", Duration = TimeSpan.FromSeconds(100) }
             ))
             .ToList();
-        app.Services.GetRequiredService<MusicLibrary>().Playlist.AddTracks(tracks);
-        Dispatcher.UIThread.RunJobs();
+        app.AddToLibrary(tracks);
         return tracks;
     }
 
@@ -117,13 +115,11 @@ public class CoverMemoryBudgetTests
         where T : Control
     {
         double maxOffset = scrollViewer.Extent.Height - scrollViewer.Viewport.Height;
-        double start = scrollViewer.Offset.Y;
 
         for(int step = 1; step <= maxSteps && scrollViewer.Offset.Y < maxOffset; step++)
         {
-            double offset = start + step * screensPerStep * scrollViewer.Viewport.Height;
-            ScrollTo(scrollViewer, Math.Min(maxOffset, offset));
-            WaitForVisibleCovers<T>(app, scrollViewer);
+            app.ScrollByScreens(scrollViewer, screensPerStep);
+            app.WaitForVisibleCovers<T>(scrollViewer);
             Assert.True(coverCache.MemoryUsed <= coverCache.MemoryBudget);
         }
     }
@@ -131,16 +127,14 @@ public class CoverMemoryBudgetTests
     private static void AssertScrollBackShowsCachedCovers<T>(TestMainWindow app, ScrollViewer scrollViewer)
         where T : Control
     {
-        double currentScreen = scrollViewer.Offset.Y;
-        double previousScreen = currentScreen - scrollViewer.Viewport.Height;
-        ScrollTo(scrollViewer, previousScreen);
-        WaitForVisibleCovers<T>(app, scrollViewer);
+        app.ScrollByScreens(scrollViewer, -1);
+        app.WaitForVisibleCovers<T>(scrollViewer);
         var loadCounts = VisibleLoadCounts<T>(app, scrollViewer);
-        ScrollTo(scrollViewer, currentScreen);
-        WaitForVisibleCovers<T>(app, scrollViewer);
+        app.ScrollByScreens(scrollViewer, 1);
+        app.WaitForVisibleCovers<T>(scrollViewer);
 
-        ScrollTo(scrollViewer, previousScreen);
-        var images = VisibleCoverImages<T>(app, scrollViewer);
+        app.ScrollByScreens(scrollViewer, -1);
+        var images = app.VisibleCoverImages<T>(scrollViewer);
 
         Assert.NotEmpty(images);
         Assert.All(images, image => Assert.NotNull(image.Source));
@@ -150,40 +144,9 @@ public class CoverMemoryBudgetTests
     private static Dictionary<string, int> VisibleLoadCounts<T>(TestMainWindow app, ScrollViewer scrollViewer)
         where T : Control
     {
-        return VisibleCoverImages<T>(app, scrollViewer)
+        return app.VisibleCoverImages<T>(scrollViewer)
             .Select(image => Assert.IsType<TrackControlVm>(image.DataContext).AudioPath)
             .ToDictionary(path => path, app.CoverLoader.LoadCount);
-    }
-
-    private static void ScrollTo(ScrollViewer scrollViewer, double offset)
-    {
-        scrollViewer.Offset = new Vector(0, offset);
-        Dispatcher.UIThread.RunJobs();
-    }
-
-    private static void WaitForVisibleCovers<T>(TestMainWindow app, ScrollViewer scrollViewer) where T : Control
-    {
-        app.WaitUntil(() =>
-        {
-            var images = VisibleCoverImages<T>(app, scrollViewer);
-            return images.Count > 0 && images.All(image => image.Source != null);
-        });
-    }
-
-    private static List<Image> VisibleCoverImages<T>(TestMainWindow app, ScrollViewer scrollViewer) where T : Control
-    {
-        return scrollViewer.GetVisualDescendants().OfType<T>()
-            .Where(track => track.IsEffectivelyVisible && IsInViewport(track, scrollViewer))
-            .Select(track => track.GetVisualDescendants().OfType<Image>().First())
-            .ToList();
-    }
-
-    private static bool IsInViewport(Control control, ScrollViewer scrollViewer)
-    {
-        var top = control.TranslatePoint(new Point(0, 0), scrollViewer);
-        return top != null
-            && top.Value.Y < scrollViewer.Viewport.Height
-            && top.Value.Y + control.Bounds.Height > 0;
     }
 
     private static long GridCoverCount(TestMainWindow app)
@@ -220,15 +183,4 @@ public class CoverMemoryBudgetTests
         return trackArea.GetVisualDescendants().OfType<ScrollViewer>().First();
     }
 
-    private static void ShowList(TestMainWindow app)
-    {
-        app.Find<SegmentedControl>("LibraryViewSwitch").SelectedIndex = 1;
-        Dispatcher.UIThread.RunJobs();
-    }
-
-    private static void ShowGrid(TestMainWindow app)
-    {
-        app.Find<SegmentedControl>("LibraryViewSwitch").SelectedIndex = 0;
-        Dispatcher.UIThread.RunJobs();
-    }
 }

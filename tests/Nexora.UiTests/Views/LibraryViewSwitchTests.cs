@@ -70,10 +70,7 @@ public class LibraryViewSwitchTests
 
     private static SegmentedControl FindSwitch(TestMainWindow app)
     {
-        return app.Window
-            .GetVisualDescendants()
-            .OfType<SegmentedControl>()
-            .Single(it => it.Name == "LibraryViewSwitch");
+        return app.Find<SegmentedControl>("LibraryViewSwitch");
     }
 
     private static Rect BoundsInWindow(TestMainWindow app, Control control)
