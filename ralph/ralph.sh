@@ -22,7 +22,7 @@ finish() {
 
 trap finish EXIT
 
-verify='dotnet build Nexora.slnx -v q -nologo && dotnet test Nexora.slnx -v q -nologo --logger "console;verbosity=minimal"'
+verify='dotnet build Nexora.slnx -v q -nologo && scripts/test.sh -v q -nologo --logger "console;verbosity=minimal"'
 mkdir -p "$logs"
 cd "$root"
 

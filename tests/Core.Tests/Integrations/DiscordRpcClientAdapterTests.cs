@@ -6,6 +6,9 @@ using Tests.Shared.Integrations;
 
 namespace Core.Tests.Integrations;
 
+[Trait("Category", "Slow")]
+[Trait("Covers", "src/Core/Integrations/DiscordRpcClientAdapter.cs")]
+[Trait("Covers", "tests/Tests.Shared/Integrations")]
 public sealed class DiscordRpcClientAdapterTests : IDisposable
 {
     private readonly FakeDiscordPipe pipe = new FakeDiscordPipe();

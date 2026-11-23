@@ -36,9 +36,27 @@ jobs:
             exit 1
           fi
 
+  test:
+    name: Tests
+    needs: guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository at tag
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache: true
+          cache-dependency-path: '**/*.csproj'
+
+      - name: Run all tests
+        run: ./scripts/test.sh --all -c Release
+
   build:
     name: Build (${{ matrix.os }})
-    needs: guard
+    needs: test
     strategy:
       fail-fast: false
       matrix:

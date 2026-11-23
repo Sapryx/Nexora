@@ -19,11 +19,11 @@ Debug build:
 ```
 dotnet build Nexora.slnx -v q -nologo
 ```
-Unit tests (all test projects):
+Tests (all test projects; skips slow tests unless their code has uncommitted changes, `--all` runs every test):
 ```
-dotnet test Nexora.slnx -v q -nologo --logger "console;verbosity=minimal"
+scripts/test.sh -v q -nologo --logger "console;verbosity=minimal"
 ```
-Single test: add `--filter "FullyQualifiedName~LruCacheTests"`.
+Single test: `dotnet test Nexora.slnx -v q -nologo --filter "FullyQualifiedName~LruCacheTests"`.
 Coverage and cyclomatic complexity of methods; fails unless each has 100% coverage and complexity of at most 8
 (runs all tests with coverage; `--no-test` reuses the last run). Pass any number of methods and classes:
 ```
@@ -44,6 +44,13 @@ Profile (Linux, perf + Hotspot): `scripts/profile.sh [--dwarf] [output file]` (G
 - Interact with `app.Click(control)` or Avalonia.Headless input methods on `app.Window` (`KeyPress`, `MouseMove`, ...).
 - When a test ends, the last rendered frame is saved to `tests/Nexora.UiTests/screenshots/<test method>.png`
   (ignored by git); open it to check how the UI looks.
+
+## Slow tests
+
+Mark a test class with a test that takes 2 seconds or more with `[Trait("Category", "Slow")]` and one
+`[Trait("Covers", "<path>")]` per file or directory it checks (paths from the repo root).
+`scripts/test.sh` runs it only when its own file or a covered path has uncommitted changes;
+the release workflow runs every test.
 
 ## Style analyzers
 

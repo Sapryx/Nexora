@@ -15,6 +15,9 @@ using Tests.Shared.Playback;
 
 namespace Nexora.UiTests.Views;
 
+[Trait("Category", "Slow")]
+[Trait("Covers", "src/Core/Integrations")]
+[Trait("Covers", "tests/Tests.Shared/Integrations")]
 public class DiscordReconnectTests
 {
     private readonly FakeMediaEngine mediaEngine = new FakeMediaEngine();

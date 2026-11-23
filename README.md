@@ -188,7 +188,8 @@ Run the tests:
 ./scripts/test.sh
 ```
 
-(`.\scripts\Test.ps1` on Windows.)
+(`.\scripts\Test.ps1` on Windows.) Slow tests run only when the code they cover has uncommitted changes; pass `--all`
+(`-All`) to run every test, for example before a release. Other arguments go to `dotnet test`.
 
 Profile the app with `perf` and open the recording in [Hotspot](https://github.com/KDAB/hotspot) (Arch Linux; needs `perf` and `hotspot`):
 
