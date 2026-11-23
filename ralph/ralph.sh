@@ -157,6 +157,7 @@ for ((i = 1; i <= iterations; i++)); do
 
   "run_$mode" -p "$(prompt)" \
       --disallowedTools "Bash(git push:*)" \
+      --settings '{"attribution": {"commit": "", "pr": ""}}' \
       --model claude-opus-5-5 \
       --effort medium \
       --no-session-persistence \
