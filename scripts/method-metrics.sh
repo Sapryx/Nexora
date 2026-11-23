@@ -2,11 +2,11 @@
 set -euo pipefail
 
 usage() {
-    echo "Usage: $0 <method> [--no-test] [--max-complexity <n>]" >&2
+    echo "Usage: $0 <method or class>... [--no-test] [--max-complexity <n>]" >&2
     exit 2
 }
 
-method=""
+targets=()
 no_test=false
 max_complexity=8
 
@@ -19,12 +19,12 @@ while [ $# -gt 0 ]; do
             shift
             ;;
         -*) usage ;;
-        *) method="$1" ;;
+        *) targets+=("$1") ;;
     esac
     shift
 done
 
-[ -n "$method" ] || usage
+[ ${#targets[@]} -gt 0 ] || usage
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 results_dir="$repo_root/Test Results/method-metrics"
@@ -38,13 +38,13 @@ if [ "$no_test" = false ]; then
     fi
 fi
 
-python3 -I - "$repo_root" "$results_dir" "$method" "$max_complexity" <<'EOF'
+python3 -I - "$repo_root" "$results_dir" "$max_complexity" "${targets[@]}" <<'EOF'
 import os
 import re
 import sys
 import xml.etree.ElementTree as ElementTree
 
-repo_root, results_dir, method, max_complexity = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+repo_root, results_dir, max_complexity, targets = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4:]
 
 
 def source_method_name(generated_class, name):
@@ -84,7 +84,9 @@ for report in reports:
                 name = source_method_name(generated_class, node.get("name"))
                 signature = node.get("signature") if name == node.get("name") else ""
                 methods[key] = {
+                    "owner": owner,
                     "name": f"{owner}.{name}",
+                    "method": f"{owner}.{name.split(' (')[0]}",
                     "label": f"{owner}.{name}{signature}",
                     "file": file,
                     "complexity": int(node.get("complexity")),
@@ -95,9 +97,20 @@ for report in reports:
                 number = int(line.get("number"))
                 lines[number] = lines.get(number, False) or int(line.get("hits")) > 0
 
-matched = [m for m in methods.values() if method.lower() in m["name"].lower()]
-if not matched:
-    sys.exit(f"No method matches '{method}'.")
+def names_match(name, target):
+    name, target = name.lower(), target.lower()
+    return name == target or name.endswith("." + target)
+
+
+def target_matches(m, target):
+    return names_match(m["method"], target) or names_match(m["owner"], target)
+
+
+unmatched = [t for t in targets if not any(target_matches(m, t) for m in methods.values())]
+if unmatched:
+    sys.exit(f"No method or class matches {', '.join(repr(t) for t in unmatched)}.")
+
+matched = [m for m in methods.values() if any(target_matches(m, t) for t in targets)]
 
 results = []
 for m in matched:
