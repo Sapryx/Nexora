@@ -29,9 +29,9 @@ public class CoverMemoryBudgetTests
     public void Grid_LargeLibrary_KeepsCoverMemoryWithinViewportBudget()
     {
         using var app = new TestMainWindow();
-        AddLibrary(app, 10000);
+        app.AddLibraryWithCovers(10000);
         var coverCache = app.Services.GetRequiredService<ICoverCache>();
-        var gridScroll = app.Find<ScrollViewer>("RowScrollViewer");
+        var gridScroll = app.LibraryGridScroll();
         app.WaitForVisibleCovers<TrackTile>(gridScroll);
         long gridBudget = coverCache.MemoryBudget;
         int visibleTiles = app.VisibleCoverImages<TrackTile>(gridScroll).Count;
@@ -56,7 +56,7 @@ public class CoverMemoryBudgetTests
         Assert.True(coverCache.MemoryUsed <= coverCache.MemoryBudget);
 
         app.ShowLibraryList();
-        var listScroll = LibraryListScroll(app);
+        var listScroll = app.LibraryListScroll();
         app.WaitForVisibleCovers<TrackControl>(listScroll);
         int listCovers = SmoothScroller.GetVisibleItemCount(listScroll.Viewport.Height, ItemHeight(listScroll));
         Assert.Equal(
@@ -80,9 +80,9 @@ public class CoverMemoryBudgetTests
     public void Grid_SmallLibrary_KeepsEveryCoverCached()
     {
         using var app = new TestMainWindow();
-        var tracks = AddLibrary(app, 100);
+        var tracks = app.AddLibraryWithCovers(100);
         var coverCache = app.Services.GetRequiredService<ICoverCache>();
-        var gridScroll = app.Find<ScrollViewer>("RowScrollViewer");
+        var gridScroll = app.LibraryGridScroll();
         app.WaitForVisibleCovers<TrackTile>(gridScroll);
 
         ScrollThrough<TrackTile>(app, gridScroll, coverCache, 1);
@@ -91,19 +91,6 @@ public class CoverMemoryBudgetTests
 
         Assert.All(tracks, track => Assert.Equal(1, app.CoverLoader.LoadCount(track.AudioPath)));
         Assert.Equal(100 * TileBytes, coverCache.MemoryUsed);
-    }
-
-    private static List<AudioTrack> AddLibrary(TestMainWindow app, int count)
-    {
-        app.CoverLoader.AddToEveryTrack(new PixelSize(200, 200));
-        var tracks = Enumerable.Range(0, count)
-            .Select(index => new AudioTrack(
-                $"/music/Track {index:D5}.mp3",
-                new Metadata() { Title = $"Track {index:D5}", Duration = TimeSpan.FromSeconds(100) }
-            ))
-            .ToList();
-        app.AddToLibrary(tracks);
-        return tracks;
     }
 
     private static void ScrollThrough<T>(
@@ -144,22 +131,20 @@ public class CoverMemoryBudgetTests
     private static Dictionary<string, int> VisibleLoadCounts<T>(TestMainWindow app, ScrollViewer scrollViewer)
         where T : Control
     {
-        return app.VisibleCoverImages<T>(scrollViewer)
-            .Select(image => Assert.IsType<TrackControlVm>(image.DataContext).AudioPath)
-            .ToDictionary(path => path, app.CoverLoader.LoadCount);
+        return app.VisibleTrackPaths<T>(scrollViewer).ToDictionary(path => path, app.CoverLoader.LoadCount);
     }
 
     private static long GridCoverCount(TestMainWindow app)
     {
         var grid = app.Find<TrackGrid>("LibraryGrid");
-        var gridScroll = app.Find<ScrollViewer>("RowScrollViewer");
+        var gridScroll = app.LibraryGridScroll();
         return SmoothScroller.GetVisibleItemCount(gridScroll.Viewport.Height, ItemHeight(gridScroll))
             * grid.ColumnCount;
     }
 
     private static long QueueBudget(TestMainWindow app)
     {
-        var queueScroll = TrackAreaScroll(app.Window.GetVisualDescendants().OfType<TrackArea>()
+        var queueScroll = app.TrackAreaScroll(app.Window.GetVisualDescendants().OfType<TrackArea>()
             .Single(area => area.Name != "LibraryList"));
         int covers = SmoothScroller.GetVisibleItemCount(queueScroll.Viewport.Height, ItemHeight(queueScroll));
         return CoverMemoryBudget.Screens * ThumbnailBytes * covers;
@@ -172,15 +157,4 @@ public class CoverMemoryBudgetTests
         var container = itemsControl.GetRealizedContainers().FirstOrDefault(it => it.Bounds.Height > 0);
         return container?.Bounds.Height ?? 100;
     }
-
-    private static ScrollViewer LibraryListScroll(TestMainWindow app)
-    {
-        return TrackAreaScroll(app.Find<TrackArea>("LibraryList"));
-    }
-
-    private static ScrollViewer TrackAreaScroll(TrackArea trackArea)
-    {
-        return trackArea.GetVisualDescendants().OfType<ScrollViewer>().First();
-    }
-
 }

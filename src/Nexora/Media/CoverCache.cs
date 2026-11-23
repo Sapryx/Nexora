@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Avalonia;
 using Avalonia.Media.Imaging;
 using Core.Collections;
@@ -23,7 +22,6 @@ public class CoverCache : ICoverCache
     private readonly ITrackCoverLoader coverLoader;
     private readonly IRenderScaleProvider renderScaleProvider;
     private readonly LruCache<CoverKey, Bitmap?> cache = new LruCache<CoverKey, Bitmap?>(0, WeighCover);
-    private readonly ConcurrentDictionary<CoverKey, Task<Bitmap?>> inFlight = [];
 
     public CoverCache(
         ILogger<CoverCache> logger,
@@ -41,7 +39,7 @@ public class CoverCache : ICoverCache
         return bitmap;
     }
 
-    public async Task<Bitmap?> GetOrLoadAsync(string audioPath, double size)
+    public async Task<Bitmap?> GetOrLoadAsync(string audioPath, double size, CancellationToken token)
     {
         var key = new CoverKey(audioPath, ScaleToScreen(size));
 
@@ -50,31 +48,23 @@ public class CoverCache : ICoverCache
             return cached;
         }
 
-        var decodeTask = inFlight.GetOrAdd(
-            key,
-            it => Task.Run(() => LoadCover(it.AudioPath, stream => DecodeToFit(stream, it.PixelSide)))
-        );
-
-        try
-        {
-            var bitmap = await decodeTask.ConfigureAwait(false);
-            cache.Set(key, bitmap);
-            return bitmap;
-        }
-        finally
-        {
-            inFlight.TryRemove(key, out _);
-        }
+        var bitmap = await Task.Run(
+            () => LoadCover(key.AudioPath, stream => DecodeToFit(stream, key.PixelSide), token),
+            token
+        ).ConfigureAwait(false);
+        token.ThrowIfCancellationRequested();
+        cache.Set(key, bitmap);
+        return bitmap;
     }
 
     public Task<Bitmap?> LoadLargeAsync(string audioPath)
     {
-        return Task.Run(() => LoadCover(audioPath, DecodeLarge));
+        return Task.Run(() => LoadCover(audioPath, DecodeLarge, CancellationToken.None));
     }
 
     public Task<Bitmap?> LoadOriginalAsync(string audioPath)
     {
-        return Task.Run(() => LoadCover(audioPath, stream => new Bitmap(stream)));
+        return Task.Run(() => LoadCover(audioPath, stream => new Bitmap(stream), CancellationToken.None));
     }
 
     public static PixelSize FitToMaxSide(PixelSize size, int maxSide)
@@ -118,11 +108,12 @@ public class CoverCache : ICoverCache
         return CoverSizes.ToPixels(size, renderScaleProvider.RenderScaling);
     }
 
-    private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)
+    private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode, CancellationToken token)
     {
         try
         {
             var coverRaw = coverLoader.LoadCover(audioPath);
+            token.ThrowIfCancellationRequested();
 
             if(coverRaw == null)
             {
@@ -132,7 +123,7 @@ public class CoverCache : ICoverCache
             using var stream = new MemoryStream(coverRaw);
             return decode(stream);
         }
-        catch(Exception ex)
+        catch(Exception ex) when(ex is not OperationCanceledException)
         {
             logger.Warn(ex, $"Failed to load cover of {audioPath}");
             return null;

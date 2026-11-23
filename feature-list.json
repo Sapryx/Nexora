@@ -56,7 +56,7 @@
             "Showing a placeholder image while a cover loads",
             "Fading covers in when they finish loading"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "Once scrolling settles, covers of the rows just above and below the visible area are loaded in advance",

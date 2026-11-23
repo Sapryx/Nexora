@@ -8,7 +8,7 @@ public interface ICoverCache
     long MemoryUsed { get; }
 
     Bitmap? Get(string audioPath, double size);
-    Task<Bitmap?> GetOrLoadAsync(string audioPath, double size);
+    Task<Bitmap?> GetOrLoadAsync(string audioPath, double size, CancellationToken token);
     Task<Bitmap?> LoadLargeAsync(string audioPath);
     Task<Bitmap?> LoadOriginalAsync(string audioPath);
 }

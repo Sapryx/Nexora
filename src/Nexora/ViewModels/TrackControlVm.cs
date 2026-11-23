@@ -1,9 +1,9 @@
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Playback;
 using Core.Playlists;
 using Nexora.Media;
-using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -26,6 +26,9 @@ public partial class TrackControlVm : CoveredTrackVm
     private readonly PlaybackQueue playbackQueue;
     private readonly IAudioPlayer audioPlayer;
     private readonly TrackEditorVm trackEditorVm;
+    private readonly ICoverCache coverCache;
+    private readonly CoverLoadQueue coverLoadQueue;
+    private readonly Dictionary<double, CoverRequest> coverRequests = [];
 
     public TrackControlVm(
         IPlaylistItem playlistItem,
@@ -33,8 +36,10 @@ public partial class TrackControlVm : CoveredTrackVm
         IAudioPlayer audioPlayer,
         TrackEditorVm trackEditorVm,
         ICoverCache coverCache,
-        IUiDispatcher uiDispatcher) : base(coverCache, uiDispatcher)
+        CoverLoadQueue coverLoadQueue) : base(coverCache)
     {
+        this.coverCache = coverCache;
+        this.coverLoadQueue = coverLoadQueue;
         this.playlistItem = playlistItem;
         this.audioPlayer = audioPlayer;
         this.playbackQueue = playbackQueue;
@@ -105,5 +110,33 @@ public partial class TrackControlVm : CoveredTrackVm
     {
         var metadata = playlistItem.AudioTrack.Metadata;
         SetTrackInfo(metadata.Title, metadata.JoinedArtists, playlistItem.AudioTrack.AudioPath);
+    }
+
+    public void ShowCover(double size)
+    {
+        if(coverRequests.ContainsKey(size) || coverCache.Get(AudioPath, size) != null)
+        {
+            return;
+        }
+
+        coverRequests[size] = coverLoadQueue.Request(AudioPath, size, bitmap => OnCoverLoaded(size, bitmap));
+    }
+
+    public void HideCover(double size)
+    {
+        if(coverRequests.Remove(size, out var request))
+        {
+            request.Cancel();
+        }
+    }
+
+    private void OnCoverLoaded(double size, Bitmap? bitmap)
+    {
+        coverRequests.Remove(size);
+
+        if(bitmap != null)
+        {
+            ShowLoadedCover(AudioPath, size);
+        }
     }
 }

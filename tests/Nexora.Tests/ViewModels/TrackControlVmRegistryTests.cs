@@ -6,6 +6,7 @@ using Core.Tracks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
+using Nexora.Tests.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
 using Tests.Shared.Library;
@@ -48,6 +49,7 @@ public class TrackControlVmRegistryTests
                 uiDispatcherMock.Object
             ),
             Mock.Of<ICoverCache>(),
+            TestCoverLoadQueue.Create(),
             uiDispatcherMock.Object
         );
     }

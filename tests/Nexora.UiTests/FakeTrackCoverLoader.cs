@@ -8,8 +8,12 @@ namespace Nexora.UiTests;
 
 public sealed class FakeTrackCoverLoader : ITrackCoverLoader
 {
+    public IReadOnlyList<string> LoadOrder => loadOrder.ToList();
     private readonly ConcurrentDictionary<string, byte[]> covers = [];
     private readonly ConcurrentDictionary<string, int> loadCounts = [];
+    private readonly ConcurrentQueue<string> loadOrder = [];
+    private const int MaxHeldLoads = 1000;
+    private volatile SemaphoreSlim? heldLoads;
     private byte[]? defaultCover;
 
     public void Add(string audioPath, PixelSize size)
@@ -22,6 +26,23 @@ public sealed class FakeTrackCoverLoader : ITrackCoverLoader
         defaultCover = CreatePng(size);
     }
 
+    public void Hold()
+    {
+        heldLoads = new SemaphoreSlim(0);
+    }
+
+    public void ReleaseOne()
+    {
+        heldLoads?.Release();
+    }
+
+    public void Release()
+    {
+        var released = heldLoads;
+        heldLoads = null;
+        released?.Release(MaxHeldLoads);
+    }
+
     public int LoadCount(string audioPath)
     {
         return loadCounts.GetValueOrDefault(audioPath);
@@ -30,6 +51,9 @@ public sealed class FakeTrackCoverLoader : ITrackCoverLoader
     public byte[]? LoadCover(string audioPath)
     {
         loadCounts.AddOrUpdate(audioPath, 1, (_, count) => count + 1);
+        loadOrder.Enqueue(audioPath);
+
+        heldLoads?.Wait();
         return covers.GetValueOrDefault(audioPath) ?? defaultCover;
     }
 

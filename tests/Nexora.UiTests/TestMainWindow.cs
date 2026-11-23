@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nexora.Controls;
+using Nexora.Media;
 using Nexora.Render;
 using Nexora.ViewModels;
 using Nexora.Views;
@@ -184,6 +185,34 @@ public sealed class TestMainWindow : IDisposable
         Dispatcher.UIThread.RunJobs();
     }
 
+    public List<AudioTrack> AddLibraryWithCovers(int count)
+    {
+        CoverLoader.AddToEveryTrack(new PixelSize(200, 200));
+        var tracks = Enumerable.Range(0, count)
+            .Select(index => new AudioTrack(
+                $"/music/Track {index:D5}.mp3",
+                new Metadata() { Title = $"Track {index:D5}", Duration = TimeSpan.FromSeconds(100) }
+            ))
+            .ToList();
+        AddToLibrary(tracks);
+        return tracks;
+    }
+
+    public ScrollViewer LibraryGridScroll()
+    {
+        return Find<ScrollViewer>("RowScrollViewer");
+    }
+
+    public ScrollViewer LibraryListScroll()
+    {
+        return TrackAreaScroll(Find<TrackArea>("LibraryList"));
+    }
+
+    public ScrollViewer TrackAreaScroll(TrackArea trackArea)
+    {
+        return trackArea.GetVisualDescendants().OfType<ScrollViewer>().First();
+    }
+
     public T FindTrack<T>(string audioPath) where T : Control
     {
         return Window.GetVisualDescendants().OfType<T>()
@@ -203,10 +232,26 @@ public sealed class TestMainWindow : IDisposable
             .ToList();
     }
 
+    public void PassCoverShowDelay()
+    {
+        TimeProvider.Advance(Services.GetRequiredService<CoverLoadQueue>().ShowDelay);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    public List<string> VisibleTrackPaths<T>(ScrollViewer scrollViewer) where T : Control
+    {
+        return VisibleCoverImages<T>(scrollViewer)
+            .Select(image => image.DataContext)
+            .OfType<TrackControlVm>()
+            .Select(trackVm => trackVm.AudioPath)
+            .ToList();
+    }
+
     public void WaitForVisibleCovers<T>(ScrollViewer scrollViewer) where T : Control
     {
         WaitUntil(() =>
         {
+            PassCoverShowDelay();
             var images = VisibleCoverImages<T>(scrollViewer);
             return images.Count > 0 && images.All(image => image.Source != null);
         });

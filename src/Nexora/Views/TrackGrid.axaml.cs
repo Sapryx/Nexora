@@ -51,6 +51,7 @@ public partial class TrackGrid : UserControl
     private const double CellWidth = 192;
     private const double RightInset = 32;
     private readonly SmoothScroller scroller;
+    private readonly VisibleCovers visibleCovers = new VisibleCovers(CoverSizes.Tile);
     private bool isUpdatePending;
     private int? pendingTrackIndex;
 
@@ -108,7 +109,9 @@ public partial class TrackGrid : UserControl
 
     private void ReportCovers()
     {
-        Covers?.Show(IsVisible ? scroller.VisibleItemCount * ColumnCount : 0, CoverSizes.Tile);
+        int rowCount = IsVisible ? scroller.VisibleItemCount : 0;
+        Covers?.Show(rowCount * ColumnCount, CoverSizes.Tile);
+        visibleCovers.Show(Rows.Skip(scroller.FirstVisibleItemIndex).Take(rowCount).SelectMany(row => row.TrackVms));
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

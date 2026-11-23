@@ -37,6 +37,7 @@ public partial class TrackArea : UserControl
         AvaloniaProperty.Register<TrackArea, CoverViewport?>(nameof(Covers));
 
     public CoverViewport? Covers => GetValue(CoversProperty);
+    private readonly VisibleCovers visibleCovers = new VisibleCovers(CoverSizes.Thumbnail);
     private SmoothScroller? scroller;
 
     public TrackArea()
@@ -86,7 +87,9 @@ public partial class TrackArea : UserControl
     {
         if(scroller != null)
         {
-            Covers?.Show(IsVisible ? scroller.VisibleItemCount : 0, CoverSizes.Thumbnail);
+            int coverCount = IsVisible ? scroller.VisibleItemCount : 0;
+            Covers?.Show(coverCount, CoverSizes.Thumbnail);
+            visibleCovers.Show(TrackVms.Skip(scroller.FirstVisibleItemIndex).Take(coverCount));
         }
     }
 

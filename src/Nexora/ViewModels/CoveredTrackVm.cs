@@ -1,7 +1,6 @@
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Nexora.Media;
-using Nexora.Threading;
 
 namespace Nexora.ViewModels;
 
@@ -14,15 +13,13 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     public partial string Artists { get; set; } = "";
 
     public string AudioPath { get; private set; } = "";
-    public Bitmap? Cover => GetCover(CoverSizes.Thumbnail, nameof(Cover));
-    public Bitmap? TileCover => GetCover(CoverSizes.Tile, nameof(TileCover));
+    public Bitmap? Cover => GetCover(CoverSizes.Thumbnail);
+    public Bitmap? TileCover => GetCover(CoverSizes.Tile);
     private readonly ICoverCache coverCache;
-    private readonly IUiDispatcher uiDispatcher;
 
-    protected CoveredTrackVm(ICoverCache coverCache, IUiDispatcher uiDispatcher)
+    protected CoveredTrackVm(ICoverCache coverCache)
     {
         this.coverCache = coverCache;
-        this.uiDispatcher = uiDispatcher;
     }
 
     protected void SetTrackInfo(string title, string artists, string audioPath)
@@ -39,32 +36,16 @@ public abstract partial class CoveredTrackVm : ViewModelBase
         }
     }
 
-    private Bitmap? GetCover(double size, string propertyName)
+    protected virtual Bitmap? GetCover(double size)
     {
-        var cached = coverCache.Get(AudioPath, size);
-
-        if(cached == null)
-        {
-            _ = LoadCoverAsync(size, propertyName);
-        }
-
-        return cached;
+        return coverCache.Get(AudioPath, size);
     }
 
-    private async Task LoadCoverAsync(double size, string propertyName)
+    protected void ShowLoadedCover(string audioPath, double size)
     {
-        string path = AudioPath;
-        var bitmap = await coverCache.GetOrLoadAsync(path, size).ConfigureAwait(false);
-
-        if(bitmap != null)
+        if(audioPath == AudioPath)
         {
-            uiDispatcher.Post(() =>
-            {
-                if(path == AudioPath)
-                {
-                    OnPropertyChanged(propertyName);
-                }
-            });
+            OnPropertyChanged(size == CoverSizes.Tile ? nameof(TileCover) : nameof(Cover));
         }
     }
 }

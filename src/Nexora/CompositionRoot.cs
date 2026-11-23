@@ -39,6 +39,8 @@ public static class CompositionRoot
 
     private static readonly string VolumeFilePath = Path.Combine(AppDataDirectory, "volume.txt");
     private static readonly TimeSpan SeekThrottleInterval = TimeSpan.FromMilliseconds(150);
+    private static readonly TimeSpan CoverShowDelay = TimeSpan.FromMilliseconds(150);
+    private const int MaxConcurrentCoverLoads = 4;
 #if DEBUG
     private static readonly string? AnimationsFilePath = null;
 #else
@@ -127,6 +129,13 @@ public static class CompositionRoot
         builder.AddSingleton<IRenderScaleProvider>(provider => provider.GetRequiredService<RenderScaleProvider>());
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<CoverMemoryBudget>();
+        builder.AddSingleton(provider => new CoverLoadQueue(
+            provider.GetRequiredService<ICoverCache>(),
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<IUiDispatcher>(),
+            CoverShowDelay,
+            MaxConcurrentCoverLoads
+        ));
         builder.AddSingleton<MusicLibrary>();
         builder.AddSingleton<PlaybackQueue>();
         builder.AddSingleton<KeyboardLayoutTranslator>();

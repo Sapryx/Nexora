@@ -29,3 +29,27 @@ new tile count; list view uses the 64px list cover size (also scrolled 40 screen
 restores the grid budget; 100 tracks scrolled through and back are each loaded once and all stay cached. Unit tests
 for LruCache weights/capacity, CoverMemoryBudget and SmoothScroller.GetVisibleItemCount. Screenshots checked. All
 tests pass; method-metrics reports 100% coverage and complexity at most 6 for the new methods.
+
+Date: 2026-11-23 | 13:31:46
+Task: While scrolling the library, a cover starts loading only after its tile has stayed visible for a short time,
+loads for tiles that scroll away are cancelled, and the most recently shown tiles load first (feature-list.json
+entry 2)
+Result: Added CoverLoadQueue (Media): each CoverRequest waits ShowDelay (150 ms, set in CompositionRoot) on the
+TimeProvider, then goes on a LIFO stack that runs at most 4 loads at once; Cancel stops the delay or cancels the load.
+CoverCache.GetOrLoadAsync takes a CancellationToken and does not cache cancelled loads (the in-flight sharing was
+dropped; one request per track and size replaces it). TrackArea and TrackGrid pass the tracks in their visible
+index range to VisibleCovers, which calls TrackControlVm.ShowCover/HideCover for tracks that appear and disappear.
+The list/grid cover getters now only read the cache; the player (TrackViewVm) still loads its cover immediately.
+Test helpers: shared AddLibraryWithCovers, LibraryGridScroll/LibraryListScroll/TrackAreaScroll, VisibleTrackPaths and
+PassCoverShowDelay on TestMainWindow, Hold/ReleaseOne/Release/LoadOrder on FakeTrackCoverLoader (ui-tests skill
+updated); TestTrackControlVm, TestCoverLoadQueue and CoverLoads in Nexora.Tests.
+Verification: UI tests CoverLoadDelayTests (grid and list): a fast scroll to the bottom loads no flashed-by covers,
+nothing loads before the delay and every visible cover loads once right after it; with loads held, scrolling away
+cancels them, the cancelled covers are not cached and the waiting ones never load; after a half-screen scroll the
+newly visible tracks load before the older waiting ones (released one at a time); scrolling back to a cached screen
+shows covers without passing time; the window still scrolls and renders frames while loads are held; the player
+cover loads without the delay. Unit tests for CoverLoadQueue, TrackControlVm covers, VisibleCovers and CoverCache
+cancellation. Screenshots checked. All tests pass (--all). method-metrics --changed: all new methods 100% covered
+with complexity <= 6; CompositionRoot.Configure (OS-specific branches) and the TrackControlVmRegistry constructor
+(complexity 12 from its existing event lambdas) were already below the bar. "Smooth scrolling" is checked only as
+the UI thread staying responsive while loads are held; no frame timing was measured.

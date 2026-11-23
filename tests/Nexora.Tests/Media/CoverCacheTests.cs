@@ -28,7 +28,7 @@ public class CoverCacheTests
     public async Task GetOrLoadAsync_TrackWithoutCover_ReturnsNull()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
-        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         Assert.Null(cover);
     }
 
@@ -36,7 +36,7 @@ public class CoverCacheTests
     public async Task GetOrLoadAsync_LoaderThrows_ReturnsNull()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
-        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         Assert.Null(cover);
     }
 
@@ -46,7 +46,7 @@ public class CoverCacheTests
         var exception = new IOException("Corrupted");
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(exception);
 
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
 
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
@@ -58,8 +58,8 @@ public class CoverCacheTests
     public async Task GetOrLoadAsync_LoaderThrewBefore_DoesNotLoadAgain()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
     }
 
@@ -68,12 +68,39 @@ public class CoverCacheTests
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
 
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile);
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
 
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_CancelledBeforeLoad_ThrowsWithoutLoading()
+    {
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, new CancellationToken(true))
+        );
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_CancelledWhileLoading_ThrowsAndDoesNotCacheOrLog()
+    {
+        using var cancellation = new CancellationTokenSource();
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath))
+            .Callback(cancellation.Cancel)
+            .Returns((byte[]?)null);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, cancellation.Token)
+        );
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
+        Assert.Empty(logger.Entries);
     }
 
     [Fact]
@@ -82,7 +109,7 @@ public class CoverCacheTests
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
         coverCache.MemoryBudget = 1000;
 
-        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
 
         Assert.Equal(1000, coverCache.MemoryBudget);
         Assert.Equal(0, coverCache.MemoryUsed);

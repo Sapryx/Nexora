@@ -34,12 +34,17 @@ decoding and scaling, cover sizes and memory) here.
 - Points: `app.PointIn(control, 0.3, 0.5)` is the point at 30% of the control's width and half its height, in window
   coordinates. Use it for presses, moves and drags with `app.Window.MouseDown` / `MouseMove` / `MouseUp`.
 - Call `Dispatcher.UIThread.RunJobs()` after raw `app.Window` input or after changing services directly.
-- Library: `app.AddToLibrary(tracks)` adds tracks to the library; `app.ShowLibraryGrid()` and `app.ShowLibraryList()`
-  switch its view. `app.FindTrack<TrackTile>(audioPath)` (or `<TrackControl>` for list and queue rows) finds the
+- Library: `app.AddToLibrary(tracks)` adds tracks to the library and `app.AddLibraryWithCovers(count)` adds `count`
+  tracks (`/music/Track 00000.mp3`, ...) that all have a 200x200 cover; `app.ShowLibraryGrid()` and
+  `app.ShowLibraryList()` switch its view. `app.FindTrack<TrackTile>(audioPath)` (or `<TrackControl>` for list and queue rows) finds the
   visible control of a track, and `app.CoverImageOf(track)` its cover `Image`.
-- Scrolling: `app.ScrollTo(scrollViewer, offset)` and `app.ScrollByScreens(scrollViewer, screens)` (clamped to the
-  extent). `app.VisibleCoverImages<TrackTile>(scrollViewer)` lists the cover images inside the viewport, and
-  `app.WaitForVisibleCovers<TrackTile>(scrollViewer)` waits until they have all loaded.
+- Scrolling: `app.LibraryGridScroll()`, `app.LibraryListScroll()` and `app.TrackAreaScroll(trackArea)` find the
+  scroll viewers. `app.ScrollTo(scrollViewer, offset)` and `app.ScrollByScreens(scrollViewer, screens)` (clamped to the
+  extent). `app.VisibleCoverImages<TrackTile>(scrollViewer)` lists the cover images inside the viewport and
+  `app.VisibleTrackPaths<TrackTile>(scrollViewer)` the audio paths of those tracks.
+- Library covers start loading only after a track has stayed visible for `CoverLoadQueue.ShowDelay`, which runs on
+  the fake time. `app.PassCoverShowDelay()` advances past it; `app.WaitForVisibleCovers<TrackTile>(scrollViewer)`
+  advances it and waits until the visible covers have all loaded. The player cover loads without the delay.
 - Before writing a helper in a test class, check `TestMainWindow` and the other tests for one that does the job.
   When one is private to another test class, move it to `TestMainWindow` (or `tests/Tests.Shared` if other test
   projects need it), list it here and use it from both.
@@ -58,7 +63,8 @@ decoding and scaling, cover sizes and memory) here.
   `app.TimeProvider.Advance(...)`, then run UI jobs. Timers and throttles never fire on their own.
 - Covers: `app.CoverLoader` is a `FakeTrackCoverLoader`; `app.CoverLoader.Add(audioPath, new PixelSize(w, h))` gives
   that track a generated PNG cover and `AddToEveryTrack(size)` gives one to every other track. Tracks without one
-  have no cover. `LoadCount(audioPath)` tells how many times a cover was loaded. Covers load on background threads,
+  have no cover. `LoadCount(audioPath)` tells how many times a cover was loaded and `LoadOrder` the order loads started in.
+  `Hold()` makes loads wait until `ReleaseOne()` or `Release()`; release held loads before the test ends. Covers load on background threads,
   so wait with `app.WaitUntil(condition)`, which runs UI jobs until the condition holds or 5 seconds pass.
 - Display scale: the headless window always renders at 100%. Set `app.RenderScale.RenderScaling` (e.g. `1.5`) before
   covers load to make the app decode covers as it would at that scale.

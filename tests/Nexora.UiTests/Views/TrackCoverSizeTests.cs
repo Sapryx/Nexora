@@ -107,6 +107,7 @@ public class TrackCoverSizeTests
     private static void WaitForCovers<T>(TestMainWindow app) where T : Control
     {
         string[] coveredPaths = [SquarePath, WidePath, TallPath];
+        app.PassCoverShowDelay();
         app.WaitUntil(() => coveredPaths.All(path => CoverImage<T>(app, path).Source != null));
     }
 
