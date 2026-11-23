@@ -14,6 +14,7 @@ using Core.Storage.Tags;
 using Core.Tracks;
 using DiscordRPC.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nexora.Controls;
@@ -50,22 +51,27 @@ public sealed class TestMainWindow : IDisposable
     public FakeDiscordPipe DiscordPipe { get; } = new FakeDiscordPipe();
     public FakeTrackCoverLoader CoverLoader { get; } = new FakeTrackCoverLoader();
     public TestRenderScale RenderScale { get; } = new TestRenderScale();
+    public string ThumbnailDirectory { get; }
     public IServiceProvider Services => provider;
     private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(5);
     private readonly ServiceProvider provider;
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
     private readonly string screenshotPath;
+    private readonly bool ownsThumbnailDirectory;
 
-    public TestMainWindow([CallerMemberName] string testName = "") : this(null, null, testName)
+    public TestMainWindow([CallerMemberName] string testName = "") : this(null, null, null, testName)
     {
     }
 
     public TestMainWindow(
         FakeMediaEngine? mediaEngine,
         IMetadataSaver? metadataSaver = null,
+        string? thumbnailDirectory = null,
         [CallerMemberName] string testName = "")
     {
         screenshotPath = Path.Combine(screenshotDirectory, $"{testName}.png");
+        ownsThumbnailDirectory = thumbnailDirectory == null;
+        ThumbnailDirectory = thumbnailDirectory ?? CreateTemporaryDirectory();
 
         var services = new ServiceCollection();
         services.AddLogging();
@@ -91,6 +97,10 @@ public sealed class TestMainWindow : IDisposable
         services.AddSingleton<INamedPipeClient>(DiscordPipe);
         services.AddSingleton<ITrackCoverLoader>(CoverLoader);
         services.AddSingleton<IRenderScaleProvider>(RenderScale);
+        services.AddSingleton<IThumbnailStore>(serviceProvider => new ThumbnailStore(
+            ThumbnailDirectory,
+            serviceProvider.GetRequiredService<ILogger<ThumbnailStore>>()
+        ));
         provider = services.BuildServiceProvider();
 
         Window = new RecordingMainWindow()
@@ -294,6 +304,11 @@ public sealed class TestMainWindow : IDisposable
             && top.Value.Y + control.Bounds.Height > 0;
     }
 
+    public static string CreateTemporaryDirectory()
+    {
+        return Directory.CreateTempSubdirectory("nexora-").FullName;
+    }
+
     private static string ProjectDirectory([CallerFilePath] string sourcePath = "")
     {
         return Path.GetDirectoryName(sourcePath)
@@ -315,5 +330,10 @@ public sealed class TestMainWindow : IDisposable
         }
 
         provider.Dispose();
+
+        if(ownsThumbnailDirectory && Directory.Exists(ThumbnailDirectory))
+        {
+            Directory.Delete(ThumbnailDirectory, true);
+        }
     }
 }

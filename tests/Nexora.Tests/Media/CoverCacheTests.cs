@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Media.Imaging;
 using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -13,6 +14,7 @@ public class CoverCacheTests
     private const string AudioPath = "/music/broken.mp3";
     private readonly TestLogger<CoverCache> logger = new TestLogger<CoverCache>();
     private readonly Mock<ITrackCoverLoader> coverLoaderMock = new Mock<ITrackCoverLoader>();
+    private readonly Mock<IThumbnailStore> thumbnailStoreMock = new Mock<IThumbnailStore>();
     private readonly CoverCache coverCache;
 
     public CoverCacheTests()
@@ -20,6 +22,7 @@ public class CoverCacheTests
         coverCache = new CoverCache(
             logger,
             coverLoaderMock.Object,
+            thumbnailStoreMock.Object,
             Mock.Of<IRenderScaleProvider>(it => it.RenderScaling == 1)
         );
     }
@@ -30,6 +33,41 @@ public class CoverCacheTests
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
         var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         Assert.Null(cover);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_TrackWithoutCover_SavesMissingThumbnailAtPixelSide()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_StoredThumbnail_ReturnsItWithoutReadingAudioFile()
+    {
+        Bitmap? stored = null;
+        thumbnailStoreMock.Setup(it => it.TryLoad(AudioPath, 64, out stored)).Returns(true);
+
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        Assert.Null(cover);
+        coverLoaderMock.Verify(it => it.LoadCover(It.IsAny<string>()), Times.Never);
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_LoaderThrows_DoesNotSaveThumbnail()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
     }
 
     [Fact]
@@ -100,6 +138,7 @@ public class CoverCacheTests
         await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
 
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, null), Times.Once);
         Assert.Empty(logger.Entries);
     }
 

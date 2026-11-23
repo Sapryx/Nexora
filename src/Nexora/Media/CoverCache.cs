@@ -20,16 +20,19 @@ public class CoverCache : ICoverCache
     private const int LargeMaxSide = 1024;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
+    private readonly IThumbnailStore thumbnailStore;
     private readonly IRenderScaleProvider renderScaleProvider;
     private readonly LruCache<CoverKey, Bitmap?> cache = new LruCache<CoverKey, Bitmap?>(0, WeighCover);
 
     public CoverCache(
         ILogger<CoverCache> logger,
         ITrackCoverLoader coverLoader,
+        IThumbnailStore thumbnailStore,
         IRenderScaleProvider renderScaleProvider)
     {
         this.logger = logger;
         this.coverLoader = coverLoader;
+        this.thumbnailStore = thumbnailStore;
         this.renderScaleProvider = renderScaleProvider;
     }
 
@@ -48,10 +51,7 @@ public class CoverCache : ICoverCache
             return cached;
         }
 
-        var bitmap = await Task.Run(
-            () => LoadCover(key.AudioPath, stream => DecodeToFit(stream, key.PixelSide), token),
-            token
-        ).ConfigureAwait(false);
+        var bitmap = await Task.Run(() => LoadThumbnail(key, token), token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
         cache.Set(key, bitmap);
         return bitmap;
@@ -59,12 +59,12 @@ public class CoverCache : ICoverCache
 
     public Task<Bitmap?> LoadLargeAsync(string audioPath)
     {
-        return Task.Run(() => LoadCover(audioPath, DecodeLarge, CancellationToken.None));
+        return Task.Run(() => LoadCover(audioPath, DecodeLarge));
     }
 
     public Task<Bitmap?> LoadOriginalAsync(string audioPath)
     {
-        return Task.Run(() => LoadCover(audioPath, stream => new Bitmap(stream), CancellationToken.None));
+        return Task.Run(() => LoadCover(audioPath, stream => new Bitmap(stream)));
     }
 
     public static PixelSize FitToMaxSide(PixelSize size, int maxSide)
@@ -108,25 +108,52 @@ public class CoverCache : ICoverCache
         return CoverSizes.ToPixels(size, renderScaleProvider.RenderScaling);
     }
 
-    private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode, CancellationToken token)
+    private Bitmap? LoadThumbnail(CoverKey key, CancellationToken token)
     {
+        if(thumbnailStore.TryLoad(key.AudioPath, key.PixelSide, out var stored))
+        {
+            return stored;
+        }
+
+        if(TryReadCover(key.AudioPath, stream => DecodeToFit(stream, key.PixelSide), token, out var bitmap))
+        {
+            thumbnailStore.Save(key.AudioPath, key.PixelSide, bitmap);
+        }
+
+        return bitmap;
+    }
+
+    private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)
+    {
+        TryReadCover(audioPath, decode, CancellationToken.None, out var bitmap);
+        return bitmap;
+    }
+
+    private bool TryReadCover(
+        string audioPath,
+        Func<Stream, Bitmap> decode,
+        CancellationToken token,
+        out Bitmap? bitmap)
+    {
+        bitmap = null;
+
         try
         {
             var coverRaw = coverLoader.LoadCover(audioPath);
             token.ThrowIfCancellationRequested();
 
-            if(coverRaw == null)
+            if(coverRaw != null)
             {
-                return null;
+                using var stream = new MemoryStream(coverRaw);
+                bitmap = decode(stream);
             }
 
-            using var stream = new MemoryStream(coverRaw);
-            return decode(stream);
+            return true;
         }
         catch(Exception ex) when(ex is not OperationCanceledException)
         {
             logger.Warn(ex, $"Failed to load cover of {audioPath}");
-            return null;
+            return false;
         }
     }
 

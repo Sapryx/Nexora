@@ -37,6 +37,19 @@ public static class CompositionRoot
         "Nexora"
     );
 
+    private static readonly string CacheDirectory = Path.Combine(
+        OsCacheDirectory.Choose(
+            OperatingSystem.IsWindows(),
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.DoNotVerify
+            ),
+            Environment.GetEnvironmentVariable("XDG_CACHE_HOME"),
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+        ),
+        "Nexora"
+    );
+
     private static readonly string VolumeFilePath = Path.Combine(AppDataDirectory, "volume.txt");
     private static readonly TimeSpan SeekThrottleInterval = TimeSpan.FromMilliseconds(150);
     private static readonly TimeSpan CoverShowDelay = TimeSpan.FromMilliseconds(150);
@@ -127,6 +140,10 @@ public static class CompositionRoot
         ));
         builder.AddSingleton<RenderScaleProvider>();
         builder.AddSingleton<IRenderScaleProvider>(provider => provider.GetRequiredService<RenderScaleProvider>());
+        builder.AddSingleton<IThumbnailStore>(provider => new ThumbnailStore(
+            CacheDirectory,
+            provider.GetRequiredService<ILogger<ThumbnailStore>>()
+        ));
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<CoverMemoryBudget>();
         builder.AddSingleton(provider => new CoverLoadQueue(

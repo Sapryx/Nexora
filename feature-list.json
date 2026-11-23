@@ -92,7 +92,7 @@
             "Storing the large covers of the cover viewer and track editor on disk",
             "Sharing one thumbnail between tracks with identical covers"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "After the library loads, a background task creates every missing or outdated list and grid thumbnail without affecting the UI",

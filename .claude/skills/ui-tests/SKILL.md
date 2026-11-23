@@ -18,6 +18,9 @@ decoding and scaling, cover sizes and memory) here.
 - Mark tests with `[AvaloniaFact]` and open the window with `using var app = new TestMainWindow();`.
   It wires services through `CompositionRoot` with a mocked audio player (`app.AudioPlayerMock`) and loudness
   analyzer. Resolve any other service with `app.Services.GetRequiredService<T>()`.
+- Each window stores cover thumbnails in its own temporary `app.ThumbnailDirectory`, deleted on dispose. To test a
+  restart, create one with `TestMainWindow.CreateTemporaryDirectory()`, pass it as `thumbnailDirectory` to every
+  window and delete it yourself; `new ThumbnailStore(directory, logger).PathOf(audioPath, pixelSide)` names a file.
 - `TestMainWindow` only builds the window. It does not run `CompositionRoot.Start`, so services started there
   (`MainWindowVm.Initialize`, `MusicLibrary.LoadAsync`, `IRichPresenceService.Initialize`) are not running.
   Start the ones the test needs yourself.

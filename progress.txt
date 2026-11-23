@@ -71,3 +71,24 @@ shows the new row's covers without new loads; a fast scroll loads nothing until 
 nearby rows. Unit tests for CoverLoadQueue prefetch ordering/promotion, VisibleCovers, TrackControlVm and
 SmoothScroller.GetShownItemCount. Screenshots checked. All tests pass; method-metrics --changed: all changed
 methods 100% covered, complexity <= 8.
+
+Date: 2026-11-23 | 20:40:01
+Task: List and grid covers are kept on disk as PNG thumbnails in the OS cache directory, so a cover that is not in
+memory loads without reading the audio file again (feature-list.json entry 4)
+Result: Added IThumbnailStore/ThumbnailStore (Media): thumbnails are '<audio file name> <side>x<side>.png' in the
+cache directory; a thumbnail older than its audio file counts as missing, a zero-byte file marks a track without a
+cover, writes go to a temporary file that is then moved in place, and read/write failures are logged and ignored.
+CoverCache.GetOrLoadAsync checks the store before reading the audio file and saves what it decodes (not when the
+read failed or was cancelled); the large and original covers are unchanged. The cache directory is
+<OS cache>/Nexora, chosen by Core.Storage.OsCacheDirectory (LocalApplicationData on Windows, XDG_CACHE_HOME or
+~/.cache elsewhere) in CompositionRoot. TestMainWindow gives every window its own temporary ThumbnailDirectory
+(or takes one to simulate restarts); ui-tests skill updated.
+Verification: UI tests ThumbnailCacheTests: an empty cache in grid view creates '<name> 160x160.png' for the
+visible tracks (decoded size checked) and nothing for unloaded ones; list view adds 64x64; a restart at 150% adds
+240x240 and 96x96 and keeps the old files; a restart loads all covers without reading audio files; touching a real
+audio file and changing its cover regenerates only its thumbnails (new size checked); deleting the cache directory
+recreates them; a track without a cover is not read again after a restart. ThumbnailStoreTests (naming, fresh,
+outdated, missing-cover marker, broken file, unwritable directory, failed replace cleans the temporary file),
+CoverCacheTests and OsCacheDirectoryTests. Screenshot checked. All tests pass (--all); method-metrics --changed:
+new methods 100% covered, complexity <= 8; CompositionRoot.Configure stays at 92% (OS branches and the real store
+registration, which tests replace with a temporary directory).
