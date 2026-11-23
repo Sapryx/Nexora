@@ -64,6 +64,7 @@
 
                     <Panel>
                         <views:TrackArea TrackVms="{Binding QueueVm.TrackVms}"
+                                            Covers="{Binding QueueCovers}"
                                             HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch" />
 
@@ -119,6 +120,7 @@
                     <views:TrackArea x:Name="LibraryList"
                                         Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
+                                        Covers="{Binding LibraryListCovers}"
                                         IsVisible="{Binding !IsLibraryGridView}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"/>
@@ -127,6 +129,7 @@
                                         Margin="32 0 0 0"
                                         TrackVms="{Binding SearchBarVm.DisplayedAudioTrackVms}"
                                         FirstVisibleTrackIndex="{Binding #LibraryList.FirstVisibleTrackIndex}"
+                                        Covers="{Binding LibraryGridCovers}"
                                         IsVisible="{Binding IsLibraryGridView}"
                                         HorizontalAlignment="Stretch"
                                         VerticalAlignment="Stretch"/>

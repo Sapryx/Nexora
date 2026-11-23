@@ -37,7 +37,7 @@
             "Delaying or cancelling cover loads while scrolling",
             "Loading covers for rows outside the visible area"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "While scrolling the library, a cover starts loading only after its tile has stayed visible for a short time, loads for tiles that scroll away are cancelled, and the most recently shown tiles load first",

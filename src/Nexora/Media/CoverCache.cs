@@ -11,12 +11,18 @@ namespace Nexora.Media;
 
 public class CoverCache : ICoverCache
 {
-    private const int Capacity = 256;
+    public long MemoryBudget
+    {
+        get => cache.Capacity;
+        set => cache.Capacity = value;
+    }
+
+    public long MemoryUsed => cache.Weight;
     private const int LargeMaxSide = 1024;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
     private readonly IRenderScaleProvider renderScaleProvider;
-    private readonly LruCache<CoverKey, Bitmap?> cache = new LruCache<CoverKey, Bitmap?>(Capacity);
+    private readonly LruCache<CoverKey, Bitmap?> cache = new LruCache<CoverKey, Bitmap?>(0, WeighCover);
     private readonly ConcurrentDictionary<CoverKey, Task<Bitmap?>> inFlight = [];
 
     public CoverCache(
@@ -102,9 +108,14 @@ public class CoverCache : ICoverCache
         return Bitmap.DecodeToHeight(stream, side, BitmapInterpolationMode.HighQuality);
     }
 
+    private static long WeighCover(Bitmap? bitmap)
+    {
+        return bitmap == null ? 0 : (long)bitmap.PixelSize.Width * bitmap.PixelSize.Height * CoverSizes.BytesPerPixel;
+    }
+
     private int ScaleToScreen(double size)
     {
-        return (int)Math.Ceiling(size * renderScaleProvider.RenderScaling);
+        return CoverSizes.ToPixels(size, renderScaleProvider.RenderScaling);
     }
 
     private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)

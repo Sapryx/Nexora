@@ -11,3 +11,21 @@ and 150%, wide and tall covers keeping their aspect ratio, an empty area for a t
 viewer and editor showing the full 500x500 cover. "No resampling while scrolling" is checked as bitmap pixel size
 equal to displayed size times scale; no frame profiling was done. Screenshot checked. All tests pass;
 method-metrics reports 100% coverage and complexity at most 2 for the changed methods.
+
+Date: 2026-11-23 | 12:47:47
+Task: The memory used by cached library covers is limited to a budget sized from how many covers fit in the visible
+area times a few screens (feature-list.json entry 1)
+Result: LruCache (Core) is now weighted: it takes a weigh function, keeps a total Weight and has a settable Capacity
+that evicts the least recently used entries. CoverCache weighs covers by pixel bytes (missing covers weigh 0) and
+exposes MemoryBudget and MemoryUsed. CoverMemoryBudget creates one CoverViewport per cover list (queue, library list,
+library grid; owned by MainWindowVm and bound in MainWindow.axaml); TrackArea and TrackGrid report how many covers fit
+in their viewport (SmoothScroller.VisibleItemCount, times columns in the grid; 0 while hidden) and the budget is
+8 screens of those covers at their scaled pixel size. 8 screens is the smallest that keeps a 100-track grid fully
+cached at 1280x800 (16 visible tiles). FakeTrackCoverLoader got AddToEveryTrack and LoadCount.
+Verification: UI tests CoverMemoryBudgetTests: 10000 tracks in grid view scrolled to the end (in 25-screen steps to
+keep the test at ~20 s) with memory used <= budget at every stop, budget unchanged and far below the library size;
+scrolling back one screen shows covers without new loads; enlarging the window to 1920x1200 raises the budget to the
+new tile count; list view uses the 64px list cover size (also scrolled 40 screens and back); switching back to grid
+restores the grid budget; 100 tracks scrolled through and back are each loaded once and all stay cached. Unit tests
+for LruCache weights/capacity, CoverMemoryBudget and SmoothScroller.GetVisibleItemCount. Screenshots checked. All
+tests pass; method-metrics reports 100% coverage and complexity at most 6 for the new methods.

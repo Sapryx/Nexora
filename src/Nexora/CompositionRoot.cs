@@ -126,6 +126,7 @@ public static class CompositionRoot
         builder.AddSingleton<RenderScaleProvider>();
         builder.AddSingleton<IRenderScaleProvider>(provider => provider.GetRequiredService<RenderScaleProvider>());
         builder.AddSingleton<ICoverCache, CoverCache>();
+        builder.AddSingleton<CoverMemoryBudget>();
         builder.AddSingleton<MusicLibrary>();
         builder.AddSingleton<PlaybackQueue>();
         builder.AddSingleton<KeyboardLayoutTranslator>();

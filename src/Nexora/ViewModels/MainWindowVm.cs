@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Core.Logging;
 using Microsoft.Extensions.Logging;
+using Nexora.Media;
 
 namespace Nexora.ViewModels;
 
@@ -21,6 +22,9 @@ public partial class MainWindowVm : ViewModelBase
     public QueueVm QueueVm { get; }
     public TrackEditorVm TrackEditorVm { get; }
     public CoverViewerVm CoverViewerVm { get; }
+    public CoverViewport QueueCovers { get; }
+    public CoverViewport LibraryListCovers { get; }
+    public CoverViewport LibraryGridCovers { get; }
     public bool IsPopupOpen => TrackEditorVm.IsOpen || CoverViewerVm.IsOpen;
     private const int LibraryGridViewIndex = 0;
     private const int SettingsTabIndex = 1;
@@ -32,7 +36,8 @@ public partial class MainWindowVm : ViewModelBase
         PlaybackVm playbackVm,
         QueueVm queueVm,
         TrackEditorVm trackEditorVm,
-        CoverViewerVm coverViewerVm)
+        CoverViewerVm coverViewerVm,
+        CoverMemoryBudget coverMemoryBudget)
     {
         this.logger = logger;
 
@@ -41,6 +46,9 @@ public partial class MainWindowVm : ViewModelBase
         QueueVm = queueVm;
         TrackEditorVm = trackEditorVm;
         CoverViewerVm = coverViewerVm;
+        QueueCovers = coverMemoryBudget.AddViewport();
+        LibraryListCovers = coverMemoryBudget.AddViewport();
+        LibraryGridCovers = coverMemoryBudget.AddViewport();
     }
 
     public void Initialize()

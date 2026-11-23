@@ -77,6 +77,18 @@ public class CoverCacheTests
     }
 
     [Fact]
+    public async Task MemoryBudget_TrackWithoutCover_KeepsBudgetAndUsesNoMemory()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+        coverCache.MemoryBudget = 1000;
+
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+
+        Assert.Equal(1000, coverCache.MemoryBudget);
+        Assert.Equal(0, coverCache.MemoryUsed);
+    }
+
+    [Fact]
     public async Task LoadLargeAsync_LoaderThrows_ReturnsNullAndLogsWarning()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));

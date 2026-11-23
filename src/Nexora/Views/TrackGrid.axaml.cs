@@ -6,6 +6,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Nexora.Controls;
+using Nexora.Media;
 using Nexora.ViewModels;
 
 namespace Nexora.Views;
@@ -42,6 +43,10 @@ public partial class TrackGrid : UserControl
         set => SetValue(FirstVisibleTrackIndexProperty, value);
     }
 
+    public static readonly StyledProperty<CoverViewport?> CoversProperty =
+        AvaloniaProperty.Register<TrackGrid, CoverViewport?>(nameof(Covers));
+
+    public CoverViewport? Covers => GetValue(CoversProperty);
     public ObservableCollection<TrackGridRow> Rows { get; } = [];
     private const double CellWidth = 192;
     private const double RightInset = 32;
@@ -54,6 +59,7 @@ public partial class TrackGrid : UserControl
         InitializeComponent();
         scroller = new SmoothScroller(RowScrollViewer, RowList);
         RowScrollViewer.ScrollChanged += OnScrollChanged;
+        RowScrollViewer.LayoutUpdated += (_, _) => ReportCovers();
     }
 
     public bool ScrollByKey(Key key)
@@ -83,11 +89,26 @@ public partial class TrackGrid : UserControl
         {
             ScheduleRowsUpdate();
         }
-        else if(change.Property == IsVisibleProperty && IsVisible)
+        else if(change.Property == IsVisibleProperty)
+        {
+            OnVisibilityChanged();
+        }
+    }
+
+    private void OnVisibilityChanged()
+    {
+        ReportCovers();
+
+        if(IsVisible)
         {
             pendingTrackIndex = FirstVisibleTrackIndex;
             ScheduleRowsUpdate();
         }
+    }
+
+    private void ReportCovers()
+    {
+        Covers?.Show(IsVisible ? scroller.VisibleItemCount * ColumnCount : 0, CoverSizes.Tile);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
