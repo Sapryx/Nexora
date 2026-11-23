@@ -24,10 +24,16 @@ Tests (all test projects; skips slow tests unless their code has uncommitted cha
 scripts/test.sh -v q -nologo --logger "console;verbosity=minimal"
 ```
 Single test: `dotnet test Nexora.slnx -v q -nologo --filter "FullyQualifiedName~LruCacheTests"`.
+Full test runs, `scripts/method-metrics.sh` and slow test classes can take several minutes: run them in the
+foreground with the Bash tool's `timeout` set to `600000`. Don't wait for them with background tasks, `sleep` or
+`Monitor`.
 Coverage and cyclomatic complexity of methods; fails unless each has 100% coverage and complexity of at most 8
-(runs all tests with coverage; `--no-test` reuses the last run). Pass any number of methods and classes:
+(runs all tests with coverage; `--no-test` reuses the last run and warns if sources changed since).
+Pass any number of methods and classes; `--changed` keeps only methods with lines changed against `HEAD`
+(including untracked files) and, without methods or classes, reports every changed method:
 ```
 scripts/method-metrics.sh LruCache.TryGet TrackControlVmRegistry
+scripts/method-metrics.sh --changed
 ```
 Run: `dotnet run --project src/Nexora` (GUI; blocking — run in background).
 Publish: `scripts/Publish.ps1` / `scripts/publish.sh`.
@@ -35,7 +41,8 @@ Profile (Linux, perf + Hotspot): `scripts/profile.sh [--dwarf] [output file]` (G
 
 ## UI tests
 
-`tests/Nexora.UiTests` runs the real `MainWindow` headlessly. Load the `ui-tests` skill before writing or debugging one.
+`tests/Nexora.UiTests` runs the real `MainWindow` headlessly. Load the `ui-tests` skill with the Skill tool
+before writing or debugging one.
 
 ## Slow tests
 

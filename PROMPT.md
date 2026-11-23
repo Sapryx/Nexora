@@ -7,8 +7,11 @@ You work autonomously. Nobody will answer your questions: use your own judgment 
    (it's not necessarily the first one).
    If the behavior already exists, extend or add a UI test that checks every step of the entry, then mark it done.
 3. State what you are going to be working on.
-4. Implement the task using the `/implement` skill. Work on one task only.
+4. Implement the task by invoking the `implement` skill with the Skill tool. Work on one task only.
+   Before writing a helper, look for one that already does the job in the code and the tests.
+   If it is private to another class, move it to a shared place and use it from both instead of copying it.
 5. Test the behavior end-to-end with a UI test in `tests/Nexora.UiTests` and check its screenshot.
+   Load the `ui-tests` skill with the Skill tool first.
 6. Mark the task as `"state": "done"` in `feature-list.json`.
 7. Append the progress you've made to the `progress.txt` file.
    State what the task was and what you did to complete it. Be concise.

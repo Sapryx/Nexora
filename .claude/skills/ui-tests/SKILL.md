@@ -7,6 +7,12 @@ description: How to write and debug Nexora's headless UI tests in tests/Nexora.U
 
 `tests/Nexora.UiTests` runs the real `MainWindow` on Avalonia's headless platform (xUnit v3), so no display is needed.
 
+## Where image tests go
+
+`tests/Nexora.Tests` has no Avalonia platform, so creating, decoding or rendering a bitmap there fails with
+"Unable to locate 'Avalonia.Platform.IPlatformRenderInterface'". Write tests that need a real image (cover
+decoding and scaling, cover sizes and memory) here.
+
 ## Opening the window
 
 - Mark tests with `[AvaloniaFact]` and open the window with `using var app = new TestMainWindow();`.
@@ -28,6 +34,15 @@ description: How to write and debug Nexora's headless UI tests in tests/Nexora.U
 - Points: `app.PointIn(control, 0.3, 0.5)` is the point at 30% of the control's width and half its height, in window
   coordinates. Use it for presses, moves and drags with `app.Window.MouseDown` / `MouseMove` / `MouseUp`.
 - Call `Dispatcher.UIThread.RunJobs()` after raw `app.Window` input or after changing services directly.
+- Library: `app.AddToLibrary(tracks)` adds tracks to the library; `app.ShowLibraryGrid()` and `app.ShowLibraryList()`
+  switch its view. `app.FindTrack<TrackTile>(audioPath)` (or `<TrackControl>` for list and queue rows) finds the
+  visible control of a track, and `app.CoverImageOf(track)` its cover `Image`.
+- Scrolling: `app.ScrollTo(scrollViewer, offset)` and `app.ScrollByScreens(scrollViewer, screens)` (clamped to the
+  extent). `app.VisibleCoverImages<TrackTile>(scrollViewer)` lists the cover images inside the viewport, and
+  `app.WaitForVisibleCovers<TrackTile>(scrollViewer)` waits until they have all loaded.
+- Before writing a helper in a test class, check `TestMainWindow` and the other tests for one that does the job.
+  When one is private to another test class, move it to `TestMainWindow` (or `tests/Tests.Shared` if other test
+  projects need it), list it here and use it from both.
 
 ## Fakes
 
@@ -42,9 +57,9 @@ description: How to write and debug Nexora's headless UI tests in tests/Nexora.U
 - Time: `app.TimeProvider` is a `FakeTimeProvider` registered as the app's `TimeProvider`. Move it with
   `app.TimeProvider.Advance(...)`, then run UI jobs. Timers and throttles never fire on their own.
 - Covers: `app.CoverLoader` is a `FakeTrackCoverLoader`; `app.CoverLoader.Add(audioPath, new PixelSize(w, h))` gives
-  that track a generated PNG cover. Tracks without one have no cover. Add tracks to the library with
-  `MusicLibrary.Playlist.AddTracks(...)` and run UI jobs. Covers load on background threads, so wait with
-  `app.WaitUntil(condition)`, which runs UI jobs until the condition holds or 5 seconds pass.
+  that track a generated PNG cover and `AddToEveryTrack(size)` gives one to every other track. Tracks without one
+  have no cover. `LoadCount(audioPath)` tells how many times a cover was loaded. Covers load on background threads,
+  so wait with `app.WaitUntil(condition)`, which runs UI jobs until the condition holds or 5 seconds pass.
 - Display scale: the headless window always renders at 100%. Set `app.RenderScale.RenderScaling` (e.g. `1.5`) before
   covers load to make the app decode covers as it would at that scale.
 - Discord: `app.DiscordPipe` is a `FakeDiscordPipe` that acts like Discord over the real library. It can `Start`,
