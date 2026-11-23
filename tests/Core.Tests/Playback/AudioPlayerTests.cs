@@ -91,6 +91,20 @@ public class AudioPlayerTests
     }
 
     [Fact]
+    public void EndReached_Stopped_StaysStopped()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        player.Stop();
+        states.Clear();
+
+        mediaEngine.RaiseEndReached();
+
+        Assert.Same(PlaybackState.Stopped, player.State);
+        Assert.Empty(states);
+    }
+
+    [Fact]
     public void TogglePause_PausedAtEndOfLastTrack_PlaysItFromStart()
     {
         var player = CreatePlayer();
@@ -329,6 +343,46 @@ public class AudioPlayerTests
         Assert.Equal("/music/one.opus", mediaEngine.OpenedPath);
         Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
         Assert.False(mediaEngine.IsPaused);
+    }
+
+    [Fact]
+    public async Task PlaybackPosition_SetWhileFileBeingWritten_OpensItAtSoughtPositionAfterWrite()
+    {
+        var player = CreatePlayer();
+        var item = AddTrack("/music/one.opus");
+        var write = new TaskCompletionSource();
+        var release = player.ReleaseFileAsync("/music/one.opus", () => write.Task);
+        player.PlayTrack(item);
+        positions.Clear();
+
+        player.PlaybackPosition = 0.5f;
+
+        Assert.Equal(0.5f, player.PlaybackPosition);
+        Assert.Equal([0.5f], positions);
+        Assert.Empty(mediaEngine.SoughtPositions);
+
+        write.SetResult();
+        await release;
+
+        Assert.Equal(1, mediaEngine.OpenCount);
+        Assert.Equal(50000, mediaEngine.OpenedStartTimeMs);
+    }
+
+    [Fact]
+    public void PlaybackPosition_SetAfterStopAtEndOfLastTrack_SeeksEngineWithoutReporting()
+    {
+        var player = CreatePlayer();
+        player.PlayTrack(AddTrack("/music/one.opus"));
+        mediaEngine.RaiseEndReached();
+        player.PlaybackPosition = 0.5f;
+        player.Stop();
+        positions.Clear();
+
+        player.PlaybackPosition = 0.3f;
+
+        Assert.Empty(positions);
+        Assert.Equal(0.3f, mediaEngine.Position);
+        Assert.Equal(0.3f, player.PlaybackPosition);
     }
 
     [Fact]

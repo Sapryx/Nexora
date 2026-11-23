@@ -30,6 +30,13 @@ public class AudioPlayer : IAudioPlayer
                 return endSeekPosition ?? 1;
             }
 
+            var open = pendingOpen;
+
+            if(open != null)
+            {
+                return PositionOf(open);
+            }
+
             return isPositionReset ? 0 : mediaEngine.Position;
         }
         set
@@ -40,10 +47,10 @@ public class AudioPlayer : IAudioPlayer
             {
                 isPositionReset = false;
 
-                if(isAtEnd)
+                if(isAtEnd || pendingOpen != null)
                 {
                     seekPosition = Math.Clamp(value, 0, 1);
-                    endSeekPosition = seekPosition;
+                    SeekClosedTrack(seekPosition.Value);
                 }
                 else
                 {
@@ -169,6 +176,7 @@ public class AudioPlayer : IAudioPlayer
         {
             State = PlaybackState.Stopped;
             pendingOpen = null;
+            ClearEnd();
             mediaEngine.Stop();
         }
 
@@ -236,8 +244,7 @@ public class AudioPlayer : IAudioPlayer
     private void OpenWhenReleased(IPlaylistItem playlistItem, long startTimeMs)
     {
         pendingOpen = null;
-        isAtEnd = false;
-        endSeekPosition = null;
+        ClearEnd();
 
         if(!releaseCounts.ContainsKey(playlistItem.AudioTrack.AudioPath))
         {
@@ -267,29 +274,51 @@ public class AudioPlayer : IAudioPlayer
 
     private void OnEndReached()
     {
-        var track = State.Track;
-        var nextTrack = track?.GetNext();
+        var nextTrack = PauseOrGetNextTrack();
 
         if(nextTrack != null)
         {
             PlayTrack(nextTrack);
-            return;
         }
+    }
 
-        if(track == null)
-        {
-            return;
-        }
-
-        var state = PlaybackState.Paused(track);
+    private IPlaylistItem? PauseOrGetNextTrack()
+    {
+        PlaybackState? state;
 
         lock(fileLock)
         {
-            isAtEnd = true;
-            State = state;
+            var nextTrack = State.Track?.GetNext();
+
+            if(nextTrack != null)
+            {
+                return nextTrack;
+            }
+
+            state = PauseAtEnd();
         }
 
-        StateChanged?.Invoke(state);
+        if(state != null)
+        {
+            StateChanged?.Invoke(state);
+        }
+
+        return null;
+    }
+
+    private PlaybackState? PauseAtEnd()
+    {
+        var track = State.Track;
+
+        if(track == null)
+        {
+            return null;
+        }
+
+        isAtEnd = true;
+        State = PlaybackState.Paused(track);
+
+        return State;
     }
 
     private void OnEncounteredError()
@@ -328,7 +357,8 @@ public class AudioPlayer : IAudioPlayer
         if(track != null)
         {
             float normalizedAmount = amount / (float)track.AudioTrack.Metadata.Duration.TotalSeconds;
-            PlaybackPosition = (isAtEnd ? PlaybackPosition : mediaEngine.Position) + normalizedAmount;
+            float position = isAtEnd || pendingOpen != null ? PlaybackPosition : mediaEngine.Position;
+            PlaybackPosition = position + normalizedAmount;
         }
     }
 
@@ -336,12 +366,42 @@ public class AudioPlayer : IAudioPlayer
     {
         float position = endSeekPosition ?? 1;
 
-        return position < 1 ? (long)Math.Round(track.AudioTrack.Metadata.Duration.TotalMilliseconds * position) : 0;
+        return position < 1 ? TimeMs(track, position) : 0;
+    }
+
+    private void SeekClosedTrack(float position)
+    {
+        if(pendingOpen != null)
+        {
+            pendingOpen.Time = TimeMs(pendingOpen.PlaylistItem, position);
+        }
+        else
+        {
+            endSeekPosition = position;
+        }
+    }
+
+    private void ClearEnd()
+    {
+        isAtEnd = false;
+        endSeekPosition = null;
+    }
+
+    private static long TimeMs(IPlaylistItem track, float position)
+    {
+        return (long)Math.Round(track.AudioTrack.Metadata.Duration.TotalMilliseconds * position);
+    }
+
+    private static float PositionOf(PendingOpen open)
+    {
+        double durationMs = open.PlaylistItem.AudioTrack.Metadata.Duration.TotalMilliseconds;
+
+        return durationMs > 0 ? (float)(open.Time / durationMs) : 0;
     }
 
     private class PendingOpen
     {
         public required IPlaylistItem PlaylistItem { get; init; }
-        public required long Time { get; init; }
+        public required long Time { get; set; }
     }
 }
