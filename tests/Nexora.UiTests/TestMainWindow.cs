@@ -5,6 +5,7 @@ using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Core.Playback;
 using Core.Playback.Loudness;
 using Core.Storage;
@@ -13,6 +14,7 @@ using DiscordRPC.IO;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using Nexora.Controls;
 using Nexora.ViewModels;
 using Nexora.Views;
 using Tests.Shared.Integrations;
@@ -100,11 +102,44 @@ public sealed class TestMainWindow : IDisposable
 
     public void Click(Control control)
     {
-        var point = CenterOf(control);
+        Click(CenterOf(control));
+    }
 
+    public void Click(Point point)
+    {
         Window.MouseDown(point, MouseButton.Left);
         Window.MouseUp(point, MouseButton.Left);
         Dispatcher.UIThread.RunJobs();
+    }
+
+    public void PressKey(Key key, PhysicalKey physicalKey)
+    {
+        Window.KeyPress(key, RawInputModifiers.None, physicalKey, null);
+        Window.KeyRelease(key, RawInputModifiers.None, physicalKey, null);
+        Dispatcher.UIThread.RunJobs();
+    }
+
+    public T Find<T>() where T : Control
+    {
+        return Window.GetVisualDescendants().OfType<T>().Single();
+    }
+
+    public T Find<T>(string name) where T : Control
+    {
+        return Window.GetVisualDescendants().OfType<T>().Single(it => it.Name == name);
+    }
+
+    public Button FindButton(string iconName, Visual? container = null)
+    {
+        return (container ?? Window).GetVisualDescendants().OfType<Button>()
+            .Single(button => button.GetVisualDescendants().OfType<Icon>().Any(icon => icon.IconName == iconName));
+    }
+
+    public Point PointIn(Control control, double fractionX, double fractionY)
+    {
+        var point = new Point(control.Bounds.Width * fractionX, control.Bounds.Height * fractionY);
+        return control.TranslatePoint(point, Window)
+            ?? throw new InvalidOperationException($"{control} is not in the main window");
     }
 
     private static string ProjectDirectory([CallerFilePath] string sourcePath = "")
@@ -115,9 +150,7 @@ public sealed class TestMainWindow : IDisposable
 
     private Point CenterOf(Control control)
     {
-        var center = new Point(control.Bounds.Width / 2, control.Bounds.Height / 2);
-        return control.TranslatePoint(center, Window)
-            ?? throw new InvalidOperationException($"{control} is not in the main window");
+        return PointIn(control, 0.5, 0.5);
     }
 
     public void Dispose()

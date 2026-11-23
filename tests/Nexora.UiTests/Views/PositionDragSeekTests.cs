@@ -27,8 +27,7 @@ public class PositionDragSeekTests
         using var app = new TestMainWindow(mediaEngine);
         var queue = app.Services.GetRequiredService<PlaybackQueue>();
         var playbackVm = app.Services.GetRequiredService<PlaybackVm>();
-        var slider = PlaybackControlOf(app).FindControl<Slider>("PlaybackPositionSlider")
-            ?? throw new InvalidOperationException("No position slider");
+        var slider = app.Find<Slider>("PlaybackPositionSlider");
         queue.AddTrack(new AudioTrack("/music/one.opus", new Metadata() { Duration = TrackDuration }));
         queue.AddTrack(new AudioTrack("/music/two.opus", new Metadata() { Duration = TrackDuration }));
         Dispatcher.UIThread.RunJobs();
@@ -77,11 +76,11 @@ public class PositionDragSeekTests
         Assert.Equal(4, mediaEngine.SoughtPositions.Count);
 
         slider.Focus();
-        PressKey(app, Key.Right);
+        app.PressKey(Key.Right, PhysicalKey.ArrowRight);
         Assert.Equal(5, mediaEngine.SoughtPositions.Count);
-        PressKey(app, Key.Right);
+        app.PressKey(Key.Right, PhysicalKey.ArrowRight);
         Assert.Equal(6, mediaEngine.SoughtPositions.Count);
-        PressKey(app, Key.Left);
+        app.PressKey(Key.Left, PhysicalKey.ArrowLeft);
         Assert.Equal(7, mediaEngine.SoughtPositions.Count);
 
         Press(app, slider, slider.Value);
@@ -99,20 +98,9 @@ public class PositionDragSeekTests
         Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
     }
 
-    private static PlaybackControl PlaybackControlOf(TestMainWindow app)
-    {
-        return app.Window.GetVisualDescendants().OfType<PlaybackControl>().Single();
-    }
-
-    private static Point PointAt(TestMainWindow app, Slider slider, double fraction)
-    {
-        return slider.TranslatePoint(new Point(slider.Bounds.Width * fraction, slider.Bounds.Height / 2), app.Window)
-            ?? throw new InvalidOperationException("Slider is not in the main window");
-    }
-
     private static void Move(TestMainWindow app, Slider slider, double fraction)
     {
-        app.Window.MouseMove(PointAt(app, slider, fraction));
+        app.Window.MouseMove(app.PointIn(slider, fraction, 0.5));
         Dispatcher.UIThread.RunJobs();
 
         var playbackVm = app.Services.GetRequiredService<PlaybackVm>();
@@ -124,13 +112,13 @@ public class PositionDragSeekTests
 
     private static void Press(TestMainWindow app, Slider slider, double fraction)
     {
-        app.Window.MouseDown(PointAt(app, slider, fraction), MouseButton.Left);
+        app.Window.MouseDown(app.PointIn(slider, fraction, 0.5), MouseButton.Left);
         Dispatcher.UIThread.RunJobs();
     }
 
     private static void Release(TestMainWindow app, Slider slider, double fraction)
     {
-        app.Window.MouseUp(PointAt(app, slider, fraction), MouseButton.Left);
+        app.Window.MouseUp(app.PointIn(slider, fraction, 0.5), MouseButton.Left);
         Dispatcher.UIThread.RunJobs();
     }
 
@@ -138,14 +126,6 @@ public class PositionDragSeekTests
     {
         Press(app, slider, fraction);
         Release(app, slider, fraction);
-    }
-
-    private static void PressKey(TestMainWindow app, Key key)
-    {
-        var physicalKey = key == Key.Left ? PhysicalKey.ArrowLeft : PhysicalKey.ArrowRight;
-        app.Window.KeyPress(key, RawInputModifiers.None, physicalKey, null);
-        app.Window.KeyRelease(key, RawInputModifiers.None, physicalKey, null);
-        Dispatcher.UIThread.RunJobs();
     }
 
     private static void Advance(TestMainWindow app, TimeSpan time)

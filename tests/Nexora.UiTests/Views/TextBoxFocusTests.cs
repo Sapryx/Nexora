@@ -21,7 +21,7 @@ public class TextBoxFocusTests
 
         Assert.True(textBox.IsFocused);
 
-        app.Click(app.Window.FindControl<TrackArea>("LibraryList")!);
+        app.Click(app.Find<TrackArea>("LibraryList"));
 
         Assert.False(textBox.IsFocused);
     }

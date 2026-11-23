@@ -46,7 +46,7 @@ public class DiscordReconnectTests
         discord.Reload();
         AssertShownAfterConnect(discord, "Psycho", "Muse");
 
-        app.Click(PlaybackButtonOf(app, "pause"));
+        app.Click(app.FindButton("pause", app.Find<PlaybackControl>()));
         Assert.False(app.Services.GetRequiredService<PlaybackVm>().IsPlaying);
         discord.Reload();
         AssertShownAfterConnect(discord, "Psycho", "Muse");
@@ -78,14 +78,6 @@ public class DiscordReconnectTests
         discord.WaitUntil(() => discord.ReceivedActivity);
         Assert.Equal(title, discord.Activity?.Details);
         Assert.Equal(artist, discord.Activity?.State);
-    }
-
-    private static Button PlaybackButtonOf(TestMainWindow app, string iconName)
-    {
-        var playbackControl = app.Window.GetVisualDescendants().OfType<PlaybackControl>().Single();
-
-        return playbackControl.GetVisualDescendants().OfType<Button>()
-            .Single(button => button.GetVisualDescendants().OfType<Icon>().Any(icon => icon.IconName == iconName));
     }
 
     private static TrackControlVm QueueTileOf(TestMainWindow app)

@@ -26,8 +26,7 @@ public class PlaybackEndSeekTests
         using var app = new TestMainWindow(mediaEngine);
         var queue = app.Services.GetRequiredService<PlaybackQueue>();
         var playbackVm = app.Services.GetRequiredService<PlaybackVm>();
-        var slider = PlaybackControlOf(app).FindControl<Slider>("PlaybackPositionSlider")
-            ?? throw new InvalidOperationException("No position slider");
+        var slider = app.Find<Slider>("PlaybackPositionSlider");
         queue.AddTrack(new AudioTrack("/music/one.opus", new Metadata() { Duration = TimeSpan.FromSeconds(100) }));
         app.Services.GetRequiredService<IAudioPlayer>().PlayTrack(queue.GetItem(0));
         Dispatcher.UIThread.RunJobs();
@@ -36,7 +35,7 @@ public class PlaybackEndSeekTests
         Assert.False(playbackVm.IsPlaying);
         Assert.NotNull(playbackVm.PlayingTrackViewVm);
 
-        app.Click(PlayButtonOf(app));
+        app.Click(app.FindButton("play", app.Find<PlaybackControl>()));
         Assert.True(playbackVm.IsPlaying);
         Assert.Equal(0, mediaEngine.OpenedStartTimeMs);
 
@@ -46,18 +45,16 @@ public class PlaybackEndSeekTests
         Assert.False(playbackVm.IsPlaying);
         Assert.Equal(2, mediaEngine.OpenCount);
 
-        app.Click(PlayButtonOf(app));
+        app.Click(app.FindButton("play", app.Find<PlaybackControl>()));
         Assert.True(playbackVm.IsPlaying);
         Assert.InRange(mediaEngine.OpenedStartTimeMs, 49000, 51000);
 
         Finish(app);
-        app.Window.KeyPress(Key.Left, RawInputModifiers.None, PhysicalKey.ArrowLeft, null);
-        app.Window.KeyRelease(Key.Left, RawInputModifiers.None, PhysicalKey.ArrowLeft, null);
-        Dispatcher.UIThread.RunJobs();
+        app.PressKey(Key.Left, PhysicalKey.ArrowLeft);
         Assert.Equal(0.95, slider.Value, 4);
         Assert.False(playbackVm.IsPlaying);
 
-        app.Click(PlayButtonOf(app));
+        app.Click(app.FindButton("play", app.Find<PlaybackControl>()));
         Assert.True(playbackVm.IsPlaying);
         Assert.Equal(95000, mediaEngine.OpenedStartTimeMs);
 
@@ -79,23 +76,10 @@ public class PlaybackEndSeekTests
         );
     }
 
-    private static PlaybackControl PlaybackControlOf(TestMainWindow app)
-    {
-        return app.Window.GetVisualDescendants().OfType<PlaybackControl>().Single();
-    }
-
-    private static Button PlayButtonOf(TestMainWindow app)
-    {
-        return PlaybackControlOf(app).GetVisualDescendants().OfType<Button>()
-            .Single(button => button.GetVisualDescendants().OfType<Icon>().Any(icon => icon.IconName == "play"));
-    }
-
     private static void DragToMiddle(TestMainWindow app, Slider slider)
     {
-        var start = slider.TranslatePoint(new Point(slider.Bounds.Width - 4, slider.Bounds.Height / 2), app.Window)
-            ?? throw new InvalidOperationException("Slider is not in the main window");
-        var middle = slider.TranslatePoint(new Point(slider.Bounds.Width / 2, slider.Bounds.Height / 2), app.Window)
-            ?? throw new InvalidOperationException("Slider is not in the main window");
+        var start = app.PointIn(slider, 0.98, 0.5);
+        var middle = app.PointIn(slider, 0.5, 0.5);
 
         app.Window.MouseDown(start, MouseButton.Left);
         app.Window.MouseMove(middle);

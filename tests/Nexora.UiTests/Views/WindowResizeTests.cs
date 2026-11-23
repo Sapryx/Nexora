@@ -14,10 +14,10 @@ public class WindowResizeTests
     {
         using var app = new TestMainWindow();
 
-        Press(app, new Point(1278, 400));
-        Press(app, new Point(640, 798));
-        Press(app, new Point(1278, 798));
-        Press(app, new Point(640, 2));
+        app.Click(new Point(1278, 400));
+        app.Click(new Point(640, 798));
+        app.Click(new Point(1278, 798));
+        app.Click(new Point(640, 2));
 
         WindowEdge[] expected = [
             WindowEdge.East,
@@ -35,7 +35,7 @@ public class WindowResizeTests
     {
         using var app = new TestMainWindow();
 
-        Press(app, new Point(1278, 2));
+        app.Click(new Point(1278, 2));
 
         Assert.Equal([WindowEdge.NorthEast], app.Window.ResizeDragEdges);
         Assert.True(app.Window.IsVisible);
@@ -46,8 +46,8 @@ public class WindowResizeTests
     {
         using var app = new TestMainWindow();
 
-        Press(app, new Point(900, 10));
-        Press(app, new Point(1270, 400));
+        app.Click(new Point(900, 10));
+        app.Click(new Point(1270, 400));
 
         Assert.Empty(app.Window.ResizeDragEdges);
     }
@@ -59,7 +59,7 @@ public class WindowResizeTests
         app.Window.WindowState = WindowState.Maximized;
         Dispatcher.UIThread.RunJobs();
 
-        Press(app, new Point(app.Window.Bounds.Width - 2, 400));
+        app.Click(new Point(app.Window.Bounds.Width - 2, 400));
 
         Assert.Empty(app.Window.ResizeDragEdges);
     }
@@ -78,12 +78,5 @@ public class WindowResizeTests
         Dispatcher.UIThread.RunJobs();
 
         Assert.Null(app.Window.Cursor);
-    }
-
-    private static void Press(TestMainWindow app, Point point)
-    {
-        app.Window.MouseDown(point, MouseButton.Left);
-        app.Window.MouseUp(point, MouseButton.Left);
-        Dispatcher.UIThread.RunJobs();
     }
 }
