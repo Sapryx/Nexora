@@ -41,6 +41,12 @@ description: How to write and debug Nexora's headless UI tests in tests/Nexora.U
   UI thread while a gated saver holds the write.
 - Time: `app.TimeProvider` is a `FakeTimeProvider` registered as the app's `TimeProvider`. Move it with
   `app.TimeProvider.Advance(...)`, then run UI jobs. Timers and throttles never fire on their own.
+- Covers: `app.CoverLoader` is a `FakeTrackCoverLoader`; `app.CoverLoader.Add(audioPath, new PixelSize(w, h))` gives
+  that track a generated PNG cover. Tracks without one have no cover. Add tracks to the library with
+  `MusicLibrary.Playlist.AddTracks(...)` and run UI jobs. Covers load on background threads, so wait with
+  `app.WaitUntil(condition)`, which runs UI jobs until the condition holds or 5 seconds pass.
+- Display scale: the headless window always renders at 100%. Set `app.RenderScale.RenderScaling` (e.g. `1.5`) before
+  covers load to make the app decode covers as it would at that scale.
 - Discord: `app.DiscordPipe` is a `FakeDiscordPipe` that acts like Discord over the real library. It can `Start`,
   `Quit`, `Reload` and `SendError`, and shows the last presence in `Activity`. The library polls once per second, so
   use `WaitUntil(condition)` and mark the test as slow (see "Slow tests" in `CLAUDE.md`).

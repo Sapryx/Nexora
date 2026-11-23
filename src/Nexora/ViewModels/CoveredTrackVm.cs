@@ -14,22 +14,8 @@ public abstract partial class CoveredTrackVm : ViewModelBase
     public partial string Artists { get; set; } = "";
 
     public string AudioPath { get; private set; } = "";
-
-    public Bitmap? Cover
-    {
-        get
-        {
-            var cached = coverCache.Get(AudioPath);
-
-            if(cached == null)
-            {
-                _ = LoadCoverAsync();
-            }
-
-            return cached;
-        }
-    }
-
+    public Bitmap? Cover => GetCover(CoverSizes.Thumbnail, nameof(Cover));
+    public Bitmap? TileCover => GetCover(CoverSizes.Tile, nameof(TileCover));
     private readonly ICoverCache coverCache;
     private readonly IUiDispatcher uiDispatcher;
 
@@ -49,13 +35,26 @@ public abstract partial class CoveredTrackVm : ViewModelBase
         if(pathChanged)
         {
             OnPropertyChanged(nameof(Cover));
+            OnPropertyChanged(nameof(TileCover));
         }
     }
 
-    private async Task LoadCoverAsync()
+    private Bitmap? GetCover(double size, string propertyName)
+    {
+        var cached = coverCache.Get(AudioPath, size);
+
+        if(cached == null)
+        {
+            _ = LoadCoverAsync(size, propertyName);
+        }
+
+        return cached;
+    }
+
+    private async Task LoadCoverAsync(double size, string propertyName)
     {
         string path = AudioPath;
-        var bitmap = await coverCache.GetOrLoadAsync(path).ConfigureAwait(false);
+        var bitmap = await coverCache.GetOrLoadAsync(path, size).ConfigureAwait(false);
 
         if(bitmap != null)
         {
@@ -63,7 +62,7 @@ public abstract partial class CoveredTrackVm : ViewModelBase
             {
                 if(path == AudioPath)
                 {
-                    OnPropertyChanged(nameof(Cover));
+                    OnPropertyChanged(propertyName);
                 }
             });
         }

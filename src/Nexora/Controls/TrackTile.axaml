@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:viewModels="clr-namespace:Nexora.ViewModels"
+             xmlns:media="clr-namespace:Nexora.Media"
              xmlns:controls="clr-namespace:Nexora.Controls"
              x:Class="Nexora.Controls.TrackTile"
              x:DataType="viewModels:TrackControlVm">
@@ -88,10 +89,10 @@
                     <Panel>
                         <Border CornerRadius="8"
                                 ClipToBounds="True">
-                            <Image Source="{Binding Cover}"
+                            <Image Source="{Binding TileCover}"
                                    RenderOptions.BitmapInterpolationMode="HighQuality"
-                                   Width="160"
-                                   Height="160" />
+                                   Width="{x:Static media:CoverSizes.Tile}"
+                                   Height="{x:Static media:CoverSizes.Tile}" />
                         </Border>
 
                         <Border x:Name="HoverEffect" CornerRadius="8" />

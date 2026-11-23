@@ -12,48 +12,52 @@ namespace Nexora.Media;
 public class CoverCache : ICoverCache
 {
     private const int Capacity = 256;
-    private const int PreviewWidth = 256;
     private const int LargeMaxSide = 1024;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
-    private readonly RenderScaleProvider renderScaleProvider;
-    private readonly LruCache<string, Bitmap?> cache = new LruCache<string, Bitmap?>(Capacity);
-    private readonly ConcurrentDictionary<string, Task<Bitmap?>> inFlight = [];
+    private readonly IRenderScaleProvider renderScaleProvider;
+    private readonly LruCache<CoverKey, Bitmap?> cache = new LruCache<CoverKey, Bitmap?>(Capacity);
+    private readonly ConcurrentDictionary<CoverKey, Task<Bitmap?>> inFlight = [];
 
     public CoverCache(
         ILogger<CoverCache> logger,
         ITrackCoverLoader coverLoader,
-        RenderScaleProvider renderScaleProvider)
+        IRenderScaleProvider renderScaleProvider)
     {
         this.logger = logger;
         this.coverLoader = coverLoader;
         this.renderScaleProvider = renderScaleProvider;
     }
 
-    public Bitmap? Get(string audioPath)
+    public Bitmap? Get(string audioPath, double size)
     {
-        cache.TryGet(audioPath, out var bitmap);
+        cache.TryGet(new CoverKey(audioPath, ScaleToScreen(size)), out var bitmap);
         return bitmap;
     }
 
-    public async Task<Bitmap?> GetOrLoadAsync(string audioPath)
+    public async Task<Bitmap?> GetOrLoadAsync(string audioPath, double size)
     {
-        if(cache.TryGet(audioPath, out var cached))
+        var key = new CoverKey(audioPath, ScaleToScreen(size));
+
+        if(cache.TryGet(key, out var cached))
         {
             return cached;
         }
 
-        var decodeTask = inFlight.GetOrAdd(audioPath, path => Task.Run(() => LoadCover(path, DecodePreview)));
+        var decodeTask = inFlight.GetOrAdd(
+            key,
+            it => Task.Run(() => LoadCover(it.AudioPath, stream => DecodeToFit(stream, it.PixelSide)))
+        );
 
         try
         {
             var bitmap = await decodeTask.ConfigureAwait(false);
-            cache.Set(audioPath, bitmap);
+            cache.Set(key, bitmap);
             return bitmap;
         }
         finally
         {
-            inFlight.TryRemove(audioPath, out _);
+            inFlight.TryRemove(key, out _);
         }
     }
 
@@ -84,7 +88,21 @@ public class CoverCache : ICoverCache
         );
     }
 
-    private int ScaleToScreen(int size)
+    public static Bitmap DecodeToFit(Stream stream, int side)
+    {
+        var bitmap = Bitmap.DecodeToWidth(stream, side, BitmapInterpolationMode.HighQuality);
+
+        if(bitmap.PixelSize.Height <= side)
+        {
+            return bitmap;
+        }
+
+        bitmap.Dispose();
+        stream.Position = 0;
+        return Bitmap.DecodeToHeight(stream, side, BitmapInterpolationMode.HighQuality);
+    }
+
+    private int ScaleToScreen(double size)
     {
         return (int)Math.Ceiling(size * renderScaleProvider.RenderScaling);
     }
@@ -108,11 +126,6 @@ public class CoverCache : ICoverCache
             logger.Warn(ex, $"Failed to load cover of {audioPath}");
             return null;
         }
-    }
-
-    private Bitmap DecodePreview(Stream stream)
-    {
-        return Bitmap.DecodeToWidth(stream, ScaleToScreen(PreviewWidth), BitmapInterpolationMode.HighQuality);
     }
 
     private Bitmap DecodeLarge(Stream stream)

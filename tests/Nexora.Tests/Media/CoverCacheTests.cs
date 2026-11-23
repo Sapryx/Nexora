@@ -17,14 +17,18 @@ public class CoverCacheTests
 
     public CoverCacheTests()
     {
-        coverCache = new CoverCache(logger, coverLoaderMock.Object, new RenderScaleProvider());
+        coverCache = new CoverCache(
+            logger,
+            coverLoaderMock.Object,
+            Mock.Of<IRenderScaleProvider>(it => it.RenderScaling == 1)
+        );
     }
 
     [Fact]
     public async Task GetOrLoadAsync_TrackWithoutCover_ReturnsNull()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
-        var cover = await coverCache.GetOrLoadAsync(AudioPath);
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
         Assert.Null(cover);
     }
 
@@ -32,7 +36,7 @@ public class CoverCacheTests
     public async Task GetOrLoadAsync_LoaderThrows_ReturnsNull()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
-        var cover = await coverCache.GetOrLoadAsync(AudioPath);
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
         Assert.Null(cover);
     }
 
@@ -42,7 +46,7 @@ public class CoverCacheTests
         var exception = new IOException("Corrupted");
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(exception);
 
-        await coverCache.GetOrLoadAsync(AudioPath);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
 
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
@@ -54,9 +58,22 @@ public class CoverCacheTests
     public async Task GetOrLoadAsync_LoaderThrewBefore_DoesNotLoadAgain()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
-        await coverCache.GetOrLoadAsync(AudioPath);
-        await coverCache.GetOrLoadAsync(AudioPath);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_TileAfterThumbnail_LoadsEachSizeOnce()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
     }
 
     [Fact]

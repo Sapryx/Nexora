@@ -124,6 +124,7 @@ public static class CompositionRoot
             provider.GetRequiredService<ILogger<FileVolumeStorage>>()
         ));
         builder.AddSingleton<RenderScaleProvider>();
+        builder.AddSingleton<IRenderScaleProvider>(provider => provider.GetRequiredService<RenderScaleProvider>());
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<MusicLibrary>();
         builder.AddSingleton<PlaybackQueue>();

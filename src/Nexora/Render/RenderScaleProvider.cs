@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 namespace Nexora.Render;
 
-public class RenderScaleProvider
+public class RenderScaleProvider : IRenderScaleProvider
 {
     public double RenderScaling { get; private set; } = 1;
 

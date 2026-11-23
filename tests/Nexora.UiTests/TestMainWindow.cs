@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using Nexora.Controls;
+using Nexora.Render;
 using Nexora.ViewModels;
 using Nexora.Views;
 using Tests.Shared.Integrations;
@@ -44,7 +45,10 @@ public sealed class TestMainWindow : IDisposable
     public Mock<IAudioPlayer> AudioPlayerMock { get; } = Tests.Shared.Playback.AudioPlayerMock.Create();
     public FakeTimeProvider TimeProvider { get; } = new FakeTimeProvider();
     public FakeDiscordPipe DiscordPipe { get; } = new FakeDiscordPipe();
+    public FakeTrackCoverLoader CoverLoader { get; } = new FakeTrackCoverLoader();
+    public TestRenderScale RenderScale { get; } = new TestRenderScale();
     public IServiceProvider Services => provider;
+    private static readonly TimeSpan WaitTimeout = TimeSpan.FromSeconds(5);
     private readonly ServiceProvider provider;
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
     private readonly string screenshotPath;
@@ -82,6 +86,8 @@ public sealed class TestMainWindow : IDisposable
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
         services.AddSingleton<TimeProvider>(TimeProvider);
         services.AddSingleton<INamedPipeClient>(DiscordPipe);
+        services.AddSingleton<ITrackCoverLoader>(CoverLoader);
+        services.AddSingleton<IRenderScaleProvider>(RenderScale);
         provider = services.BuildServiceProvider();
 
         Window = new RecordingMainWindow()
@@ -133,6 +139,22 @@ public sealed class TestMainWindow : IDisposable
     {
         return (container ?? Window).GetVisualDescendants().OfType<Button>()
             .Single(button => button.GetVisualDescendants().OfType<Icon>().Any(icon => icon.IconName == iconName));
+    }
+
+    public void WaitUntil(Func<bool> condition)
+    {
+        var deadline = DateTime.UtcNow + WaitTimeout;
+
+        while(!condition())
+        {
+            if(DateTime.UtcNow > deadline)
+            {
+                throw new TimeoutException("The condition was not met in time");
+            }
+
+            Thread.Sleep(10);
+            Dispatcher.UIThread.RunJobs();
+        }
     }
 
     public Point PointIn(Control control, double fractionX, double fractionY)

@@ -1,0 +1,13 @@
+Date: 2026-11-23 | 12:32:02
+Task: Track covers in the library list, the grid and the player are loaded at exactly the size they are shown at (feature-list.json entry 0)
+Result: The cover cache is keyed by audio path and pixel side and decodes each cover to fit a square of the displayed
+size times the display scale, keeping the aspect ratio (CoverCache.DecodeToFit). The sizes live in Media/CoverSizes
+(Thumbnail 64 for list and player, Tile 160 for grid) and are used by both the XAML and CoveredTrackVm, which now has
+Cover and TileCover. Added IRenderScaleProvider so tests can set the scale. The cover viewer and track editor still
+load the original and large covers. UI tests got FakeTrackCoverLoader, TestRenderScale and WaitUntil (documented in
+the ui-tests skill).
+Verification: UI tests TrackCoverSizeTests check list, grid and player cover pixel sizes and displayed sizes at 100%
+and 150%, wide and tall covers keeping their aspect ratio, an empty area for a track without a cover, and the cover
+viewer and editor showing the full 500x500 cover. "No resampling while scrolling" is checked as bitmap pixel size
+equal to displayed size times scale; no frame profiling was done. Screenshot checked. All tests pass;
+method-metrics reports 100% coverage and complexity at most 2 for the changed methods.

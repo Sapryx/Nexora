@@ -19,7 +19,7 @@
             "Reloading covers when the display scale changes while the app runs",
             "Fading covers in when they finish loading"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "The memory used by cached library covers is limited to a budget sized from how many covers fit in the visible area times a few screens, and does not grow with library size",
