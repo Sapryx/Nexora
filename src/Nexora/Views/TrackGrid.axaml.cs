@@ -111,7 +111,8 @@ public partial class TrackGrid : UserControl
     {
         int rowCount = IsVisible ? scroller.VisibleItemCount : 0;
         Covers?.Show(rowCount * ColumnCount, CoverSizes.Tile);
-        visibleCovers.Show(Rows.Skip(scroller.FirstVisibleItemIndex).Take(rowCount).SelectMany(row => row.TrackVms));
+        int shownRowCount = IsVisible ? scroller.ShownItemCount : 0;
+        visibleCovers.Show(Rows, scroller.FirstVisibleItemIndex, shownRowCount, row => row.TrackVms);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

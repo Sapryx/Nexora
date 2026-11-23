@@ -53,3 +53,21 @@ cancellation. Screenshots checked. All tests pass (--all). method-metrics --chan
 with complexity <= 6; CompositionRoot.Configure (OS-specific branches) and the TrackControlVmRegistry constructor
 (complexity 12 from its existing event lambdas) were already below the bar. "Smooth scrolling" is checked only as
 the UI thread staying responsive while loads are held; no frame timing was measured.
+
+Date: 2026-11-23 | 20:20:11
+Task: Once scrolling settles, covers of the rows just above and below the visible area are loaded in advance
+(feature-list.json entry 3)
+Result: Finished the work left in the tree. VisibleCovers.Show takes the rows, the first visible row and the shown
+row count, shows the visible tracks' covers and one row above and below as prefetch (PrefetchRowCount = 1).
+SmoothScroller.ShownItemCount counts only rows actually inside the viewport (ignoring slivers) so the prefetch rows
+are the real neighbours. CoverRequest got IsPrefetch; CoverLoadQueue keeps delayed and loading lists, starts
+prefetch loads only when no visible request is delayed or loading, and SetPrefetch promotes a prefetched request
+that becomes visible (TrackControlVm.ShowCover reuses the request). Prefetch requests use the same show delay, so
+nothing outside the visible area loads while scrolling fast. Added TestMainWindow.NearbyRowPaths (listed in the
+ui-tests skill) and adjusted CoverLoadDelayTests for the prefetched rows.
+Verification: UI tests CoverPrefetchTests (grid and list, 1000 tracks): after settling in the middle, all visible
+covers load first, then exactly the rows above and below, nothing more, memory within budget; scrolling one row
+shows the new row's covers without new loads; a fast scroll loads nothing until it settles, then visible then
+nearby rows. Unit tests for CoverLoadQueue prefetch ordering/promotion, VisibleCovers, TrackControlVm and
+SmoothScroller.GetShownItemCount. Screenshots checked. All tests pass; method-metrics --changed: all changed
+methods 100% covered, complexity <= 8.

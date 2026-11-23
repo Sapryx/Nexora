@@ -130,6 +130,131 @@ public class CoverLoadQueueTests
         Assert.Empty(coverLoads.Started);
     }
 
+    [Fact]
+    public void Request_PrefetchShownAfterVisible_LoadsVisibleFirst()
+    {
+        var queue = CreateQueue(1);
+        Request(queue, "a");
+        timeProvider.Advance(ShowDelay);
+        Request(queue, "b");
+        Request(queue, "prefetch", isPrefetch: true);
+        timeProvider.Advance(ShowDelay);
+
+        Finish("a");
+        Finish("b");
+
+        Assert.Equal(["a", "b", "prefetch"], coverLoads.StartedPaths);
+    }
+
+    [Fact]
+    public void Request_PrefetchWithFreeSlot_WaitsUntilVisibleLoadsEnd()
+    {
+        var queue = CreateQueue(4);
+        Request(queue, "a");
+        Request(queue, "prefetch", isPrefetch: true);
+        timeProvider.Advance(ShowDelay);
+        Assert.Equal(["a"], coverLoads.StartedPaths);
+
+        Finish("a");
+
+        Assert.Equal(["a", "prefetch"], coverLoads.StartedPaths);
+    }
+
+    [Fact]
+    public void Request_OnlyPrefetches_LoadsThemConcurrently()
+    {
+        var queue = CreateQueue(4);
+        Request(queue, "a", isPrefetch: true);
+        Request(queue, "b", isPrefetch: true);
+        timeProvider.Advance(ShowDelay);
+
+        Assert.Equal(["a", "b"], coverLoads.StartedPaths.Order());
+    }
+
+    [Fact]
+    public void Request_PrefetchTurnedVisible_LoadsWithoutWaiting()
+    {
+        var queue = CreateQueue(4);
+        Request(queue, "a");
+        queue.SetPrefetch(Request(queue, "b", isPrefetch: true), false);
+        timeProvider.Advance(ShowDelay);
+
+        Assert.Equal(["a", "b"], coverLoads.StartedPaths.Order());
+    }
+
+    [Fact]
+    public void SetPrefetch_WaitingPrefetchTurnedVisible_LoadsBeforeEarlierVisibleOnes()
+    {
+        var queue = CreateQueue(1);
+        Request(queue, "a");
+        Request(queue, "b");
+        var prefetch = Request(queue, "prefetch", isPrefetch: true);
+        timeProvider.Advance(ShowDelay);
+
+        queue.SetPrefetch(prefetch, false);
+        Finish("a");
+
+        Assert.Equal(["a", "prefetch"], coverLoads.StartedPaths);
+    }
+
+    [Fact]
+    public void SetPrefetch_LastVisibleLoadTurnedPrefetch_StartsWaitingPrefetch()
+    {
+        var queue = CreateQueue(4);
+        var visible = Request(queue, "a");
+        Request(queue, "prefetch", isPrefetch: true);
+        timeProvider.Advance(ShowDelay);
+
+        queue.SetPrefetch(visible, true);
+
+        Assert.Equal(["a", "prefetch"], coverLoads.StartedPaths);
+    }
+
+    [Fact]
+    public void SetPrefetch_Unchanged_KeepsOrder()
+    {
+        var queue = CreateQueue(1);
+        Request(queue, "a");
+        var first = Request(queue, "b");
+        Request(queue, "c");
+        timeProvider.Advance(ShowDelay);
+
+        queue.SetPrefetch(first, false);
+        Finish("a");
+        Finish("c");
+
+        Assert.Equal(["a", "c", "b"], coverLoads.StartedPaths);
+    }
+
+    [Fact]
+    public void Request_PrefetchShownBeforeVisible_WaitsForVisibleStillInDelay()
+    {
+        var queue = CreateQueue(4);
+        Request(queue, "prefetch", isPrefetch: true);
+        timeProvider.Advance(TimeSpan.FromMilliseconds(10));
+        Request(queue, "a");
+        timeProvider.Advance(ShowDelay - TimeSpan.FromMilliseconds(10));
+        Assert.Empty(coverLoads.Started);
+
+        timeProvider.Advance(TimeSpan.FromMilliseconds(10));
+
+        Assert.Equal(["a"], coverLoads.StartedPaths);
+    }
+
+    [Fact]
+    public void Cancel_LastVisibleInDelay_StartsWaitingPrefetch()
+    {
+        var queue = CreateQueue(4);
+        Request(queue, "prefetch", isPrefetch: true);
+        timeProvider.Advance(TimeSpan.FromMilliseconds(10));
+        var visible = Request(queue, "a");
+        timeProvider.Advance(ShowDelay - TimeSpan.FromMilliseconds(10));
+
+        queue.Cancel(visible);
+
+        Assert.Equal(["prefetch"], coverLoads.StartedPaths);
+    }
+
     private CoverLoadQueue CreateQueue(int maxConcurrentLoads)
     {
         var uiDispatcherMock = new Mock<IUiDispatcher>();
@@ -167,8 +292,12 @@ public class CoverLoadQueueTests
         Assert.True(SpinWait.SpinUntil(() => Volatile.Read(ref postCount) > postsBefore, TimeSpan.FromSeconds(5)));
     }
 
-    private CoverRequest Request(CoverLoadQueue queue, string audioPath, double size = CoverSizes.Thumbnail)
+    private CoverRequest Request(
+        CoverLoadQueue queue,
+        string audioPath,
+        double size = CoverSizes.Thumbnail,
+        bool isPrefetch = false)
     {
-        return queue.Request(audioPath, size, _ => loaded.Add(audioPath));
+        return queue.Request(audioPath, size, isPrefetch, _ => loaded.Add(audioPath));
     }
 }

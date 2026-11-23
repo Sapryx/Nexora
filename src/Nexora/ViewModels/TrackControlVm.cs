@@ -112,21 +112,28 @@ public partial class TrackControlVm : CoveredTrackVm
         SetTrackInfo(metadata.Title, metadata.JoinedArtists, playlistItem.AudioTrack.AudioPath);
     }
 
-    public void ShowCover(double size)
+    public void ShowCover(double size, bool isPrefetch)
     {
-        if(coverRequests.ContainsKey(size) || coverCache.Get(AudioPath, size) != null)
+        if(coverRequests.TryGetValue(size, out var request))
         {
-            return;
+            coverLoadQueue.SetPrefetch(request, isPrefetch);
         }
-
-        coverRequests[size] = coverLoadQueue.Request(AudioPath, size, bitmap => OnCoverLoaded(size, bitmap));
+        else if(coverCache.Get(AudioPath, size) == null)
+        {
+            coverRequests[size] = coverLoadQueue.Request(
+                AudioPath,
+                size,
+                isPrefetch,
+                bitmap => OnCoverLoaded(size, bitmap)
+            );
+        }
     }
 
     public void HideCover(double size)
     {
         if(coverRequests.Remove(size, out var request))
         {
-            request.Cancel();
+            coverLoadQueue.Cancel(request);
         }
     }
 

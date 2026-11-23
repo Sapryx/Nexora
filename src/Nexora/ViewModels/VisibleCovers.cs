@@ -2,6 +2,7 @@ namespace Nexora.ViewModels;
 
 public class VisibleCovers
 {
+    public const int PrefetchRowCount = 1;
     private readonly double coverSize;
     private HashSet<TrackControlVm> shownTrackVms = [];
 
@@ -10,20 +11,29 @@ public class VisibleCovers
         this.coverSize = coverSize;
     }
 
-    public void Show(IEnumerable<TrackControlVm> trackVms)
+    public void Show<TRow>(
+        IReadOnlyList<TRow> rows,
+        int firstRowIndex,
+        int rowCount,
+        Func<TRow, IEnumerable<TrackControlVm>> trackVmsOf)
     {
-        var visibleTrackVms = trackVms.ToHashSet();
+        var visibleTrackVms = rows.Skip(firstRowIndex).Take(rowCount).SelectMany(trackVmsOf).ToList();
+        int prefetchCount = rowCount > 0 ? PrefetchRowCount : 0;
+        var nearbyTrackVms = rows
+            .Skip(Math.Max(0, firstRowIndex - prefetchCount))
+            .Take(Math.Min(firstRowIndex, prefetchCount))
+            .Concat(rows.Skip(firstRowIndex + rowCount).Take(prefetchCount))
+            .SelectMany(trackVmsOf)
+            .ToList();
+        var newShownTrackVms = visibleTrackVms.Concat(nearbyTrackVms).ToHashSet();
 
-        foreach(var trackVm in shownTrackVms.Where(it => !visibleTrackVms.Contains(it)))
+        foreach(var trackVm in shownTrackVms.Where(it => !newShownTrackVms.Contains(it)))
         {
             trackVm.HideCover(coverSize);
         }
 
-        foreach(var trackVm in visibleTrackVms.Where(it => !shownTrackVms.Contains(it)))
-        {
-            trackVm.ShowCover(coverSize);
-        }
-
-        shownTrackVms = visibleTrackVms;
+        visibleTrackVms.ForEach(trackVm => trackVm.ShowCover(coverSize, false));
+        nearbyTrackVms.ForEach(trackVm => trackVm.ShowCover(coverSize, true));
+        shownTrackVms = newShownTrackVms;
     }
 }

@@ -71,6 +71,24 @@ public class SmoothScrollerTests
     }
 
     [Fact]
+    public void GetShownItemCount_AlignedOffset_CountsOnlyItemsInViewport()
+    {
+        Assert.Equal(5, SmoothScroller.GetShownItemCount(200, 500, 100));
+    }
+
+    [Fact]
+    public void GetShownItemCount_ScrolledBetweenItems_CountsPartialItemsAtBothEdges()
+    {
+        Assert.Equal(6, SmoothScroller.GetShownItemCount(150, 500, 100));
+    }
+
+    [Fact]
+    public void GetShownItemCount_AlmostAlignedOffset_IgnoresSlivers()
+    {
+        Assert.Equal(5, SmoothScroller.GetShownItemCount(199.8, 500, 100));
+    }
+
+    [Fact]
     public void GetRepeatAcceleration_LongList_CoversAllItemsInGivenTime()
     {
         Assert.Equal(20, SmoothScroller.GetRepeatAcceleration(120, 10, 3));

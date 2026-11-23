@@ -3,16 +3,19 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Core.Tracks;
 using Microsoft.Extensions.DependencyInjection;
 using Nexora.Controls;
 using Nexora.Media;
 using Nexora.ViewModels;
+using Nexora.Views;
 using Tests.Shared.Playback;
 
 namespace Nexora.UiTests.Views;
 
 [Trait("Category", "Slow")]
 [Trait("Covers", "src/Nexora/Media")]
+[Trait("Covers", "src/Nexora/Controls/SmoothScroller.cs")]
 [Trait("Covers", "src/Nexora/ViewModels/CoveredTrackVm.cs")]
 [Trait("Covers", "src/Nexora/ViewModels/TrackControlVm.cs")]
 [Trait("Covers", "src/Nexora/ViewModels/TrackViewVm.cs")]
@@ -29,40 +32,51 @@ public class CoverLoadDelayTests
     public void Grid_FastScroll_LoadsOnlyCoversShownAfterScrollingStops()
     {
         using var app = new TestMainWindow();
-        app.AddLibraryWithCovers(LibrarySize);
+        var tracks = app.AddLibraryWithCovers(LibrarySize);
         app.ShowLibraryGrid();
 
-        AssertFastScrollLoadsOnlyFinalCovers<TrackTile>(app, app.LibraryGridScroll());
+        AssertFastScrollLoadsOnlyFinalCovers<TrackTile>(
+            app,
+            app.LibraryGridScroll(),
+            tracks,
+            app.Find<TrackGrid>().ColumnCount
+        );
     }
 
     [AvaloniaFact]
     public void List_FastScroll_LoadsOnlyCoversShownAfterScrollingStops()
     {
         using var app = new TestMainWindow();
-        app.AddLibraryWithCovers(LibrarySize);
+        var tracks = app.AddLibraryWithCovers(LibrarySize);
         app.ShowLibraryList();
 
-        AssertFastScrollLoadsOnlyFinalCovers<TrackControl>(app, app.LibraryListScroll());
+        AssertFastScrollLoadsOnlyFinalCovers<TrackControl>(app, app.LibraryListScroll(), tracks, 1);
     }
 
     [AvaloniaFact]
     public void Grid_ScrollWhileLoading_CancelsHiddenLoadsAndLoadsNewestFirst()
     {
         using var app = new TestMainWindow();
-        app.AddLibraryWithCovers(LibrarySize);
+        var tracks = app.AddLibraryWithCovers(LibrarySize);
         app.ShowLibraryGrid();
 
-        AssertLoadsFollowScrolling<TrackTile>(app, app.LibraryGridScroll(), CoverSizes.Tile);
+        AssertLoadsFollowScrolling<TrackTile>(
+            app,
+            app.LibraryGridScroll(),
+            CoverSizes.Tile,
+            tracks,
+            app.Find<TrackGrid>().ColumnCount
+        );
     }
 
     [AvaloniaFact]
     public void List_ScrollWhileLoading_CancelsHiddenLoadsAndLoadsNewestFirst()
     {
         using var app = new TestMainWindow();
-        app.AddLibraryWithCovers(LibrarySize);
+        var tracks = app.AddLibraryWithCovers(LibrarySize);
         app.ShowLibraryList();
 
-        AssertLoadsFollowScrolling<TrackControl>(app, app.LibraryListScroll(), CoverSizes.Thumbnail);
+        AssertLoadsFollowScrolling<TrackControl>(app, app.LibraryListScroll(), CoverSizes.Thumbnail, tracks, 1);
     }
 
     [AvaloniaFact]
@@ -79,8 +93,11 @@ public class CoverLoadDelayTests
         Assert.Empty(app.CoverLoader.LoadOrder.Skip(1));
     }
 
-    private static void AssertFastScrollLoadsOnlyFinalCovers<T>(TestMainWindow app, ScrollViewer scrollViewer)
-        where T : Control
+    private static void AssertFastScrollLoadsOnlyFinalCovers<T>(
+        TestMainWindow app,
+        ScrollViewer scrollViewer,
+        List<AudioTrack> tracks,
+        int columnCount) where T : Control
     {
         var flashedBy = new HashSet<string>();
         double maxOffset = scrollViewer.Extent.Height - scrollViewer.Viewport.Height;
@@ -95,6 +112,7 @@ public class CoverLoadDelayTests
 
         var finalPaths = app.VisibleTrackPaths<T>(scrollViewer);
         flashedBy.ExceptWith(finalPaths);
+        flashedBy.ExceptWith(TestMainWindow.NearbyRowPaths(tracks, finalPaths, columnCount));
         Assert.True(flashedBy.Count > LibrarySize / (FastScrollScreens + 1));
         app.TimeProvider.Advance(app.Services.GetRequiredService<CoverLoadQueue>().ShowDelay - FastScrollStep);
         Dispatcher.UIThread.RunJobs();
@@ -109,8 +127,12 @@ public class CoverLoadDelayTests
         Assert.All(finalPaths, path => Assert.Equal(1, app.CoverLoader.LoadCount(path)));
     }
 
-    private static void AssertLoadsFollowScrolling<T>(TestMainWindow app, ScrollViewer scrollViewer, double size)
-        where T : Control
+    private static void AssertLoadsFollowScrolling<T>(
+        TestMainWindow app,
+        ScrollViewer scrollViewer,
+        double size,
+        List<AudioTrack> tracks,
+        int columnCount) where T : Control
     {
         var coverCache = app.Services.GetRequiredService<ICoverCache>();
         int maxConcurrentLoads = app.Services.GetRequiredService<CoverLoadQueue>().MaxConcurrentLoads;
@@ -128,6 +150,9 @@ public class CoverLoadDelayTests
         app.CoverLoader.Release();
         app.WaitForVisibleCovers<T>(scrollViewer);
         double loadedScreen = scrollViewer.Offset.Y;
+        var loadedPaths = app.VisibleTrackPaths<T>(scrollViewer);
+        var prefetchedPaths = TestMainWindow.NearbyRowPaths(tracks, loadedPaths, columnCount);
+        app.WaitUntil(() => prefetchedPaths.All(path => coverCache.Get(path, size) != null));
 
         Assert.All(cancelledLoads, path => Assert.Null(coverCache.Get(path, size)));
         Assert.All(
@@ -146,7 +171,11 @@ public class CoverLoadDelayTests
         app.ScrollByScreens(scrollViewer, 0.5);
         var visiblePaths = app.VisibleTrackPaths<T>(scrollViewer);
         var newerPaths = visiblePaths.Except(olderPaths).Where(path => coverCache.Get(path, size) == null).ToList();
-        var waitingOlder = visiblePaths.Intersect(olderPaths).Except(startedOlder).ToList();
+        var waitingOlder = visiblePaths
+            .Intersect(olderPaths)
+            .Except(startedOlder)
+            .Where(path => coverCache.Get(path, size) == null)
+            .ToList();
         Assert.NotEmpty(newerPaths);
         Assert.NotEmpty(waitingOlder);
         app.PassCoverShowDelay();

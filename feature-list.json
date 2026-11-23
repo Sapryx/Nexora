@@ -72,7 +72,7 @@
         "out_of_scope": [
             "Creating thumbnails for the whole library in the background"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "List and grid covers are kept on disk as PNG thumbnails in the OS cache directory, so a cover that is not in memory loads without reading the audio file again",

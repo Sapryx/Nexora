@@ -10,8 +10,9 @@ public class CoverLoadQueue
     private readonly ICoverCache coverCache;
     private readonly TimeProvider timeProvider;
     private readonly IUiDispatcher uiDispatcher;
+    private readonly List<CoverRequest> delayed = [];
     private readonly List<CoverRequest> shown = [];
-    private int activeLoads;
+    private readonly List<CoverRequest> loading = [];
 
     public CoverLoadQueue(
         ICoverCache coverCache,
@@ -27,9 +28,11 @@ public class CoverLoadQueue
         MaxConcurrentLoads = maxConcurrentLoads;
     }
 
-    public CoverRequest Request(string audioPath, double size, Action<Bitmap?> loaded)
+    public CoverRequest Request(string audioPath, double size, bool isPrefetch, Action<Bitmap?> loaded)
     {
-        var request = new CoverRequest(audioPath, size, loaded);
+        var request = new CoverRequest(audioPath, size, isPrefetch, loaded);
+        delayed.RemoveAll(it => it.IsCancelled);
+        delayed.Add(request);
         request.Delay(timeProvider.CreateTimer(
             _ => uiDispatcher.Post(() => OnShown(request)),
             null,
@@ -39,8 +42,33 @@ public class CoverLoadQueue
         return request;
     }
 
+    public void SetPrefetch(CoverRequest request, bool isPrefetch)
+    {
+        if(request.IsPrefetch == isPrefetch)
+        {
+            return;
+        }
+
+        request.IsPrefetch = isPrefetch;
+
+        if(shown.Remove(request))
+        {
+            shown.Add(request);
+        }
+
+        StartLoads();
+    }
+
+    public void Cancel(CoverRequest request)
+    {
+        request.Cancel();
+        StartLoads();
+    }
+
     private void OnShown(CoverRequest request)
     {
+        delayed.Remove(request);
+
         if(request.IsCancelled)
         {
             return;
@@ -52,17 +80,42 @@ public class CoverLoadQueue
 
     private void StartLoads()
     {
-        while(activeLoads < MaxConcurrentLoads && shown.Count > 0)
-        {
-            var request = shown[shown.Count - 1];
-            shown.RemoveAt(shown.Count - 1);
+        shown.RemoveAll(request => request.IsCancelled);
+        var request = TakeNext();
 
-            if(!request.IsCancelled)
-            {
-                activeLoads++;
-                _ = LoadAsync(request);
-            }
+        while(request != null)
+        {
+            loading.Add(request);
+            _ = LoadAsync(request);
+            request = TakeNext();
         }
+    }
+
+    private CoverRequest? TakeNext()
+    {
+        if(loading.Count >= MaxConcurrentLoads)
+        {
+            return null;
+        }
+
+        var request = shown.LastOrDefault(it => !it.IsPrefetch);
+
+        if(request == null && !HasPendingVisible())
+        {
+            request = shown.LastOrDefault();
+        }
+
+        if(request != null)
+        {
+            shown.Remove(request);
+        }
+
+        return request;
+    }
+
+    private bool HasPendingVisible()
+    {
+        return delayed.Concat(loading).Any(request => !request.IsPrefetch && !request.IsCancelled);
     }
 
     private async Task LoadAsync(CoverRequest request)
@@ -81,7 +134,7 @@ public class CoverLoadQueue
 
     private void OnLoadEnded(CoverRequest request, Bitmap? bitmap)
     {
-        activeLoads--;
+        loading.Remove(request);
 
         if(!request.IsCancelled)
         {

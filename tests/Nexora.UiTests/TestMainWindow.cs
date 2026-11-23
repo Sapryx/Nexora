@@ -247,6 +247,22 @@ public sealed class TestMainWindow : IDisposable
             .ToList();
     }
 
+    public static List<string> NearbyRowPaths(
+        List<AudioTrack> tracks,
+        IReadOnlyCollection<string> visiblePaths,
+        int columnCount)
+    {
+        int firstRow = tracks.FindIndex(track => visiblePaths.Contains(track.AudioPath)) / columnCount;
+        int lastRow = tracks.FindLastIndex(track => visiblePaths.Contains(track.AudioPath)) / columnCount;
+        int firstRowStart = firstRow * columnCount;
+        int lastRowEnd = (lastRow + 1) * columnCount;
+        return tracks
+            .Where((_, index) => index >= firstRowStart - columnCount && index < firstRowStart
+                || index >= lastRowEnd && index < lastRowEnd + columnCount)
+            .Select(track => track.AudioPath)
+            .ToList();
+    }
+
     public void WaitForVisibleCovers<T>(ScrollViewer scrollViewer) where T : Control
     {
         WaitUntil(() =>

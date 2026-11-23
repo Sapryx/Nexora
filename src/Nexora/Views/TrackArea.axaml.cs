@@ -89,7 +89,8 @@ public partial class TrackArea : UserControl
         {
             int coverCount = IsVisible ? scroller.VisibleItemCount : 0;
             Covers?.Show(coverCount, CoverSizes.Thumbnail);
-            visibleCovers.Show(TrackVms.Skip(scroller.FirstVisibleItemIndex).Take(coverCount));
+            int shownCount = IsVisible ? scroller.ShownItemCount : 0;
+            visibleCovers.Show(TrackVms, scroller.FirstVisibleItemIndex, shownCount, trackVm => [trackVm]);
         }
     }
 

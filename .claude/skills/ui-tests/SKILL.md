@@ -42,6 +42,8 @@ decoding and scaling, cover sizes and memory) here.
   scroll viewers. `app.ScrollTo(scrollViewer, offset)` and `app.ScrollByScreens(scrollViewer, screens)` (clamped to the
   extent). `app.VisibleCoverImages<TrackTile>(scrollViewer)` lists the cover images inside the viewport and
   `app.VisibleTrackPaths<TrackTile>(scrollViewer)` the audio paths of those tracks.
+  `TestMainWindow.NearbyRowPaths(tracks, visiblePaths, columnCount)` lists the tracks of the rows just above and
+  below them, which are prefetched once scrolling settles.
 - Library covers start loading only after a track has stayed visible for `CoverLoadQueue.ShowDelay`, which runs on
   the fake time. `app.PassCoverShowDelay()` advances past it; `app.WaitForVisibleCovers<TrackTile>(scrollViewer)`
   advances it and waits until the visible covers have all loaded. The player cover loads without the delay.
