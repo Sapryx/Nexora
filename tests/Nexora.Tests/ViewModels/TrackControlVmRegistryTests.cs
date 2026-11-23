@@ -140,6 +140,27 @@ public class TrackControlVmRegistryTests
     }
 
     [Fact]
+    public void Create_TrackStartedBeforeStateChangeIsHandled_DeactivatesPreviousTrack()
+    {
+        var previousVm = CreateQueueVm();
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playbackQueue.GetItem(0)));
+        List<Action> postedActions = [];
+        uiDispatcherMock
+            .Setup(it => it.Post(It.IsAny<Action>()))
+            .Callback<Action>(postedActions.Add);
+        playbackQueue.AddTrack(CreateTrack("Aether"));
+        var playlistItem = playbackQueue.GetItem(1);
+        var state = PlaybackState.Playing(playlistItem);
+        audioPlayerMock.SetupGet(it => it.State).Returns(state);
+        audioPlayerMock.Raise(it => it.StateChanged += null, state);
+
+        var vm = registry.Create(playlistItem);
+        postedActions.ForEach(it => it());
+
+        Assert.Equal([false, true], [previousVm.IsActive, vm.IsActive]);
+    }
+
+    [Fact]
     public void PlaybackPositionChanged_ActiveQueueItem_ShowsProgress()
     {
         var vm = CreateQueueVm();

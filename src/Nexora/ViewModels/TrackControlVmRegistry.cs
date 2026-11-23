@@ -67,6 +67,7 @@ public class TrackControlVmRegistry
 
         if(trackVm.IsActive)
         {
+            activeTrackVm?.ApplyState(audioPlayer.State);
             activeTrackVm = trackVm;
         }
 
