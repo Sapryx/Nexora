@@ -2,9 +2,11 @@ using Core.Library;
 using Core.Playback;
 using Core.Playlists;
 using Core.Storage.Tags;
+using Core.Tracks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexora.Media;
+using Nexora.Tests.Media;
 using Nexora.Threading;
 using Nexora.ViewModels;
 using Tests.Shared.Library;
@@ -47,6 +49,7 @@ public class TrackControlVmRegistryTests
                 uiDispatcherMock.Object
             ),
             Mock.Of<ICoverCache>(),
+            TestCoverLoadQueue.Create(),
             uiDispatcherMock.Object
         );
     }
@@ -136,6 +139,27 @@ public class TrackControlVmRegistryTests
         audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Stopped);
 
         Assert.False(vm.IsActive);
+    }
+
+    [Fact]
+    public void Create_TrackStartedBeforeStateChangeIsHandled_DeactivatesPreviousTrack()
+    {
+        var previousVm = CreateQueueVm();
+        audioPlayerMock.Raise(it => it.StateChanged += null, PlaybackState.Playing(playbackQueue.GetItem(0)));
+        List<Action> postedActions = [];
+        uiDispatcherMock
+            .Setup(it => it.Post(It.IsAny<Action>()))
+            .Callback<Action>(postedActions.Add);
+        playbackQueue.AddTrack(CreateTrack("Aether"));
+        var playlistItem = playbackQueue.GetItem(1);
+        var state = PlaybackState.Playing(playlistItem);
+        audioPlayerMock.SetupGet(it => it.State).Returns(state);
+        audioPlayerMock.Raise(it => it.StateChanged += null, state);
+
+        var vm = registry.Create(playlistItem);
+        postedActions.ForEach(it => it());
+
+        Assert.Equal([false, true], [previousVm.IsActive, vm.IsActive]);
     }
 
     [Fact]

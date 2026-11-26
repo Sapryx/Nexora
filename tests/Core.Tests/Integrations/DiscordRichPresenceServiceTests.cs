@@ -1,7 +1,7 @@
 using Core.Integrations;
-using Core.Library;
 using Core.Playback;
 using Core.Playlists;
+using Core.Tracks;
 using DiscordRPC;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;

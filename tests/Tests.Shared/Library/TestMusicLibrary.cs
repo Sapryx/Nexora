@@ -1,6 +1,7 @@
 using Core.Library;
 using Core.Playback.Loudness;
 using Core.Storage;
+using Core.Tracks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -15,10 +16,6 @@ public static class TestMusicLibrary
 
     public static MusicLibrary Create(TrackTagWriter tagWriter, IReadOnlyList<IAudioTrack> loadedTracks)
     {
-        var trackLoaderMock = new Mock<ITrackLoader>();
-        trackLoaderMock
-            .Setup(it => it.Load())
-            .Returns(() => loadedTracks.ToList());
         var loudnessScanner = new LoudnessScanner(
             NullLogger<LoudnessScanner>.Instance,
             Mock.Of<ILoudnessAnalyzer>(),
@@ -28,9 +25,18 @@ public static class TestMusicLibrary
 
         return new MusicLibrary(
             NullLogger<MusicLibrary>.Instance,
-            trackLoaderMock.Object,
+            CreateTrackLoader(loadedTracks),
             loudnessScanner,
             tagWriter
         );
+    }
+
+    public static ITrackLoader CreateTrackLoader(IReadOnlyList<IAudioTrack> loadedTracks)
+    {
+        var trackLoaderMock = new Mock<ITrackLoader>();
+        trackLoaderMock
+            .Setup(it => it.Load())
+            .Returns(() => loadedTracks.ToList());
+        return trackLoaderMock.Object;
     }
 }

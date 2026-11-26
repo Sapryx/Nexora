@@ -32,7 +32,7 @@ public class WindowButtonsTests
     public void MaximizeButton_Click_MaximizesWindowAndShowsRestoreIcon()
     {
         using var app = new TestMainWindow();
-        var button = FindButton(app, "window_maximize");
+        var button = app.FindButton("window_maximize");
 
         app.Click(button);
 
@@ -46,9 +46,9 @@ public class WindowButtonsTests
         using var app = new TestMainWindow();
         var size = app.Window.ClientSize;
         var position = app.Window.Position;
-        app.Click(FindButton(app, "window_maximize"));
+        app.Click(app.FindButton("window_maximize"));
 
-        app.Click(FindButton(app, "window_restore"));
+        app.Click(app.FindButton("window_restore"));
 
         Assert.Equal(WindowState.Normal, app.Window.WindowState);
         Assert.Equal(size, app.Window.ClientSize);
@@ -79,7 +79,7 @@ public class WindowButtonsTests
         bool closed = false;
         app.Window.Closed += (_, _) => closed = true;
 
-        app.Click(FindButton(app, "window_close"));
+        app.Click(app.FindButton("window_close"));
 
         Assert.True(closed);
     }
@@ -88,9 +88,9 @@ public class WindowButtonsTests
     public void CaptionButtons_Hover_HighlightAndResetOnLeave()
     {
         using var app = new TestMainWindow();
-        var minimize = FindButton(app, "window_minimize");
-        var maximize = FindButton(app, "window_maximize");
-        var close = FindButton(app, "window_close");
+        var minimize = app.FindButton("window_minimize");
+        var maximize = app.FindButton("window_maximize");
+        var close = app.FindButton("window_close");
 
         app.Hover(minimize);
         Assert.Equal(Color.Parse("#1AFFFFFF"), BackgroundOf(minimize));
@@ -113,16 +113,5 @@ public class WindowButtonsTests
     {
         var presenter = button.GetVisualDescendants().OfType<ContentPresenter>().First();
         return ((ISolidColorBrush?)presenter.Background)?.Color ?? Colors.Transparent;
-    }
-
-    private static Button FindButton(TestMainWindow app, string iconName)
-    {
-        var button = app.Window
-            .GetVisualDescendants()
-            .OfType<Icon>()
-            .Single(it => it.IconName == iconName)
-            .FindAncestorOfType<Button>();
-        Assert.NotNull(button);
-        return button;
     }
 }

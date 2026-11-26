@@ -7,13 +7,14 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using Nexora.Threading;
 
 namespace Nexora.Controls;
 
 public sealed class SmoothScroller
 {
     public int FirstVisibleItemIndex => GetItemIndex(scrollViewer.Offset.Y, GetWheelStep());
+    public int VisibleItemCount => GetVisibleItemCount(scrollViewer.Viewport.Height, GetWheelStep());
+    public int ShownItemCount => GetShownItemCount(scrollViewer.Offset.Y, scrollViewer.Viewport.Height, GetWheelStep());
     private double MaxOffset => Math.Max(0, scrollViewer.Extent.Height - scrollViewer.Viewport.Height);
     private const double FallbackWheelStep = 100;
     private const double TimeConstantSeconds = 0.08;
@@ -22,7 +23,6 @@ public sealed class SmoothScroller
     private const double FullRepeatSeconds = 3;
     private readonly ScrollViewer scrollViewer;
     private readonly ItemsControl itemsControl;
-    private readonly IUiDispatcher uiDispatcher = new AvaloniaUiDispatcher();
     private readonly DispatcherTimer repeatTimer = new DispatcherTimer();
     private readonly Stopwatch repeatStopwatch = new Stopwatch();
     private double repeatDelta;
@@ -59,7 +59,7 @@ public sealed class SmoothScroller
 
     public void ScrollToItem(int index)
     {
-        uiDispatcher.Post(
+        scrollViewer.Dispatcher.Post(
             () => JumpTo(Math.Clamp(index * GetWheelStep(), 0, MaxOffset)),
             DispatcherPriority.Background
         );
@@ -231,6 +231,16 @@ public sealed class SmoothScroller
     public static int GetRepeatItemCount(double seconds, double initialItemsPerSecond, double itemsPerSecondSquared)
     {
         return (int)Math.Floor(1 + initialItemsPerSecond * seconds + itemsPerSecondSquared * seconds * seconds / 2);
+    }
+
+    public static int GetVisibleItemCount(double viewportHeight, double step)
+    {
+        return (int)Math.Ceiling(viewportHeight / step) + 1;
+    }
+
+    public static int GetShownItemCount(double offset, double viewportHeight, double step)
+    {
+        return (int)Math.Ceiling((offset + viewportHeight - StopDistance) / step) - GetItemIndex(offset, step);
     }
 
     public static int GetItemIndex(double offset, double step)

@@ -1,14 +1,9 @@
 using Avalonia;
-using Nexora.Logging;
-using Nexora.Threading;
 
 namespace Nexora;
 
 sealed class Program
 {
-    public static bool IsWaylandSession =>
-        OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
-
     private const string InstanceMutexName = "Nexora.SingleInstance";
 
     [STAThread]
@@ -24,34 +19,11 @@ sealed class Program
         }
 #endif
 
-        using var loggerFactory = LoggingInitializer.Initialize(args);
-        var crashLogger = new CrashLogger(loggerFactory);
-        crashLogger.Register();
-
-        BuildAvaloniaApp(() => new App(loggerFactory))
-            .AfterSetup(_ => crashLogger.RegisterUiThread(new AvaloniaUiDispatcher()))
-            .StartWithClassicDesktopLifetime(args);
+        CompositionRoot.Run(args);
     }
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        return BuildAvaloniaApp(() => new App()).LogToTrace();
-    }
-
-    private static AppBuilder BuildAvaloniaApp(Func<App> createApp)
-    {
-        var builder = AppBuilder.Configure(createApp).UsePlatformDetect();
-
-        if(IsWaylandSession)
-        {
-            builder = builder.UseWayland();
-        }
-
-        return builder
-#if DEBUG
-            .WithDeveloperTools()
-#endif
-            .With(new SkiaOptions() { UseOpacitySaveLayer = true })
-            .WithInterFont();
+        return CompositionRoot.BuildDesignerApp();
     }
 }

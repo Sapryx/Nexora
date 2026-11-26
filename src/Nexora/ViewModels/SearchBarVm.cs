@@ -5,6 +5,7 @@ using Core.Input;
 using Core.Library;
 using Core.Playlists;
 using Core.Search;
+using Core.Tracks;
 using Nexora.Threading;
 
 namespace Nexora.ViewModels;

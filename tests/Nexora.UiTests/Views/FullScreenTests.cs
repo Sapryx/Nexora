@@ -15,10 +15,10 @@ public class FullScreenTests
     {
         using var app = new TestMainWindow();
 
-        PressF11(app);
+        app.PressKey(Key.F11, PhysicalKey.F11);
         Assert.Equal(WindowState.FullScreen, app.Window.WindowState);
 
-        PressF11(app);
+        app.PressKey(Key.F11, PhysicalKey.F11);
         Assert.Equal(WindowState.Normal, app.Window.WindowState);
     }
 
@@ -29,8 +29,8 @@ public class FullScreenTests
         app.Window.WindowState = WindowState.Maximized;
         Dispatcher.UIThread.RunJobs();
 
-        PressF11(app);
-        PressF11(app);
+        app.PressKey(Key.F11, PhysicalKey.F11);
+        app.PressKey(Key.F11, PhysicalKey.F11);
 
         Assert.Equal(WindowState.Maximized, app.Window.WindowState);
     }
@@ -44,15 +44,8 @@ public class FullScreenTests
         textBox.Focus();
         Dispatcher.UIThread.RunJobs();
 
-        PressF11(app);
+        app.PressKey(Key.F11, PhysicalKey.F11);
 
         Assert.Equal(WindowState.FullScreen, app.Window.WindowState);
-    }
-
-    private static void PressF11(TestMainWindow app)
-    {
-        app.Window.KeyPress(Key.F11, RawInputModifiers.None, PhysicalKey.F11, null);
-        app.Window.KeyRelease(Key.F11, RawInputModifiers.None, PhysicalKey.F11, null);
-        Dispatcher.UIThread.RunJobs();
     }
 }

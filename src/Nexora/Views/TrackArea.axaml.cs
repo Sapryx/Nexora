@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Nexora.Controls;
+using Nexora.Media;
 using Nexora.ViewModels;
 
 namespace Nexora.Views;
@@ -32,6 +33,11 @@ public partial class TrackArea : UserControl
         set => SetValue(FirstVisibleTrackIndexProperty, value);
     }
 
+    public static readonly StyledProperty<CoverViewport?> CoversProperty =
+        AvaloniaProperty.Register<TrackArea, CoverViewport?>(nameof(Covers));
+
+    public CoverViewport? Covers => GetValue(CoversProperty);
+    private readonly VisibleCovers visibleCovers = new VisibleCovers(CoverSizes.Thumbnail);
     private SmoothScroller? scroller;
 
     public TrackArea()
@@ -48,6 +54,7 @@ public partial class TrackArea : UserControl
         {
             scroller = new SmoothScroller(scrollViewer, TrackList);
             scrollViewer.ScrollChanged += OnScrollChanged;
+            scrollViewer.LayoutUpdated += (_, _) => ReportCovers();
         }
     }
 
@@ -60,9 +67,30 @@ public partial class TrackArea : UserControl
     {
         base.OnPropertyChanged(change);
 
-        if(change.Property == IsVisibleProperty && IsVisible)
+        if(change.Property == IsVisibleProperty)
+        {
+            OnVisibilityChanged();
+        }
+    }
+
+    private void OnVisibilityChanged()
+    {
+        ReportCovers();
+
+        if(IsVisible)
         {
             scroller?.ScrollToItem(FirstVisibleTrackIndex);
+        }
+    }
+
+    private void ReportCovers()
+    {
+        if(scroller != null)
+        {
+            int coverCount = IsVisible ? scroller.VisibleItemCount : 0;
+            Covers?.Show(coverCount, CoverSizes.Thumbnail);
+            int shownCount = IsVisible ? scroller.ShownItemCount : 0;
+            visibleCovers.Show(TrackVms, scroller.FirstVisibleItemIndex, shownCount, trackVm => [trackVm]);
         }
     }
 

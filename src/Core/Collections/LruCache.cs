@@ -15,15 +15,50 @@ public class LruCache<TKey, TValue> where TKey : notnull
         }
     }
 
+    public long Weight
+    {
+        get
+        {
+            lock(gate)
+            {
+                return weight;
+            }
+        }
+    }
+
+    public long Capacity
+    {
+        get
+        {
+            lock(gate)
+            {
+                return capacity;
+            }
+        }
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+
+            lock(gate)
+            {
+                capacity = value;
+                EvictOverCapacity();
+            }
+        }
+    }
+
     private readonly Lock gate = new Lock();
-    private readonly int capacity;
+    private readonly Func<TValue, long> weigh;
     private readonly Dictionary<TKey, LinkedListNode<CacheEntry>> map = [];
     private readonly LinkedList<CacheEntry> order = [];
+    private long capacity;
+    private long weight;
 
-    public LruCache(int capacity)
+    public LruCache(long capacity, Func<TValue, long> weigh)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(capacity, 1);
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         this.capacity = capacity;
+        this.weigh = weigh;
     }
 
     public bool TryGet(TKey key, [MaybeNullWhen(false)] out TValue value)
@@ -45,28 +80,32 @@ public class LruCache<TKey, TValue> where TKey : notnull
 
     public void Set(TKey key, TValue value)
     {
+        var entry = new CacheEntry(key, value, weigh(value));
+
         lock(gate)
         {
-            if(map.TryGetValue(key, out var existing))
+            if(map.Remove(key, out var existing))
             {
-                existing.Value = new CacheEntry(key, value);
                 order.Remove(existing);
-                order.AddFirst(existing);
-                return;
+                weight -= existing.Value.Weight;
             }
 
-            var node = new LinkedListNode<CacheEntry>(new CacheEntry(key, value));
-            map[key] = node;
-            order.AddFirst(node);
-
-            if(map.Count > capacity)
-            {
-                var oldest = order.Last!;
-                order.RemoveLast();
-                map.Remove(oldest.Value.Key);
-            }
+            map[key] = order.AddFirst(entry);
+            weight += entry.Weight;
+            EvictOverCapacity();
         }
     }
 
-    private readonly record struct CacheEntry(TKey Key, TValue Value);
+    private void EvictOverCapacity()
+    {
+        while(weight > capacity)
+        {
+            var oldest = order.Last!.Value;
+            order.RemoveLast();
+            map.Remove(oldest.Key);
+            weight -= oldest.Weight;
+        }
+    }
+
+    private readonly record struct CacheEntry(TKey Key, TValue Value, long Weight);
 }

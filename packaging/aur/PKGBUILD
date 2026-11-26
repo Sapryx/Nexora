@@ -4,7 +4,7 @@ _repoowner="Sapryx"
 _reponame="Nexora"
 pkgname="nexora"
 pkgdesc="Open-source cross-platform desktop audio player"
-license=("GPL-3.0-or-later")
+license=("GPL-3.0-or-later" "Apache-2.0")
 pkgver="0.2.3"
 pkgrel=1
 arch=("x86_64")
@@ -24,7 +24,7 @@ url="https://github.com/$_repoowner/$_reponame"
 
 build() {
     cd "$_reponame-$pkgver"
-    dotnet publish src/Nexora -c Release -r linux-x64 --self-contained true -p:PublishAot=true
+    dotnet publish src/Nexora -c Release -r linux-x64 --self-contained true
 }
 
 package() {
@@ -32,6 +32,7 @@ package() {
     install -Dm644 "nexora.desktop" "$pkgdir/usr/share/applications/$pkgname.desktop"
 
     cd "$_reponame-$pkgver"
+    install -Dm644 "src/Nexora/MATERIAL-SYMBOLS-LICENSE.txt" "$pkgdir/usr/share/licenses/$pkgname/material-symbols.txt"
     install -Dm755 "src/Nexora/bin/Release/net10.0/linux-x64/publish/Nexora" "$pkgdir/usr/lib/$pkgname/Nexora"
     for file in src/Nexora/bin/Release/net10.0/linux-x64/publish/*.so; do
         install -Dm644 "$file" "$pkgdir/usr/lib/$pkgname/"

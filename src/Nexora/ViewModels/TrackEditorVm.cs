@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Core.Library;
 using Core.Playback;
+using Core.Tracks;
 using Nexora.Media;
 using Nexora.Threading;
 

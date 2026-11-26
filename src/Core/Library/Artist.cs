@@ -1,3 +1,5 @@
+using Core.Tracks;
+
 namespace Core.Library;
 
 public class Artist

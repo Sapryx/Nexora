@@ -6,7 +6,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Threading;
 using Nexora.Controls;
-using Nexora.Threading;
+using Nexora.Media;
 using Nexora.ViewModels;
 
 namespace Nexora.Views;
@@ -43,11 +43,15 @@ public partial class TrackGrid : UserControl
         set => SetValue(FirstVisibleTrackIndexProperty, value);
     }
 
+    public static readonly StyledProperty<CoverViewport?> CoversProperty =
+        AvaloniaProperty.Register<TrackGrid, CoverViewport?>(nameof(Covers));
+
+    public CoverViewport? Covers => GetValue(CoversProperty);
     public ObservableCollection<TrackGridRow> Rows { get; } = [];
     private const double CellWidth = 192;
     private const double RightInset = 32;
-    private readonly IUiDispatcher uiDispatcher = new AvaloniaUiDispatcher();
     private readonly SmoothScroller scroller;
+    private readonly VisibleCovers visibleCovers = new VisibleCovers(CoverSizes.Tile);
     private bool isUpdatePending;
     private int? pendingTrackIndex;
 
@@ -56,6 +60,7 @@ public partial class TrackGrid : UserControl
         InitializeComponent();
         scroller = new SmoothScroller(RowScrollViewer, RowList);
         RowScrollViewer.ScrollChanged += OnScrollChanged;
+        RowScrollViewer.LayoutUpdated += (_, _) => ReportCovers();
     }
 
     public bool ScrollByKey(Key key)
@@ -85,11 +90,29 @@ public partial class TrackGrid : UserControl
         {
             ScheduleRowsUpdate();
         }
-        else if(change.Property == IsVisibleProperty && IsVisible)
+        else if(change.Property == IsVisibleProperty)
+        {
+            OnVisibilityChanged();
+        }
+    }
+
+    private void OnVisibilityChanged()
+    {
+        ReportCovers();
+
+        if(IsVisible)
         {
             pendingTrackIndex = FirstVisibleTrackIndex;
             ScheduleRowsUpdate();
         }
+    }
+
+    private void ReportCovers()
+    {
+        int rowCount = IsVisible ? scroller.VisibleItemCount : 0;
+        Covers?.Show(rowCount * ColumnCount, CoverSizes.Tile);
+        int shownRowCount = IsVisible ? scroller.ShownItemCount : 0;
+        visibleCovers.Show(Rows, scroller.FirstVisibleItemIndex, shownRowCount, row => row.TrackVms);
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -125,7 +148,7 @@ public partial class TrackGrid : UserControl
         }
 
         isUpdatePending = true;
-        uiDispatcher.Post(
+        Dispatcher.Post(
             () =>
             {
                 isUpdatePending = false;

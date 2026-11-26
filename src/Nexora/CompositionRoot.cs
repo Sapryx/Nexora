@@ -1,3 +1,6 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Platform;
 using Core.Input;
 using Core.Integrations;
 using Core.Library;
@@ -7,14 +10,20 @@ using Core.Playback.Loudness;
 using Core.Playlists;
 using Core.Storage;
 using Core.Storage.Tags;
+using DiscordRPC.IO;
 using LibVLCSharp.Shared;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Nexora.Animations;
 using Nexora.Input;
+using Nexora.Logging;
 using Nexora.Media;
 using Nexora.Render;
+using Nexora.Theme.Resources;
 using Nexora.Threading;
 using Nexora.ViewModels;
+using Nexora.Views;
 
 namespace Nexora;
 
@@ -28,18 +37,81 @@ public static class CompositionRoot
         "Nexora"
     );
 
+    private static readonly string CacheDirectory = Path.Combine(
+        OsCacheDirectory.Choose(
+            OperatingSystem.IsWindows(),
+            Environment.GetFolderPath(
+                Environment.SpecialFolder.LocalApplicationData,
+                Environment.SpecialFolderOption.DoNotVerify
+            ),
+            Environment.GetEnvironmentVariable("XDG_CACHE_HOME"),
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+        ),
+        "Nexora"
+    );
+
     private static readonly string VolumeFilePath = Path.Combine(AppDataDirectory, "volume.txt");
+    private static readonly TimeSpan SeekThrottleInterval = TimeSpan.FromMilliseconds(150);
+    private static readonly TimeSpan CoverShowDelay = TimeSpan.FromMilliseconds(150);
+    private const int MaxConcurrentCoverLoads = 4;
 #if DEBUG
-    public static readonly string? AnimationsFilePath = null;
+    private static readonly string? AnimationsFilePath = null;
 #else
-    public static readonly string? AnimationsFilePath = Path.Combine(AppDataDirectory, "animations.json");
+    private static readonly string? AnimationsFilePath = Path.Combine(AppDataDirectory, "animations.json");
 #endif
+
+    private static readonly bool IsWaylandSession =
+        OperatingSystem.IsLinux() && Environment.GetEnvironmentVariable("WAYLAND_DISPLAY") != null;
+
+    public static void Run(string[] args)
+    {
+        using var loggerFactory = LoggingInitializer.Initialize(args);
+        var crashLogger = new CrashLogger(loggerFactory);
+        crashLogger.Register();
+
+        var builder = new ServiceCollection();
+        builder.AddSingleton(loggerFactory);
+        builder.AddLogging();
+        Configure(builder);
+        var provider = builder.BuildServiceProvider();
+
+        BuildAvaloniaApp(() => CreateApp(loggerFactory, () => Start(provider)))
+            .AfterSetup(_ => crashLogger.RegisterUiThread(provider.GetRequiredService<IUiDispatcher>()))
+            .StartWithClassicDesktopLifetime(args);
+        provider.GetRequiredService<ThumbnailGenerator>().Dispose();
+    }
+
+    public static AppBuilder BuildDesignerApp()
+    {
+        return BuildAvaloniaApp(() => CreateApp(NullLoggerFactory.Instance, () => new MainWindow())).LogToTrace();
+    }
+
+    public static void LoadAnimationResources(ILoggerFactory loggerFactory)
+    {
+        var loader = new AnimationSettingsLoader(
+            ReadDefaultAnimationSettings(),
+            AnimationsFilePath,
+            loggerFactory.CreateLogger<AnimationSettingsLoader>()
+        );
+        var factory = new AnimationResourceFactory(loggerFactory.CreateLogger<AnimationResourceFactory>());
+        AnimationResources.Entries = factory.Create(loader.Load(), loader.LoadDefaults());
+    }
 
     public static void Configure(ServiceCollection builder)
     {
+        builder.AddSingleton(provider => new EnvironmentLogger(
+            provider.GetRequiredService<ILogger<EnvironmentLogger>>(),
+            IsWaylandSession
+        ));
         builder.AddSingleton<LibVlcLogForwarder>();
         builder.AddSingleton(provider => CreateLibVlc(provider.GetRequiredService<LibVlcLogForwarder>()));
         builder.AddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
+        builder.AddSingleton(TimeProvider.System);
+        builder.AddTransient(provider => new Throttler(
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<IUiDispatcher>(),
+            SeekThrottleInterval
+        ));
         builder.AddSingleton<TrackControlVmRegistry>();
         builder.AddSingleton<ITrackLoader, FileTrackLoader>();
         builder.AddSingleton<
@@ -58,6 +130,7 @@ public static class CompositionRoot
         >();
         builder.AddSingleton<TrackTagWriter>();
         builder.AddSingleton<ITrackCoverLoader, TagLibTrackCoverLoader>();
+        builder.AddSingleton<INamedPipeClient, ManagedNamedPipeClient>();
         builder.AddSingleton<IDiscordClient, DiscordRpcClientAdapter>();
         builder.AddSingleton<IRichPresenceService, DiscordRichPresenceService>();
         builder.AddSingleton<IMediaEngine, VlcMediaEngine>();
@@ -67,7 +140,21 @@ public static class CompositionRoot
             provider.GetRequiredService<ILogger<FileVolumeStorage>>()
         ));
         builder.AddSingleton<RenderScaleProvider>();
+        builder.AddSingleton<IRenderScaleProvider>(provider => provider.GetRequiredService<RenderScaleProvider>());
+        builder.AddSingleton<IThumbnailStore>(provider => new ThumbnailStore(
+            CacheDirectory,
+            provider.GetRequiredService<ILogger<ThumbnailStore>>()
+        ));
         builder.AddSingleton<ICoverCache, CoverCache>();
+        builder.AddSingleton<CoverMemoryBudget>();
+        builder.AddSingleton<ThumbnailGenerator>();
+        builder.AddSingleton(provider => new CoverLoadQueue(
+            provider.GetRequiredService<ICoverCache>(),
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<IUiDispatcher>(),
+            CoverShowDelay,
+            MaxConcurrentCoverLoads
+        ));
         builder.AddSingleton<MusicLibrary>();
         builder.AddSingleton<PlaybackQueue>();
         builder.AddSingleton<KeyboardLayoutTranslator>();
@@ -76,7 +163,7 @@ public static class CompositionRoot
         {
             builder.AddSingleton<IKeyboardLayoutProvider, WindowsKeyboardLayoutProvider>();
         }
-        else if(Program.IsWaylandSession)
+        else if(IsWaylandSession)
         {
             builder.AddSingleton<IKeyboardLayoutProvider, WaylandKeyboardLayoutProvider>();
         }
@@ -91,6 +178,61 @@ public static class CompositionRoot
         builder.AddSingleton<QueueVm>();
         builder.AddSingleton<TrackEditorVm>();
         builder.AddSingleton<CoverViewerVm>();
+    }
+
+    private static App CreateApp(ILoggerFactory loggerFactory, Func<Window> start)
+    {
+        return new App()
+        {
+            LoadResources = () => LoadAnimationResources(loggerFactory),
+            Start = start
+        };
+    }
+
+    private static AppBuilder BuildAvaloniaApp(Func<App> createApp)
+    {
+        var builder = AppBuilder.Configure(createApp).UsePlatformDetect();
+
+        if(IsWaylandSession)
+        {
+            builder = builder.UseWayland();
+        }
+
+        return builder
+#if DEBUG
+            .WithDeveloperTools()
+#endif
+            .With(new SkiaOptions() { UseOpacitySaveLayer = true })
+            .WithInterFont();
+    }
+
+    private static string ReadDefaultAnimationSettings()
+    {
+        using var stream = AssetLoader.Open(new Uri("avares://Nexora/Assets/animations.json"));
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
+    private static Window Start(ServiceProvider provider)
+    {
+        provider.GetRequiredService<EnvironmentLogger>().Log();
+
+        var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
+        mainWindowVm.Initialize();
+
+        bool showWindowControls = !OperatingSystem.IsLinux()
+            || !TilingWindowManager.IsPresent(Environment.GetEnvironmentVariable);
+        var mainWindow = new MainWindow(showWindowControls)
+        {
+            DataContext = mainWindowVm
+        };
+        provider.GetRequiredService<RenderScaleProvider>().Track(mainWindow);
+        provider.GetRequiredService<ThumbnailGenerator>().Start();
+        _ = provider.GetRequiredService<MusicLibrary>().LoadAsync();
+        provider.GetRequiredService<IRichPresenceService>().Initialize();
+        LibVLCSharp.Shared.Core.Initialize();
+
+        return mainWindow;
     }
 
     private static LibVLC CreateLibVlc(LibVlcLogForwarder logForwarder)

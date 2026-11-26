@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Media.Imaging;
 using Core.Storage.Tags;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -13,26 +14,90 @@ public class CoverCacheTests
     private const string AudioPath = "/music/broken.mp3";
     private readonly TestLogger<CoverCache> logger = new TestLogger<CoverCache>();
     private readonly Mock<ITrackCoverLoader> coverLoaderMock = new Mock<ITrackCoverLoader>();
+    private readonly Mock<IThumbnailStore> thumbnailStoreMock = new Mock<IThumbnailStore>();
     private readonly CoverCache coverCache;
 
     public CoverCacheTests()
     {
-        coverCache = new CoverCache(logger, coverLoaderMock.Object, new RenderScaleProvider());
+        coverCache = new CoverCache(
+            logger,
+            coverLoaderMock.Object,
+            thumbnailStoreMock.Object,
+            Mock.Of<IRenderScaleProvider>(it => it.RenderScaling == 1)
+        );
     }
 
     [Fact]
     public async Task GetOrLoadAsync_TrackWithoutCover_ReturnsNull()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
-        var cover = await coverCache.GetOrLoadAsync(AudioPath);
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         Assert.Null(cover);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_TrackWithoutCover_SavesMissingThumbnailAtPixelSide()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_NoThumbnails_CreatesEveryOutdatedSizeFromOneRead()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, null), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_OtherSizeFresh_SavesOnlyRequestedSize()
+    {
+        thumbnailStoreMock.Setup(it => it.IsFresh(AudioPath, 64)).Returns(true);
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, It.IsAny<Bitmap?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_StoredThumbnail_ReturnsItWithoutReadingAudioFile()
+    {
+        Bitmap? stored = null;
+        thumbnailStoreMock.Setup(it => it.TryLoad(AudioPath, 64, out stored)).Returns(true);
+
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        Assert.Null(cover);
+        coverLoaderMock.Verify(it => it.LoadCover(It.IsAny<string>()), Times.Never);
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_LoaderThrows_DoesNotSaveThumbnail()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
     }
 
     [Fact]
     public async Task GetOrLoadAsync_LoaderThrows_ReturnsNull()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
-        var cover = await coverCache.GetOrLoadAsync(AudioPath);
+        var cover = await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         Assert.Null(cover);
     }
 
@@ -42,7 +107,7 @@ public class CoverCacheTests
         var exception = new IOException("Corrupted");
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(exception);
 
-        await coverCache.GetOrLoadAsync(AudioPath);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
 
         var entry = Assert.Single(logger.Entries);
         Assert.Equal(LogLevel.Warning, entry.Level);
@@ -54,9 +119,130 @@ public class CoverCacheTests
     public async Task GetOrLoadAsync_LoaderThrewBefore_DoesNotLoadAgain()
     {
         coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
-        await coverCache.GetOrLoadAsync(AudioPath);
-        await coverCache.GetOrLoadAsync(AudioPath);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_TileAfterThumbnail_LoadsEachSizeOnce()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_CancelledBeforeLoad_ThrowsWithoutLoading()
+    {
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, new CancellationToken(true))
+        );
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_CancelledWhileLoading_ThrowsAndDoesNotCacheOrLog()
+    {
+        using var cancellation = new CancellationTokenSource();
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath))
+            .Callback(cancellation.Cancel)
+            .Returns((byte[]?)null);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, cancellation.Token)
+        );
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, null), Times.Once);
+        Assert.Empty(logger.Entries);
+    }
+
+    [Fact]
+    public void CreateThumbnails_AllFresh_DoesNotReadAudioFile()
+    {
+        thumbnailStoreMock.Setup(it => it.IsFresh(AudioPath, It.IsAny<int>())).Returns(true);
+
+        coverCache.CreateThumbnails(AudioPath, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(It.IsAny<string>()), Times.Never);
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public void CreateThumbnails_TrackWithoutCover_ReadsOnceAndSavesMissingMarkerForOutdatedSizesOnly()
+    {
+        thumbnailStoreMock.Setup(it => it.IsFresh(AudioPath, 64)).Returns(true);
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        coverCache.CreateThumbnails(AudioPath, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, It.IsAny<Bitmap?>()), Times.Never);
+    }
+
+    [Fact]
+    public void CreateThumbnails_LoaderThrows_SavesNothingAndLogsWarning()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
+
+        coverCache.CreateThumbnails(AudioPath, CancellationToken.None);
+
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+        Assert.Equal(LogLevel.Warning, Assert.Single(logger.Entries).Level);
+    }
+
+    [Fact]
+    public void CreateThumbnails_CancelledWhileReading_ThrowsAndSavesNothing()
+    {
+        using var cancellation = new CancellationTokenSource();
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath))
+            .Callback(cancellation.Cancel)
+            .Returns((byte[]?)null);
+
+        Assert.ThrowsAny<OperationCanceledException>(
+            () => coverCache.CreateThumbnails(AudioPath, cancellation.Token)
+        );
+
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public void CreateThumbnails_AlreadyCancelled_SkipsReadingAudioFile()
+    {
+        Assert.ThrowsAny<OperationCanceledException>(
+            () => coverCache.CreateThumbnails(AudioPath, new CancellationToken(true))
+        );
+        coverLoaderMock.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task MemoryBudget_TrackWithoutCover_KeepsBudgetAndUsesNoMemory()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+        coverCache.MemoryBudget = 1000;
+
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        Assert.Equal(1000, coverCache.MemoryBudget);
+        Assert.Equal(0, coverCache.MemoryUsed);
     }
 
     [Fact]

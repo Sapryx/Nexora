@@ -39,6 +39,7 @@ public class VlcMediaEngine : IMediaEngine
     private readonly LibVLC vlc;
     private readonly MediaPlayer mediaPlayer;
     private readonly Equalizer equalizer = new Equalizer();
+    private int mediaVersion;
 
     public event Action<float>? PositionChanged;
     public event Action? EndReached;
@@ -52,8 +53,8 @@ public class VlcMediaEngine : IMediaEngine
         mediaPlayer = new MediaPlayer(vlc);
 
         mediaPlayer.PositionChanged += (_, args) => PositionChanged?.Invoke(args.Position);
-        mediaPlayer.EndReached += (_, _) => Task.Run(() => EndReached?.Invoke());
-        mediaPlayer.EncounteredError += (_, _) => Task.Run(() => EncounteredError?.Invoke());
+        mediaPlayer.EndReached += (_, _) => RaiseForCurrentMedia(() => EndReached?.Invoke());
+        mediaPlayer.EncounteredError += (_, _) => RaiseForCurrentMedia(() => EncounteredError?.Invoke());
         mediaPlayer.VolumeChanged += (_, args) => VolumeChanged?.Invoke(args.Volume * 100f);
         mediaPlayer.Muted += (_, _) => MuteChanged?.Invoke(true);
         mediaPlayer.Unmuted += (_, _) => MuteChanged?.Invoke(false);
@@ -74,6 +75,7 @@ public class VlcMediaEngine : IMediaEngine
             media.AddOption(":start-paused");
         }
 
+        Interlocked.Increment(ref mediaVersion);
         equalizer.SetPreamp((float)gainDb);
         mediaPlayer.SetEqualizer(equalizer);
         mediaPlayer.Media = media;
@@ -87,6 +89,20 @@ public class VlcMediaEngine : IMediaEngine
 
     public void Stop()
     {
+        Interlocked.Increment(ref mediaVersion);
         mediaPlayer.Stop();
+    }
+
+    private void RaiseForCurrentMedia(Action raise)
+    {
+        int version = Volatile.Read(ref mediaVersion);
+
+        Task.Run(() =>
+        {
+            if(Volatile.Read(ref mediaVersion) == version)
+            {
+                raise();
+            }
+        });
     }
 }

@@ -1,6 +1,7 @@
 using Core.Logging;
 using Core.Playlists;
 using Core.Storage;
+using Core.Tracks;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Library;
@@ -16,6 +17,8 @@ public class MusicLibrary
 
     private readonly Dictionary<string, Artist> artists =
         new Dictionary<string, Artist>(StringComparer.OrdinalIgnoreCase);
+
+    public event Action<IReadOnlyList<IAudioTrack>>? Loaded;
 
     public MusicLibrary(
         ILogger<MusicLibrary> logger,
@@ -39,6 +42,7 @@ public class MusicLibrary
                 var audioTracks = trackLoader.Load();
                 AddToArtistIndex(audioTracks);
                 Playlist.AddTracks(audioTracks);
+                Loaded?.Invoke(audioTracks);
                 await loudnessScanner.ScanAsync(audioTracks).ConfigureAwait(false);
             }
             catch(Exception ex)

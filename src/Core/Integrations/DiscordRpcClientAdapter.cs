@@ -1,5 +1,6 @@
 using Core.Logging;
 using DiscordRPC;
+using DiscordRPC.IO;
 using Microsoft.Extensions.Logging;
 
 namespace Core.Integrations;
@@ -13,11 +14,12 @@ public class DiscordRpcClientAdapter : IDiscordClient
     public event Action? ConnectionFailed;
     public event Action<int, string>? Error;
 
-    public DiscordRpcClientAdapter(ILogger<DiscordRpcLogger> rpcLogger)
+    public DiscordRpcClientAdapter(INamedPipeClient pipeClient, ILogger<DiscordRpcLogger> rpcLogger)
     {
-        client = new DiscordRpcClient(AppId)
+        client = new DiscordRpcClient(AppId, client: pipeClient)
         {
-            Logger = new DiscordRpcLogger(rpcLogger)
+            Logger = new DiscordRpcLogger(rpcLogger),
+            SkipIdenticalPresence = false
         };
 
         client.OnReady += (_, e) => Ready?.Invoke(e.User.Username);

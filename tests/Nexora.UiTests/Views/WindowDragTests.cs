@@ -13,11 +13,31 @@ namespace Nexora.UiTests.Views;
 public class WindowDragTests
 {
     [AvaloniaFact]
+    public void TilingSession_HidesCaptionButtonsAndDisablesTopDragWithoutMovingLibraryControls()
+    {
+        using var stacking = new TestMainWindow(testName: "StackingWindowControls");
+        using var tiling = new TestMainWindow(showWindowControls: false);
+
+        var point = new Point(900, 10);
+        tiling.Click(point);
+        tiling.Click(point);
+
+        Assert.False(tiling.Find<WindowButtons>().IsEffectivelyVisible);
+        Assert.Equal(0, tiling.Window.MoveDragCount);
+        Assert.Equal(WindowState.Normal, tiling.Window.WindowState);
+        Assert.Equal(stacking.Find<SearchBar>().Bounds, tiling.Find<SearchBar>().Bounds);
+        Assert.Equal(
+            stacking.Find<SegmentedControl>("LibraryViewSwitch").Bounds,
+            tiling.Find<SegmentedControl>("LibraryViewSwitch").Bounds
+        );
+    }
+
+    [AvaloniaFact]
     public void TopStrip_PressOnEmptySpot_StartsMoveDrag()
     {
         using var app = new TestMainWindow();
 
-        Press(app, new Point(900, 10));
+        app.Click(new Point(900, 10));
 
         Assert.Equal(1, app.Window.MoveDragCount);
     }
@@ -29,7 +49,7 @@ public class WindowDragTests
         app.Window.WindowState = WindowState.Maximized;
         Dispatcher.UIThread.RunJobs();
 
-        Press(app, new Point(900, 10));
+        app.Click(new Point(900, 10));
         app.Window.WindowState = WindowState.Normal;
         Dispatcher.UIThread.RunJobs();
 
@@ -42,7 +62,7 @@ public class WindowDragTests
     {
         using var app = new TestMainWindow();
 
-        Press(app, new Point(900, 10));
+        app.Click(new Point(900, 10));
 
         Assert.Equal(WindowState.Normal, app.Window.WindowState);
         Assert.True(app.Window.CanResize);
@@ -55,7 +75,7 @@ public class WindowDragTests
     {
         using var app = new TestMainWindow();
 
-        Press(app, new Point(900, 100));
+        app.Click(new Point(900, 100));
 
         Assert.Equal(0, app.Window.MoveDragCount);
     }
@@ -104,16 +124,9 @@ public class WindowDragTests
             var point = control.TranslatePoint(center, app.Window);
             Assert.NotNull(point);
             Assert.InRange(point.Value.Y, 0, 31);
-            Press(app, point.Value);
+            app.Click(point.Value);
         }
 
         Assert.Equal(0, app.Window.MoveDragCount);
-    }
-
-    private static void Press(TestMainWindow app, Point point)
-    {
-        app.Window.MouseDown(point, MouseButton.Left);
-        app.Window.MouseUp(point, MouseButton.Left);
-        Dispatcher.UIThread.RunJobs();
     }
 }

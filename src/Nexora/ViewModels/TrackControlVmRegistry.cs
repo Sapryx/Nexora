@@ -12,6 +12,7 @@ public class TrackControlVmRegistry
     private readonly IAudioPlayer audioPlayer;
     private readonly TrackEditorVm trackEditorVm;
     private readonly ICoverCache coverCache;
+    private readonly CoverLoadQueue coverLoadQueue;
     private readonly IUiDispatcher uiDispatcher;
     private readonly Dictionary<IPlaylistItem, TrackControlVm> trackVms = [];
     private TrackControlVm? activeTrackVm;
@@ -22,12 +23,14 @@ public class TrackControlVmRegistry
         TrackTagWriter tagWriter,
         TrackEditorVm trackEditorVm,
         ICoverCache coverCache,
+        CoverLoadQueue coverLoadQueue,
         IUiDispatcher uiDispatcher)
     {
         this.playbackQueue = playbackQueue;
         this.audioPlayer = audioPlayer;
         this.trackEditorVm = trackEditorVm;
         this.coverCache = coverCache;
+        this.coverLoadQueue = coverLoadQueue;
         this.uiDispatcher = uiDispatcher;
 
         audioPlayer.StateChanged += state => uiDispatcher.Post(() =>
@@ -61,12 +64,13 @@ public class TrackControlVmRegistry
             audioPlayer,
             trackEditorVm,
             coverCache,
-            uiDispatcher
+            coverLoadQueue
         );
         trackVms[playlistItem] = trackVm;
 
         if(trackVm.IsActive)
         {
+            activeTrackVm?.ApplyState(audioPlayer.State);
             activeTrackVm = trackVm;
         }
 

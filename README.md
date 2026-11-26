@@ -188,4 +188,6 @@ Run the tests:
 ./scripts/test.sh
 ```
 
-(`.\scripts\Test.ps1` on Windows.)
+The script runs all tests by default. Use `./scripts/test.sh --exclude-slow` to skip tests tagged as slow.
+For a custom selection, use `--filter`, for example `./scripts/test.sh --filter 'FullyQualifiedName!~LruCacheTests'`.
+Other arguments are forwarded to `dotnet test`.
