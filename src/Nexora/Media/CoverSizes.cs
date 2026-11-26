@@ -5,6 +5,7 @@ public static class CoverSizes
     public const double Thumbnail = 64;
     public const double Tile = 160;
     public const int BytesPerPixel = 4;
+    public static readonly IReadOnlyList<double> Thumbnails = [Thumbnail, Tile];
 
     public static int ToPixels(double size, double renderScaling)
     {

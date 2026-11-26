@@ -18,6 +18,8 @@ public class MusicLibrary
     private readonly Dictionary<string, Artist> artists =
         new Dictionary<string, Artist>(StringComparer.OrdinalIgnoreCase);
 
+    public event Action<IReadOnlyList<IAudioTrack>>? Loaded;
+
     public MusicLibrary(
         ILogger<MusicLibrary> logger,
         ITrackLoader trackLoader,
@@ -40,6 +42,7 @@ public class MusicLibrary
                 var audioTracks = trackLoader.Load();
                 AddToArtistIndex(audioTracks);
                 Playlist.AddTracks(audioTracks);
+                Loaded?.Invoke(audioTracks);
                 await loudnessScanner.ScanAsync(audioTracks).ConfigureAwait(false);
             }
             catch(Exception ex)

@@ -78,6 +78,7 @@ public static class CompositionRoot
         BuildAvaloniaApp(() => CreateApp(loggerFactory, () => Start(provider)))
             .AfterSetup(_ => crashLogger.RegisterUiThread(provider.GetRequiredService<IUiDispatcher>()))
             .StartWithClassicDesktopLifetime(args);
+        provider.GetRequiredService<ThumbnailGenerator>().Dispose();
     }
 
     public static AppBuilder BuildDesignerApp()
@@ -146,6 +147,7 @@ public static class CompositionRoot
         ));
         builder.AddSingleton<ICoverCache, CoverCache>();
         builder.AddSingleton<CoverMemoryBudget>();
+        builder.AddSingleton<ThumbnailGenerator>();
         builder.AddSingleton(provider => new CoverLoadQueue(
             provider.GetRequiredService<ICoverCache>(),
             provider.GetRequiredService<TimeProvider>(),
@@ -223,6 +225,7 @@ public static class CompositionRoot
             DataContext = mainWindowVm
         };
         provider.GetRequiredService<RenderScaleProvider>().Track(mainWindow);
+        provider.GetRequiredService<ThumbnailGenerator>().Start();
         _ = provider.GetRequiredService<MusicLibrary>().LoadAsync();
         provider.GetRequiredService<IRichPresenceService>().Initialize();
         LibVLCSharp.Shared.Core.Initialize();

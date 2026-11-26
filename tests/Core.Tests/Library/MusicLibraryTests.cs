@@ -67,6 +67,28 @@ public class MusicLibraryTests
     }
 
     [Fact]
+    public async Task LoadAsync_TracksLoaded_RaisesLoadedAfterAddingThemAndBeforeAnalyzingLoudness()
+    {
+        var track = new AudioTrack("/music/Psycho.mp3", new Metadata() { Title = "Psycho" });
+        IReadOnlyList<IAudioTrack>? loadedTracks = null;
+        int trackCountWhenLoaded = 0;
+        bool wasAnalyzedWhenLoaded = true;
+        SetupLoadedTracks(track);
+        library.Loaded += tracks =>
+        {
+            loadedTracks = tracks;
+            trackCountWhenLoaded = library.Playlist.TrackCount;
+            wasAnalyzedWhenLoaded = loudnessAnalyzerMock.Invocations.Count > 0;
+        };
+
+        await library.LoadAsync();
+
+        Assert.Equal([track], loadedTracks);
+        Assert.Equal(1, trackCountWhenLoaded);
+        Assert.False(wasAnalyzedWhenLoaded);
+    }
+
+    [Fact]
     public async Task LoadAsync_LoaderThrows_LogsError()
     {
         var exception = new IOException("Music folder is unavailable");

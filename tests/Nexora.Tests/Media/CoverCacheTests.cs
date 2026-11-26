@@ -44,6 +44,29 @@ public class CoverCacheTests
     }
 
     [Fact]
+    public async Task GetOrLoadAsync_NoThumbnails_CreatesEveryOutdatedSizeFromOneRead()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Thumbnail, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, null), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetOrLoadAsync_OtherSizeFresh_SavesOnlyRequestedSize()
+    {
+        thumbnailStoreMock.Setup(it => it.IsFresh(AudioPath, 64)).Returns(true);
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        await coverCache.GetOrLoadAsync(AudioPath, CoverSizes.Tile, CancellationToken.None);
+
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, It.IsAny<Bitmap?>()), Times.Never);
+    }
+
+    [Fact]
     public async Task GetOrLoadAsync_StoredThumbnail_ReturnsItWithoutReadingAudioFile()
     {
         Bitmap? stored = null;
@@ -140,6 +163,74 @@ public class CoverCacheTests
         coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Exactly(2));
         thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, null), Times.Once);
         Assert.Empty(logger.Entries);
+    }
+
+    [Fact]
+    public void CreateThumbnails_AllFresh_DoesNotReadAudioFile()
+    {
+        thumbnailStoreMock.Setup(it => it.IsFresh(AudioPath, It.IsAny<int>())).Returns(true);
+
+        coverCache.CreateThumbnails(AudioPath, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(It.IsAny<string>()), Times.Never);
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public void CreateThumbnails_TrackWithoutCover_ReadsOnceAndSavesMissingMarkerForOutdatedSizesOnly()
+    {
+        thumbnailStoreMock.Setup(it => it.IsFresh(AudioPath, 64)).Returns(true);
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Returns((byte[]?)null);
+
+        coverCache.CreateThumbnails(AudioPath, CancellationToken.None);
+
+        coverLoaderMock.Verify(it => it.LoadCover(AudioPath), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 160, null), Times.Once);
+        thumbnailStoreMock.Verify(it => it.Save(AudioPath, 64, It.IsAny<Bitmap?>()), Times.Never);
+    }
+
+    [Fact]
+    public void CreateThumbnails_LoaderThrows_SavesNothingAndLogsWarning()
+    {
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath)).Throws(new IOException("Corrupted"));
+
+        coverCache.CreateThumbnails(AudioPath, CancellationToken.None);
+
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+        Assert.Equal(LogLevel.Warning, Assert.Single(logger.Entries).Level);
+    }
+
+    [Fact]
+    public void CreateThumbnails_CancelledWhileReading_ThrowsAndSavesNothing()
+    {
+        using var cancellation = new CancellationTokenSource();
+        coverLoaderMock.Setup(it => it.LoadCover(AudioPath))
+            .Callback(cancellation.Cancel)
+            .Returns((byte[]?)null);
+
+        Assert.ThrowsAny<OperationCanceledException>(
+            () => coverCache.CreateThumbnails(AudioPath, cancellation.Token)
+        );
+
+        thumbnailStoreMock.Verify(
+            it => it.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Bitmap?>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public void CreateThumbnails_AlreadyCancelled_SkipsReadingAudioFile()
+    {
+        Assert.ThrowsAny<OperationCanceledException>(
+            () => coverCache.CreateThumbnails(AudioPath, new CancellationToken(true))
+        );
+        coverLoaderMock.VerifyNoOtherCalls();
     }
 
     [Fact]

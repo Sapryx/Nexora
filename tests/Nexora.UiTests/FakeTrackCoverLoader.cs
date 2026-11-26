@@ -9,7 +9,9 @@ namespace Nexora.UiTests;
 public sealed class FakeTrackCoverLoader : ITrackCoverLoader
 {
     public IReadOnlyList<string> LoadOrder => loadOrder.ToList();
+    public string? FileCoverPath { get; set; }
     private readonly ConcurrentDictionary<string, byte[]> covers = [];
+    private readonly TagLibTrackCoverLoader fileLoader = new TagLibTrackCoverLoader();
     private readonly ConcurrentDictionary<string, int> loadCounts = [];
     private readonly ConcurrentQueue<string> loadOrder = [];
     private const int MaxHeldLoads = 1000;
@@ -54,6 +56,12 @@ public sealed class FakeTrackCoverLoader : ITrackCoverLoader
         loadOrder.Enqueue(audioPath);
 
         heldLoads?.Wait();
+
+        if(audioPath == FileCoverPath)
+        {
+            return fileLoader.LoadCover(audioPath);
+        }
+
         return covers.GetValueOrDefault(audioPath) ?? defaultCover;
     }
 

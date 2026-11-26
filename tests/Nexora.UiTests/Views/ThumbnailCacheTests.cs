@@ -2,7 +2,6 @@ using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
-using Avalonia.Media.Imaging;
 using Core.Tracks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Nexora.Controls;
@@ -39,6 +38,7 @@ public sealed class ThumbnailCacheTests : IDisposable
             var gridPaths = WaitForVisibleCovers<TrackTile>(app, app.LibraryGridScroll());
             Assert.Equal(new PixelSize(160, 160), ThumbnailSize($"{RealTrackName} 160x160.png"));
             AssertThumbnails(gridPaths, 160);
+            AssertThumbnails(gridPaths, 64);
             AssertOnlyLoadedTracksHaveThumbnails(app);
 
             app.ShowLibraryList();
@@ -82,7 +82,7 @@ public sealed class ThumbnailCacheTests : IDisposable
             Assert.Equal(new PixelSize(160, 80), ThumbnailSize($"{RealTrackName} 160x160.png"));
             app.ShowLibraryList();
             WaitForVisibleCovers<TrackControl>(app, app.LibraryListScroll());
-            Assert.Equal(2, app.CoverLoader.LoadCount(realTrackPath));
+            Assert.Equal(1, app.CoverLoader.LoadCount(realTrackPath));
             Assert.Equal(new PixelSize(64, 32), ThumbnailSize($"{RealTrackName} 64x64.png"));
         }
 
@@ -163,7 +163,9 @@ public sealed class ThumbnailCacheTests : IDisposable
 
     private void AssertOnlyLoadedTracksHaveThumbnails(TestMainWindow app)
     {
-        var loadedThumbnails = app.CoverLoader.LoadOrder.Select(path => ThumbnailPath(path, 160)).ToHashSet();
+        var loadedThumbnails = app.CoverLoader.LoadOrder
+            .SelectMany(path => new[] { ThumbnailPath(path, 160), ThumbnailPath(path, 64) })
+            .ToHashSet();
         Assert.All(Directory.EnumerateFiles(thumbnailDirectory), file => Assert.Contains(file, loadedThumbnails));
     }
 
@@ -174,7 +176,6 @@ public sealed class ThumbnailCacheTests : IDisposable
 
     private PixelSize ThumbnailSize(string fileName)
     {
-        using var bitmap = new Bitmap(Path.Combine(thumbnailDirectory, fileName));
-        return bitmap.PixelSize;
+        return TestMainWindow.ThumbnailSize(Path.Combine(thumbnailDirectory, fileName));
     }
 }

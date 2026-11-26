@@ -18,11 +18,13 @@ public class CoverCache : ICoverCache
 
     public long MemoryUsed => cache.Weight;
     private const int LargeMaxSide = 1024;
+    private const int ThumbnailLockCount = 256;
     private readonly ILogger<CoverCache> logger;
     private readonly ITrackCoverLoader coverLoader;
     private readonly IThumbnailStore thumbnailStore;
     private readonly IRenderScaleProvider renderScaleProvider;
     private readonly LruCache<CoverKey, Bitmap?> cache = new LruCache<CoverKey, Bitmap?>(0, WeighCover);
+    private readonly Lock[] thumbnailLocks = Enumerable.Range(0, ThumbnailLockCount).Select(_ => new Lock()).ToArray();
 
     public CoverCache(
         ILogger<CoverCache> logger,
@@ -55,6 +57,14 @@ public class CoverCache : ICoverCache
         token.ThrowIfCancellationRequested();
         cache.Set(key, bitmap);
         return bitmap;
+    }
+
+    public void CreateThumbnails(string audioPath, CancellationToken token)
+    {
+        lock(ThumbnailLockOf(audioPath))
+        {
+            DisposeAll(CreateMissingThumbnails(audioPath, [], token));
+        }
     }
 
     public Task<Bitmap?> LoadLargeAsync(string audioPath)
@@ -108,19 +118,70 @@ public class CoverCache : ICoverCache
         return CoverSizes.ToPixels(size, renderScaleProvider.RenderScaling);
     }
 
+    private Lock ThumbnailLockOf(string audioPath)
+    {
+        uint hash = unchecked((uint)StringComparer.OrdinalIgnoreCase.GetHashCode(audioPath));
+        return thumbnailLocks[hash % ThumbnailLockCount];
+    }
+
     private Bitmap? LoadThumbnail(CoverKey key, CancellationToken token)
     {
-        if(thumbnailStore.TryLoad(key.AudioPath, key.PixelSide, out var stored))
+        lock(ThumbnailLockOf(key.AudioPath))
         {
-            return stored;
+            if(thumbnailStore.TryLoad(key.AudioPath, key.PixelSide, out var stored))
+            {
+                return stored;
+            }
+
+            var bitmaps = CreateMissingThumbnails(key.AudioPath, [key.PixelSide], token);
+            DisposeAll(bitmaps.Skip(1));
+            return bitmaps.FirstOrDefault();
+        }
+    }
+
+    private List<Bitmap?> CreateMissingThumbnails(string audioPath, List<int> requiredSides, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        double scale = renderScaleProvider.RenderScaling;
+        var sides = requiredSides
+            .Concat(CoverSizes.Thumbnails
+                .Select(size => CoverSizes.ToPixels(size, scale))
+                .Except(requiredSides)
+                .Where(side => !thumbnailStore.IsFresh(audioPath, side)))
+            .ToList();
+
+        if(sides.Count == 0 || !TryReadCover(audioPath, stream => DecodeToFit(stream, sides), token, out var bitmaps))
+        {
+            return [];
         }
 
-        if(TryReadCover(key.AudioPath, stream => DecodeToFit(stream, key.PixelSide), token, out var bitmap))
+        var thumbnails = bitmaps ?? sides.Select(_ => (Bitmap?)null).ToList();
+
+        for(int index = 0; index < sides.Count; index++)
         {
-            thumbnailStore.Save(key.AudioPath, key.PixelSide, bitmap);
+            thumbnailStore.Save(audioPath, sides[index], thumbnails[index]);
         }
 
-        return bitmap;
+        return thumbnails;
+    }
+
+    private static List<Bitmap?> DecodeToFit(Stream stream, List<int> sides)
+    {
+        return sides
+            .Select<int, Bitmap?>(side =>
+            {
+                stream.Position = 0;
+                return DecodeToFit(stream, side);
+            })
+            .ToList();
+    }
+
+    private static void DisposeAll(IEnumerable<Bitmap?> bitmaps)
+    {
+        foreach(var bitmap in bitmaps)
+        {
+            bitmap?.Dispose();
+        }
     }
 
     private Bitmap? LoadCover(string audioPath, Func<Stream, Bitmap> decode)
@@ -129,13 +190,13 @@ public class CoverCache : ICoverCache
         return bitmap;
     }
 
-    private bool TryReadCover(
+    private bool TryReadCover<T>(
         string audioPath,
-        Func<Stream, Bitmap> decode,
+        Func<Stream, T> decode,
         CancellationToken token,
-        out Bitmap? bitmap)
+        out T? cover) where T : class
     {
-        bitmap = null;
+        cover = null;
 
         try
         {
@@ -145,7 +206,7 @@ public class CoverCache : ICoverCache
             if(coverRaw != null)
             {
                 using var stream = new MemoryStream(coverRaw);
-                bitmap = decode(stream);
+                cover = decode(stream);
             }
 
             return true;

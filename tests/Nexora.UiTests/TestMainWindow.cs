@@ -23,6 +23,7 @@ using Nexora.Render;
 using Nexora.ViewModels;
 using Nexora.Views;
 using Tests.Shared.Integrations;
+using Tests.Shared.Library;
 using Tests.Shared.Playback;
 
 namespace Nexora.UiTests;
@@ -58,6 +59,7 @@ public sealed class TestMainWindow : IDisposable
     private readonly string screenshotDirectory = Path.Combine(ProjectDirectory(), "screenshots");
     private readonly string screenshotPath;
     private readonly bool ownsThumbnailDirectory;
+    private readonly List<IAudioTrack> loadedTracks = [];
 
     public TestMainWindow([CallerMemberName] string testName = "") : this(null, null, null, testName)
     {
@@ -93,6 +95,7 @@ public sealed class TestMainWindow : IDisposable
         }
 
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
+        services.AddSingleton(TestMusicLibrary.CreateTrackLoader(loadedTracks));
         services.AddSingleton<TimeProvider>(TimeProvider);
         services.AddSingleton<INamedPipeClient>(DiscordPipe);
         services.AddSingleton<ITrackCoverLoader>(CoverLoader);
@@ -197,15 +200,30 @@ public sealed class TestMainWindow : IDisposable
 
     public List<AudioTrack> AddLibraryWithCovers(int count)
     {
+        var tracks = CreateTracksWithCovers(count);
+        AddToLibrary(tracks);
+        return tracks;
+    }
+
+    public List<AudioTrack> CreateTracksWithCovers(int count)
+    {
         CoverLoader.AddToEveryTrack(new PixelSize(200, 200));
-        var tracks = Enumerable.Range(0, count)
+        return Enumerable.Range(0, count)
             .Select(index => new AudioTrack(
                 $"/music/Track {index:D5}.mp3",
                 new Metadata() { Title = $"Track {index:D5}", Duration = TimeSpan.FromSeconds(100) }
             ))
             .ToList();
-        AddToLibrary(tracks);
-        return tracks;
+    }
+
+    public ThumbnailGenerator LoadLibrary(IEnumerable<IAudioTrack> tracks)
+    {
+        loadedTracks.AddRange(tracks);
+        var generator = Services.GetRequiredService<ThumbnailGenerator>();
+        generator.Start();
+        Services.GetRequiredService<MusicLibrary>().LoadAsync().Wait();
+        Dispatcher.UIThread.RunJobs();
+        return generator;
     }
 
     public ScrollViewer LibraryGridScroll()
@@ -307,6 +325,12 @@ public sealed class TestMainWindow : IDisposable
     public static string CreateTemporaryDirectory()
     {
         return Directory.CreateTempSubdirectory("nexora-").FullName;
+    }
+
+    public static PixelSize ThumbnailSize(string filePath)
+    {
+        using var bitmap = new Bitmap(filePath);
+        return bitmap.PixelSize;
     }
 
     private static string ProjectDirectory([CallerFilePath] string sourcePath = "")

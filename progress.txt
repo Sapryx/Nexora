@@ -92,3 +92,8 @@ outdated, missing-cover marker, broken file, unwritable directory, failed replac
 CoverCacheTests and OsCacheDirectoryTests. Screenshot checked. All tests pass (--all); method-metrics --changed:
 new methods 100% covered, complexity <= 8; CompositionRoot.Configure stays at 92% (OS branches and the real store
 registration, which tests replace with a temporary directory).
+
+Date: 2026-11-26 | 14:25:17
+Task: Generate missing or outdated list and grid thumbnails after the library loads (feature-list.json entry 5).
+Result: Finished the background worker. It shares thumbnail generation with on-screen loads, reads each needed cover once for both sizes, and cancels and waits on shutdown while preserving atomic PNG writes.
+Verification: Debug build and all 663 tests passed. Headless UI tests verified 20,000 thumbnails from 10,000 tracks, responsive scroll and render steps, a real embedded-cover edit, zero cover reads on a fresh-cache restart, and intact files after a mid-generation close. Inspected the screenshots. The new methods reached 100% coverage and complexity at most 8. The broad metrics report still flags three existing CompositionRoot methods.

@@ -109,7 +109,7 @@
             "Removing thumbnails of tracks that no longer exist",
             "Showing thumbnail creation progress"
         ],
-        "state": "todo"
+        "state": "done"
     },
     {
         "description": "After the library loads, thumbnails of tracks that are no longer in the library are removed from the cache directory",

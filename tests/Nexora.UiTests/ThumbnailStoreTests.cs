@@ -30,6 +30,28 @@ public sealed class ThumbnailStoreTests : IDisposable
     }
 
     [Fact]
+    public void IsFresh_NoThumbnail_ReturnsFalse()
+    {
+        Assert.False(store.IsFresh(audioPath, PixelSide));
+    }
+
+    [Fact]
+    public void IsFresh_SavedAfterAudioFileChanged_ReturnsTrue()
+    {
+        store.Save(audioPath, PixelSide, null);
+        Assert.True(store.IsFresh(audioPath, PixelSide));
+    }
+
+    [Fact]
+    public void IsFresh_AudioFileChangedAfterSave_ReturnsFalse()
+    {
+        store.Save(audioPath, PixelSide, null);
+        File.SetLastWriteTimeUtc(audioPath, DateTime.UtcNow.AddMinutes(1));
+
+        Assert.False(store.IsFresh(audioPath, PixelSide));
+    }
+
+    [Fact]
     public void TryLoad_NoThumbnail_ReturnsFalse()
     {
         Assert.False(store.TryLoad(audioPath, PixelSide, out var thumbnail));

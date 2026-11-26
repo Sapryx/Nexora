@@ -21,12 +21,17 @@ public class ThumbnailStore : IThumbnailStore
         return Path.Combine(directory, $"{name} {pixelSide}x{pixelSide}.png");
     }
 
+    public bool IsFresh(string audioPath, int pixelSide)
+    {
+        return IsFresh(new FileInfo(PathOf(audioPath, pixelSide)), audioPath);
+    }
+
     public bool TryLoad(string audioPath, int pixelSide, out Bitmap? thumbnail)
     {
         thumbnail = null;
         var file = new FileInfo(PathOf(audioPath, pixelSide));
 
-        if(!file.Exists || file.LastWriteTimeUtc < File.GetLastWriteTimeUtc(audioPath))
+        if(!IsFresh(file, audioPath))
         {
             return false;
         }
@@ -70,5 +75,10 @@ public class ThumbnailStore : IThumbnailStore
                 File.Delete(temporaryPath);
             }
         }
+    }
+
+    private static bool IsFresh(FileInfo file, string audioPath)
+    {
+        return file.Exists && file.LastWriteTimeUtc >= File.GetLastWriteTimeUtc(audioPath);
     }
 }
