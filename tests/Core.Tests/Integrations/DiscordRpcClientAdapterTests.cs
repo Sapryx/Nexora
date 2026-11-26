@@ -11,6 +11,7 @@ namespace Core.Tests.Integrations;
 [Trait("Covers", "tests/Tests.Shared/Integrations")]
 public sealed class DiscordRpcClientAdapterTests : IDisposable
 {
+    private static readonly TimeSpan EventTimeout = TimeSpan.FromSeconds(15);
     private readonly FakeDiscordPipe pipe = new FakeDiscordPipe();
     private readonly DiscordRpcClientAdapter adapter;
 
@@ -20,42 +21,42 @@ public sealed class DiscordRpcClientAdapterTests : IDisposable
     }
 
     [Fact]
-    public void Initialize_DiscordRunning_RaisesReadyWithUsername()
+    public async Task Initialize_DiscordRunning_RaisesReadyWithUsername()
     {
-        string? username = null;
-        adapter.Ready += it => username = it;
+        TaskCompletionSource<string> ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        adapter.Ready += username => ready.TrySetResult(username);
         pipe.Start();
 
         adapter.Initialize();
 
-        pipe.WaitUntil(() => username != null);
-        Assert.Equal("user", username);
+        Assert.Equal("user", await ready.Task.WaitAsync(EventTimeout));
     }
 
     [Fact]
-    public void Initialize_DiscordClosed_RaisesConnectionFailed()
+    public async Task Initialize_DiscordClosed_RaisesConnectionFailed()
     {
-        bool failed = false;
-        adapter.ConnectionFailed += () => failed = true;
+        TaskCompletionSource failed = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        adapter.ConnectionFailed += () => failed.TrySetResult();
 
         adapter.Initialize();
 
-        pipe.WaitUntil(() => failed);
+        await failed.Task.WaitAsync(EventTimeout);
     }
 
     [Fact]
-    public void Error_SentByDiscord_RaisesErrorWithCodeAndMessage()
+    public async Task Error_SentByDiscord_RaisesErrorWithCodeAndMessage()
     {
-        string? error = null;
-        adapter.Error += (code, message) => error = $"{code} {message}";
+        TaskCompletionSource ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<string> error = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        adapter.Ready += _ => ready.TrySetResult();
+        adapter.Error += (code, message) => error.TrySetResult($"{code} {message}");
         pipe.Start();
         adapter.Initialize();
-        pipe.WaitUntil(() => pipe.IsConnected);
+        await ready.Task.WaitAsync(EventTimeout);
 
         pipe.SendError(4000, "Bad activity");
 
-        pipe.WaitUntil(() => error != null);
-        Assert.Equal("4000 Bad activity", error);
+        Assert.Equal("4000 Bad activity", await error.Task.WaitAsync(EventTimeout));
     }
 
     [Fact]
