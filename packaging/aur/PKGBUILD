@@ -24,7 +24,7 @@ url="https://github.com/$_repoowner/$_reponame"
 
 build() {
     cd "$_reponame-$pkgver"
-    dotnet publish src/Nexora -c Release -r linux-x64 --self-contained true -p:PublishAot=true
+    dotnet publish src/Nexora -c Release -r linux-x64 --self-contained true
 }
 
 package() {
