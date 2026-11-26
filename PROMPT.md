@@ -7,15 +7,16 @@ You work autonomously. Nobody will answer your questions: use your own judgment 
    (it's not necessarily the first one).
    If the behavior already exists, extend or add a UI test that checks every step of the entry, then mark it done.
 3. State what you are going to be working on.
-4. Implement the task by invoking the `implement` skill with the Skill tool. Work on one task only.
+4. Implement the task using the `implement` skill. Work on one task only.
    Before writing a helper, look for one that already does the job in the code and the tests.
    If it is private to another class, move it to a shared place and use it from both instead of copying it.
 5. Test the behavior end-to-end with a UI test in `tests/Nexora.UiTests` and check its screenshot.
-   Load the `ui-tests` skill with the Skill tool first.
+   Load the `ui-tests` skill first.
 6. Mark the task as `"state": "done"` in `feature-list.json`.
 7. Append the progress you've made to the `progress.txt` file.
    State what the task was and what you did to complete it. Be concise.
-8. Make a commit with a descriptive name to the current branch.
+8. Make a local commit with a descriptive Conventional Commit title and no body or agent attribution.
+   Use local Git operations only.
 9. Provide feedback: what took you a lot of time, tokens or tool calls and how it could be improved,
    for examples, by creating a skill, a script/tool and. What information would be good having at the start (if any).
 

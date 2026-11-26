@@ -1,4 +1,5 @@
-FROM docker.io/sbx/claude:latest
+ARG AGENT=claude
+FROM docker.io/sbx/${AGENT}:latest
 
 USER root
 
