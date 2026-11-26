@@ -16,6 +16,7 @@
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
         <AdditionalFiles Include="BannedSymbols.txt" />
+        <None Update="MATERIAL-SYMBOLS-LICENSE.txt" CopyToPublishDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
