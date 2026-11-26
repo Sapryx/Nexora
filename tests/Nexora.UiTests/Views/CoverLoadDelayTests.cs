@@ -101,8 +101,9 @@ public class CoverLoadDelayTests
     {
         var flashedBy = new HashSet<string>();
         double maxOffset = scrollViewer.Extent.Height - scrollViewer.Viewport.Height;
+        double scrollDistance = FastScrollScreens * scrollViewer.Viewport.Height;
 
-        while(scrollViewer.Offset.Y < maxOffset)
+        while(scrollViewer.Offset.Y + scrollDistance <= maxOffset)
         {
             flashedBy.UnionWith(app.VisibleTrackPaths<T>(scrollViewer));
             app.ScrollByScreens(scrollViewer, FastScrollScreens);
@@ -114,12 +115,14 @@ public class CoverLoadDelayTests
         flashedBy.ExceptWith(finalPaths);
         flashedBy.ExceptWith(TestMainWindow.NearbyRowPaths(tracks, finalPaths, columnCount));
         Assert.True(flashedBy.Count > LibrarySize / (FastScrollScreens + 1));
-        app.TimeProvider.Advance(app.Services.GetRequiredService<CoverLoadQueue>().ShowDelay - FastScrollStep);
+        var showDelay = app.Services.GetRequiredService<CoverLoadQueue>().ShowDelay;
+        var remainingDelay = TimeSpan.FromMilliseconds(1);
+        app.TimeProvider.Advance(showDelay - FastScrollStep - remainingDelay);
         Dispatcher.UIThread.RunJobs();
         Assert.Empty(app.CoverLoader.LoadOrder);
         Assert.All(app.VisibleCoverImages<T>(scrollViewer), image => Assert.Null(image.Source));
 
-        app.TimeProvider.Advance(FastScrollStep);
+        app.TimeProvider.Advance(remainingDelay);
         Dispatcher.UIThread.RunJobs();
         app.WaitUntil(() => app.VisibleCoverImages<T>(scrollViewer).All(image => image.Source != null));
 
@@ -161,7 +164,7 @@ public class CoverLoadDelayTests
         );
 
         app.CoverLoader.Hold();
-        app.ScrollByScreens(scrollViewer, 1);
+        app.ScrollByScreens(scrollViewer, 2);
         var olderPaths = app.VisibleTrackPaths<T>(scrollViewer);
         int loadsBefore = app.CoverLoader.LoadOrder.Count;
         app.PassCoverShowDelay();
