@@ -52,7 +52,7 @@ jobs:
           cache-dependency-path: '**/*.csproj'
 
       - name: Run all tests
-        run: ./scripts/test.sh --all -c Release
+        run: ./scripts/test.sh -c Release
 
   build:
     name: Build (${{ matrix.os }})

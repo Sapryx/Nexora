@@ -19,7 +19,7 @@ Debug build:
 ```
 dotnet build Nexora.slnx -v q -nologo
 ```
-Tests (all test projects; skips slow tests unless their code has uncommitted changes, `--all` runs every test):
+Tests (all test projects by default, or pass `--exclude-slow` first to skip tests tagged as slow):
 ```
 scripts/test.sh -v q -nologo --logger "console;verbosity=minimal"
 ```
@@ -48,8 +48,7 @@ before writing or debugging one.
 
 Mark a test class with a test that takes 2 seconds or more with `[Trait("Category", "Slow")]` and one
 `[Trait("Covers", "<path>")]` per file or directory it checks (paths from the repo root).
-`scripts/test.sh` runs it only when its own file or a covered path has uncommitted changes;
-the release workflow runs every test.
+The test script and release workflow run slow tests by default.
 
 ## Style analyzers
 

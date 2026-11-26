@@ -188,18 +188,6 @@ Run the tests:
 ./scripts/test.sh
 ```
 
-Slow tests run only when the code they cover has uncommitted changes; pass `--all` to run every test, for example
-before a release. Other arguments go to `dotnet test`.
-
-Profile the app with `perf` and open the recording in [Hotspot](https://github.com/KDAB/hotspot) (Arch Linux; needs `perf` and `hotspot`):
-
-```
-./scripts/profile.sh [--dwarf] [output file]
-```
-
-It builds a Release (JIT) build, records it until the app is closed or Ctrl+C is pressed, and installs debug symbols
-for stripped system libraries from Arch's debuginfod server. The recording goes to `~/nexora.perf.data` by default.
-
-Native libraries such as SkiaSharp are built without frame pointers, so their call stacks stop at the first native
-frame. Pass `--dwarf` to unwind them from debug info instead; the recording grows by tens of MB per second, so keep it
-short.
+The script runs all tests by default. Use `./scripts/test.sh --exclude-slow` to skip tests tagged as slow.
+For a custom selection, use `--filter`, for example `./scripts/test.sh --filter 'FullyQualifiedName!~LruCacheTests'`.
+Other arguments are forwarded to `dotnet test`.
