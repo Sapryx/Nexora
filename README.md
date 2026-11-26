@@ -29,7 +29,7 @@ Target platforms currently are:
 - Windows
 - Linux
 
-<img width="1920" height="1030" alt="image" src="https://github.com/user-attachments/assets/19901dca-8641-4d66-a4b8-410a1e6b0c1b" />
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/d1f8744b-4358-43d5-83dd-32a9f30ea411" />
 
 ---
 
