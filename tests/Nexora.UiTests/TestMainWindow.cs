@@ -69,7 +69,8 @@ public sealed class TestMainWindow : IDisposable
         FakeMediaEngine? mediaEngine,
         IMetadataSaver? metadataSaver = null,
         string? thumbnailDirectory = null,
-        [CallerMemberName] string testName = "")
+        [CallerMemberName] string testName = "",
+        string? musicDirectory = null)
     {
         screenshotPath = Path.Combine(screenshotDirectory, $"{testName}.png");
         ownsThumbnailDirectory = thumbnailDirectory == null;
@@ -95,7 +96,19 @@ public sealed class TestMainWindow : IDisposable
         }
 
         services.AddSingleton(Mock.Of<ILoudnessAnalyzer>());
-        services.AddSingleton(TestMusicLibrary.CreateTrackLoader(loadedTracks));
+
+        if(musicDirectory == null)
+        {
+            services.AddSingleton(TestMusicLibrary.CreateTrackLoader(loadedTracks));
+        }
+        else
+        {
+            services.AddSingleton<IMusicDirectoryProvider>(serviceProvider => new MusicDirectoryProvider(
+                serviceProvider.GetRequiredService<ILogger<MusicDirectoryProvider>>(),
+                musicDirectory
+            ));
+        }
+
         services.AddSingleton<TimeProvider>(TimeProvider);
         services.AddSingleton<INamedPipeClient>(DiscordPipe);
         services.AddSingleton<ITrackCoverLoader>(CoverLoader);

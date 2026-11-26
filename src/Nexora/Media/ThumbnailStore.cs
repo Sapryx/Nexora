@@ -1,10 +1,11 @@
+using System.Text.RegularExpressions;
 using Avalonia.Media.Imaging;
 using Core.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Nexora.Media;
 
-public class ThumbnailStore : IThumbnailStore
+public partial class ThumbnailStore : IThumbnailStore
 {
     private readonly string directory;
     private readonly ILogger<ThumbnailStore> logger;
@@ -76,6 +77,41 @@ public class ThumbnailStore : IThumbnailStore
             }
         }
     }
+
+    public void RemoveOrphanedThumbnails(IEnumerable<string> audioPaths, CancellationToken token)
+    {
+        var trackNames = audioPaths.Select(Path.GetFileNameWithoutExtension).ToHashSet(StringComparer.Ordinal);
+
+        try
+        {
+            foreach(string path in Directory.EnumerateFiles(directory, "*.png"))
+            {
+                token.ThrowIfCancellationRequested();
+
+                if(IsOrphanedThumbnail(Path.GetFileName(path), trackNames))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+        catch(DirectoryNotFoundException)
+        {
+        }
+        catch(Exception ex) when(ex is IOException or UnauthorizedAccessException)
+        {
+            logger.Warn(ex, $"Failed to remove orphaned thumbnails in {directory}");
+        }
+    }
+
+    private static bool IsOrphanedThumbnail(string fileName, HashSet<string?> trackNames)
+    {
+        var name = ThumbnailName().Match(fileName);
+        return name.Success && int.TryParse(name.Groups["size"].ValueSpan, out _)
+            && !trackNames.Contains(name.Groups["track"].Value);
+    }
+
+    [GeneratedRegex(@"\A(?<track>.*) (?<size>[1-9][0-9]*)x\k<size>\.png\z", RegexOptions.Singleline)]
+    private static partial Regex ThumbnailName();
 
     private static bool IsFresh(FileInfo file, string audioPath)
     {

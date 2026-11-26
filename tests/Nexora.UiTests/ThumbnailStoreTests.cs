@@ -119,6 +119,65 @@ public sealed class ThumbnailStoreTests : IDisposable
         Assert.Empty(Directory.GetFiles(Path.Combine(directory, "cache")));
     }
 
+    [Fact]
+    public void RemoveOrphanedThumbnails_KeepsAllSizesForPresentTracksAndLeavesOtherFiles()
+    {
+        string orphan = Path.Combine(directory, "Artist - Title 96x96.mp3");
+        string cache = Path.Combine(directory, "cache");
+        store.Save(audioPath, 64, null);
+        store.Save(audioPath, 240, null);
+        store.Save(orphan, 64, null);
+        store.Save(orphan, 240, null);
+        string[] unrelated = [
+            "artwork.png",
+            "artwork 64x160.png",
+            "artwork 0x0.png",
+            "notes 9876543210x9876543210.png"
+        ];
+
+        foreach(string name in unrelated)
+        {
+            File.WriteAllText(Path.Combine(cache, name), name);
+        }
+
+        store.RemoveOrphanedThumbnails([audioPath], CancellationToken.None);
+
+        Assert.True(File.Exists(store.PathOf(audioPath, 64)));
+        Assert.True(File.Exists(store.PathOf(audioPath, 240)));
+        Assert.False(File.Exists(store.PathOf(orphan, 64)));
+        Assert.False(File.Exists(store.PathOf(orphan, 240)));
+        Assert.All(unrelated, name => Assert.Equal(name, File.ReadAllText(Path.Combine(cache, name))));
+    }
+
+    [Fact]
+    public void RemoveOrphanedThumbnails_Cancelled_DoesNotDeleteFiles()
+    {
+        store.Save(audioPath, PixelSide, null);
+
+        var token = new CancellationToken(true);
+        Assert.Throws<OperationCanceledException>(() => store.RemoveOrphanedThumbnails([], token));
+        Assert.True(File.Exists(store.PathOf(audioPath, PixelSide)));
+    }
+
+    [Fact]
+    public void RemoveOrphanedThumbnails_MissingDirectory_DoesNothing()
+    {
+        store.RemoveOrphanedThumbnails([], CancellationToken.None);
+
+        Assert.Empty(logger.Entries);
+        Assert.False(Directory.Exists(Path.Combine(directory, "cache")));
+    }
+
+    [Fact]
+    public void RemoveOrphanedThumbnails_InvalidDirectory_LogsWarning()
+    {
+        var invalidStore = new ThumbnailStore(Path.Combine(directory, new string('a', 512)), logger);
+
+        invalidStore.RemoveOrphanedThumbnails([], CancellationToken.None);
+
+        Assert.Equal(LogLevel.Warning, Assert.Single(logger.Entries).Level);
+    }
+
     public void Dispose()
     {
         Directory.Delete(directory, true);

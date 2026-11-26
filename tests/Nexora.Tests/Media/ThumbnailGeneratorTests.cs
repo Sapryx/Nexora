@@ -17,6 +17,7 @@ public sealed class ThumbnailGeneratorTests : IDisposable
     ];
 
     private readonly Mock<ICoverCache> coverCacheMock = new Mock<ICoverCache>();
+    private readonly Mock<IThumbnailStore> thumbnailStoreMock = new Mock<IThumbnailStore>();
     private readonly MusicLibrary library;
     private readonly ThumbnailGenerator generator;
 
@@ -28,13 +29,26 @@ public sealed class ThumbnailGeneratorTests : IDisposable
             AudioPlayerMock.Create().Object
         );
         library = TestMusicLibrary.Create(tagWriter, tracks);
-        generator = new ThumbnailGenerator(NullLogger<ThumbnailGenerator>.Instance, library, coverCacheMock.Object);
+        generator = new ThumbnailGenerator(
+            NullLogger<ThumbnailGenerator>.Instance,
+            library,
+            coverCacheMock.Object,
+            thumbnailStoreMock.Object
+        );
     }
 
     [Fact]
-    public async Task Start_LibraryLoaded_CreatesThumbnailsOfEveryTrackInLibraryOrder()
+    public async Task Start_LibraryLoaded_RemovesOrphansBeforeCreatingThumbnailsInLibraryOrder()
     {
         var createdPaths = new List<string>();
+        List<string>? retainedPaths = null;
+        thumbnailStoreMock
+            .Setup(it => it.RemoveOrphanedThumbnails(It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
+            .Callback((IEnumerable<string> paths, CancellationToken _) =>
+            {
+                Assert.Empty(createdPaths);
+                retainedPaths = paths.ToList();
+            });
         coverCacheMock
             .Setup(it => it.CreateThumbnails(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Callback((string audioPath, CancellationToken _) => createdPaths.Add(audioPath));
@@ -45,6 +59,7 @@ public sealed class ThumbnailGeneratorTests : IDisposable
         await generator.Completion;
 
         Assert.Equal(["/music/Psycho.mp3", "/music/Uprising.mp3"], createdPaths);
+        Assert.Equal(createdPaths, retainedPaths);
     }
 
     [Fact]

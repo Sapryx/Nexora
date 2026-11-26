@@ -102,6 +102,56 @@ public sealed class BackgroundThumbnailTests : IDisposable
     }
 
     [AvaloniaFact]
+    public void Restart_AfterDeletingAndRenamingTracks_RemovesOnlyTheirOldThumbnails()
+    {
+        string kept = Path.Combine(musicDirectory, "Kept.wav");
+        string oldPath = Path.Combine(musicDirectory, "Before.wav");
+        string newPath = Path.Combine(musicDirectory, "Renamed.wav");
+        File.Copy(realTrackPath, kept);
+        File.Copy(realTrackPath, oldPath);
+        string notes = Path.Combine(thumbnailDirectory, "notes.txt");
+        string image = Path.Combine(thumbnailDirectory, "Artwork 160x64.png");
+        byte[] artwork = FakeTrackCoverLoader.CreatePng(new PixelSize(160, 64));
+        File.WriteAllText(notes, "keep me");
+        File.WriteAllBytes(image, artwork);
+
+        using(var app = Start(musicDirectory))
+        {
+            app.CoverLoader.AddToEveryTrack(new PixelSize(200, 200));
+            WaitForGenerator(app.LoadLibrary([]));
+            AssertBothThumbnails([realTrackPath, oldPath, kept]);
+        }
+
+        File.Delete(realTrackPath);
+
+        using(var app = Start(musicDirectory))
+        {
+            WaitForGenerator(app.LoadLibrary([]));
+            Assert.False(File.Exists(ThumbnailPath(realTrackPath, 64)));
+            Assert.False(File.Exists(ThumbnailPath(realTrackPath, 160)));
+            AssertBothThumbnails([oldPath, kept]);
+            Assert.Empty(app.CoverLoader.LoadOrder);
+        }
+
+        File.Move(oldPath, newPath);
+
+        using(var app = Start(musicDirectory))
+        {
+            app.CoverLoader.Add(newPath, new PixelSize(200, 200));
+            WaitForGenerator(app.LoadLibrary([]));
+            Assert.False(File.Exists(ThumbnailPath(oldPath, 64)));
+            Assert.False(File.Exists(ThumbnailPath(oldPath, 160)));
+            AssertBothThumbnails([newPath, kept]);
+            Assert.Equal([newPath], app.CoverLoader.LoadOrder);
+            Assert.Equal("keep me", File.ReadAllText(notes));
+            Assert.Equal(artwork, File.ReadAllBytes(image));
+            app.ShowLibraryGrid();
+            app.WaitForVisibleCovers<TrackTile>(app.LibraryGridScroll());
+            Assert.Equal(2, app.VisibleTrackPaths<TrackTile>(app.LibraryGridScroll()).Count);
+        }
+    }
+
+    [AvaloniaFact]
     public void Close_WhileCreating_LeavesOnlyCompleteThumbnails()
     {
         List<AudioTrack> tracks;
@@ -155,9 +205,9 @@ public sealed class BackgroundThumbnailTests : IDisposable
         return size == new PixelSize(160, 160) || size == new PixelSize(64, 64);
     }
 
-    private TestMainWindow Start([CallerMemberName] string testName = "")
+    private TestMainWindow Start(string? musicDirectory = null, [CallerMemberName] string testName = "")
     {
-        return new TestMainWindow(null, null, thumbnailDirectory, testName);
+        return new TestMainWindow(null, null, thumbnailDirectory, testName, musicDirectory);
     }
 
     private List<AudioTrack> LibraryOf(TestMainWindow app)

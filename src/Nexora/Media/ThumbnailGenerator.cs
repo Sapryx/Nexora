@@ -11,16 +11,22 @@ public sealed class ThumbnailGenerator : IDisposable
     private readonly ILogger<ThumbnailGenerator> logger;
     private readonly MusicLibrary library;
     private readonly ICoverCache coverCache;
+    private readonly IThumbnailStore thumbnailStore;
     private readonly CancellationTokenSource stopping = new CancellationTokenSource();
     private readonly Lock lifecycleLock = new Lock();
     private bool started;
     private Task? generation;
 
-    public ThumbnailGenerator(ILogger<ThumbnailGenerator> logger, MusicLibrary library, ICoverCache coverCache)
+    public ThumbnailGenerator(
+        ILogger<ThumbnailGenerator> logger,
+        MusicLibrary library,
+        ICoverCache coverCache,
+        IThumbnailStore thumbnailStore)
     {
         this.logger = logger;
         this.library = library;
         this.coverCache = coverCache;
+        this.thumbnailStore = thumbnailStore;
     }
 
     public void Start()
@@ -78,6 +84,8 @@ public sealed class ThumbnailGenerator : IDisposable
 
         try
         {
+            thumbnailStore.RemoveOrphanedThumbnails(tracks.Select(track => track.AudioPath), stopping.Token);
+
             foreach(var track in tracks)
             {
                 stopping.Token.ThrowIfCancellationRequested();

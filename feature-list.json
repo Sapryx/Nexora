@@ -121,6 +121,6 @@
             "Verify thumbnails of the remaining tracks are kept",
             "Verify files in the cache directory that are not thumbnails are left untouched"
         ],
-        "state": "todo"
+        "state": "done"
     }
 ]
