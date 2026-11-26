@@ -220,7 +220,9 @@ public static class CompositionRoot
         var mainWindowVm = provider.GetRequiredService<MainWindowVm>();
         mainWindowVm.Initialize();
 
-        var mainWindow = new MainWindow()
+        bool showWindowControls = !OperatingSystem.IsLinux()
+            || !TilingWindowManager.IsPresent(Environment.GetEnvironmentVariable);
+        var mainWindow = new MainWindow(showWindowControls)
         {
             DataContext = mainWindowVm
         };

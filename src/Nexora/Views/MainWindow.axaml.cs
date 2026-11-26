@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     private bool IsPopupOpen => DataContext is MainWindowVm vm && vm.IsPopupOpen;
     private const double DragStripHeight = 32;
     private const double ResizeBorderThickness = 6;
+    private readonly bool showWindowControls;
     private WindowEdge? hoveredEdge;
     private WindowState stateBeforeFullScreen = WindowState.Normal;
 
@@ -29,9 +30,15 @@ public partial class MainWindow : Window
         }
     };
 
-    public MainWindow()
+    public MainWindow() : this(true)
     {
+    }
+
+    public MainWindow(bool showWindowControls)
+    {
+        this.showWindowControls = showWindowControls;
         InitializeComponent();
+        CaptionButtons.IsVisible = showWindowControls;
 
         AddHandler(KeyDownEvent, OnPreviewKey, RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, OnPreviewKey, RoutingStrategies.Tunnel);
@@ -42,6 +49,11 @@ public partial class MainWindow : Window
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+
+        if(!showWindowControls)
+        {
+            return;
+        }
 
         bool isLeftPress = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
 

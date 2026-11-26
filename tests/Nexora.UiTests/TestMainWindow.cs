@@ -33,6 +33,10 @@ public sealed class RecordingMainWindow : MainWindow
     public int MoveDragCount { get; private set; }
     public List<WindowEdge> ResizeDragEdges { get; } = [];
 
+    public RecordingMainWindow(bool showWindowControls) : base(showWindowControls)
+    {
+    }
+
     protected override void StartMoveDrag(PointerPressedEventArgs e)
     {
         MoveDragCount++;
@@ -61,7 +65,8 @@ public sealed class TestMainWindow : IDisposable
     private readonly bool ownsThumbnailDirectory;
     private readonly List<IAudioTrack> loadedTracks = [];
 
-    public TestMainWindow([CallerMemberName] string testName = "") : this(null, null, null, testName)
+    public TestMainWindow(bool showWindowControls = true, [CallerMemberName] string testName = "")
+        : this(null, null, null, testName, showWindowControls: showWindowControls)
     {
     }
 
@@ -70,7 +75,8 @@ public sealed class TestMainWindow : IDisposable
         IMetadataSaver? metadataSaver = null,
         string? thumbnailDirectory = null,
         [CallerMemberName] string testName = "",
-        string? musicDirectory = null)
+        string? musicDirectory = null,
+        bool showWindowControls = true)
     {
         screenshotPath = Path.Combine(screenshotDirectory, $"{testName}.png");
         ownsThumbnailDirectory = thumbnailDirectory == null;
@@ -119,7 +125,7 @@ public sealed class TestMainWindow : IDisposable
         ));
         provider = services.BuildServiceProvider();
 
-        Window = new RecordingMainWindow()
+        Window = new RecordingMainWindow(showWindowControls)
         {
             Width = 1280,
             Height = 800,

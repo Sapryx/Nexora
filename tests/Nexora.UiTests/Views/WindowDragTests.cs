@@ -13,6 +13,26 @@ namespace Nexora.UiTests.Views;
 public class WindowDragTests
 {
     [AvaloniaFact]
+    public void TilingSession_HidesCaptionButtonsAndDisablesTopDragWithoutMovingLibraryControls()
+    {
+        using var stacking = new TestMainWindow(testName: "StackingWindowControls");
+        using var tiling = new TestMainWindow(showWindowControls: false);
+
+        var point = new Point(900, 10);
+        tiling.Click(point);
+        tiling.Click(point);
+
+        Assert.False(tiling.Find<WindowButtons>().IsEffectivelyVisible);
+        Assert.Equal(0, tiling.Window.MoveDragCount);
+        Assert.Equal(WindowState.Normal, tiling.Window.WindowState);
+        Assert.Equal(stacking.Find<SearchBar>().Bounds, tiling.Find<SearchBar>().Bounds);
+        Assert.Equal(
+            stacking.Find<SegmentedControl>("LibraryViewSwitch").Bounds,
+            tiling.Find<SegmentedControl>("LibraryViewSwitch").Bounds
+        );
+    }
+
+    [AvaloniaFact]
     public void TopStrip_PressOnEmptySpot_StartsMoveDrag()
     {
         using var app = new TestMainWindow();

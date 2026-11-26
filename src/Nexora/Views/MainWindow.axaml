@@ -144,7 +144,8 @@
             </Grid>
         </DockPanel>
 
-        <views:WindowButtons HorizontalAlignment="Right"
+        <views:WindowButtons x:Name="CaptionButtons"
+                             HorizontalAlignment="Right"
                              VerticalAlignment="Top" />
 
         <views:TrackEditor DataContext="{Binding TrackEditorVm}" />
