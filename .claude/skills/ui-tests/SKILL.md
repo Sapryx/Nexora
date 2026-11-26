@@ -75,7 +75,7 @@ decoding and scaling, cover sizes and memory) here.
   covers load to make the app decode covers as it would at that scale.
 - Discord: `app.DiscordPipe` is a `FakeDiscordPipe` that acts like Discord over the real library. It can `Start`,
   `Quit`, `Reload` and `SendError`, and shows the last presence in `Activity`. The library polls once per second, so
-  use `WaitUntil(condition)` and mark the test as slow (see "Slow tests" in `CLAUDE.md`).
+  use `WaitUntil(condition)` and mark the test as slow (see "Slow tests" in `AGENTS.md`).
 
 ## Theme quirks
 
